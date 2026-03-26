@@ -1,5 +1,5 @@
 /**
- * Login Page
+ * Login Page — Unified for Admin & Collector
  */
 export function renderLoginPage() {
   return `
@@ -8,7 +8,7 @@ export function renderLoginPage() {
         <div class="login-brand">
           <div class="brand-icon">📡</div>
           <h1>WiFi Billing</h1>
-          <p>Admin Dashboard</p>
+          <p>Sign in to your account</p>
         </div>
 
         <div class="login-error" id="login-error"></div>
@@ -16,7 +16,7 @@ export function renderLoginPage() {
         <form class="login-form" id="login-form">
           <div class="form-group">
             <label class="form-label">Email Address</label>
-            <input type="email" class="form-input" id="login-email" placeholder="admin@example.com" required autocomplete="email">
+            <input type="email" class="form-input" id="login-email" placeholder="Enter your email" required autocomplete="email">
           </div>
           <div class="form-group">
             <label class="form-label">Password</label>
@@ -26,6 +26,10 @@ export function renderLoginPage() {
             Sign In
           </button>
         </form>
+
+        <div style="text-align: center; margin-top: 24px; font-size: 0.75rem; color: var(--text-muted);">
+          Admins & Collectors use the same login
+        </div>
       </div>
     </div>
   `;

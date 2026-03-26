@@ -2,18 +2,19 @@ import { account, databases, DATABASE_ID, COLLECTIONS, ID, Query } from '../conf
 
 export const AuthService = {
   /**
-   * Login with email & password
+   * Login with email & password — returns user + profile with role
    */
   async login(email, password) {
     try {
       const session = await account.createEmailPasswordSession(email, password);
       const user = await account.get();
-      // Fetch user profile to check role
       const profile = await this.getUserProfile(user.$id);
-      if (profile && profile.role !== 'admin') {
+
+      if (!profile) {
         await account.deleteSession('current');
-        throw new Error('Access denied. Only admins can access this dashboard.');
+        throw new Error('No profile found for this account.');
       }
+
       return { user, profile, session };
     } catch (error) {
       throw error;
@@ -66,7 +67,6 @@ export const AuthService = {
    */
   async createUser(email, password, name) {
     try {
-      // Note: In production, use Appwrite server SDK or Cloud Functions for this
       const user = await account.create(ID.unique(), email, password, name);
       return user;
     } catch (error) {

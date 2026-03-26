@@ -62,6 +62,11 @@ async function init() {
   if (savedSession) {
     try {
       currentUser = JSON.parse(savedSession);
+      // If collector session is saved, redirect to collector app
+      if (currentUser.profile && currentUser.profile.role === 'collector') {
+        window.location.href = '/collector';
+        return;
+      }
       isLoggedIn = true;
       navigateTo(currentPage);
       return;
@@ -75,6 +80,12 @@ async function init() {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
     const session = await Promise.race([services.auth.getCurrentUser(), timeout]);
     if (session && session.user) {
+      // Route based on role
+      const role = session.profile?.role;
+      if (role === 'collector') {
+        window.location.href = '/collector';
+        return;
+      }
       currentUser = session;
       isLoggedIn = true;
       navigateTo(currentPage);
@@ -96,21 +107,34 @@ function showLogin() {
   initLoginPage(async (email, password) => {
     try {
       const result = await services.auth.login(email, password);
+      const role = result.profile?.role;
+
+      // Route based on role
+      if (role === 'collector') {
+        // Redirect to the collector mobile app
+        window.location.href = '/collector';
+        return;
+      }
+
+      // Admin — stay on admin dashboard
       currentUser = result;
       isLoggedIn = true;
       navigateTo('dashboard');
     } catch (error) {
-      // Demo mode: allow demo login
+      // Demo mode: allow demo login for both roles
       if (email === 'admin@demo.com' && password === 'demo1234') {
         currentUser = { user: { name: 'Demo Admin', email: 'admin@demo.com' }, profile: { firstName: 'Demo', lastName: 'Admin', role: 'admin' } };
         isLoggedIn = true;
         localStorage.setItem('wifi_admin_session', JSON.stringify(currentUser));
         navigateTo('dashboard');
-      } else if (error.message && error.message.includes('Access denied')) {
-        throw error;
+      } else if (email === 'collector@demo.com' && password === 'demo1234') {
+        localStorage.setItem('wifi_admin_session', JSON.stringify({
+          user: { name: 'Demo Collector', email: 'collector@demo.com' },
+          profile: { firstName: 'Demo', lastName: 'Collector', role: 'collector' }
+        }));
+        window.location.href = '/collector';
       } else {
-        // Try demo login hint
-        throw new Error('Login failed. Use admin@demo.com / demo1234 for demo mode, or configure Appwrite for production.');
+        throw new Error(error.message || 'Login failed. Please check your credentials.');
       }
     }
   });
