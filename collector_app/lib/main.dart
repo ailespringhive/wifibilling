@@ -22,7 +22,7 @@ void main() {
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: AppTheme.bgCard,
+      systemNavigationBarColor: AppTheme.bgDark,
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
@@ -60,13 +60,24 @@ class AuthGate extends StatefulWidget {
   State<AuthGate> createState() => _AuthGateState();
 }
 
-class _AuthGateState extends State<AuthGate> {
+class _AuthGateState extends State<AuthGate> with SingleTickerProviderStateMixin {
   bool _checking = true;
+  late AnimationController _pulseController;
 
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
     _checkAuth();
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   Future<void> _checkAuth() async {
@@ -89,26 +100,40 @@ class _AuthGateState extends State<AuthGate> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.wifi_outlined,
-                  size: 32,
-                  color: Colors.white,
-                ),
+              AnimatedBuilder(
+                animation: _pulseController,
+                builder: (context, child) {
+                  return Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.accentBlue.withValues(
+                            alpha: 0.2 + (_pulseController.value * 0.15),
+                          ),
+                          blurRadius: 24 + (_pulseController.value * 12),
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.wifi_outlined,
+                      size: 36,
+                      color: Colors.white,
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 20),
-              const SizedBox(
+              const SizedBox(height: 24),
+              SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppTheme.accentBlue,
+                  color: AppTheme.accentBlue.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -120,7 +145,7 @@ class _AuthGateState extends State<AuthGate> {
   }
 }
 
-/// Main shell with bottom navigation
+/// Main shell with premium bottom navigation
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -149,22 +174,34 @@ class _MainShellState extends State<MainShell> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppTheme.border),
         ),
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text(
+          'Sign Out',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Are you sure you want to sign out?',
+          style: GoogleFonts.inter(color: AppTheme.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: AppTheme.textMuted),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.accentRose,
             ),
-            child: const Text('Logout'),
+            child: Text(
+              'Sign Out',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -190,93 +227,180 @@ class _MainShellState extends State<MainShell> {
             builder: (context) {
               final auth = context.watch<AuthService>();
               final profile = auth.currentProfile;
-              
+
               final initials = profile?.initials ?? 'DC';
               final firstName = profile?.firstName ?? 'Demo';
               final fullName = profile?.fullName ?? 'Demo Collector';
-              
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Name
-                  Text(
-                    fullName,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary.withValues(alpha: 0.9),
-                    ),
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: PopupMenuButton<String>(
+                  offset: const Offset(0, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: AppTheme.border),
                   ),
-                  const SizedBox(width: 10),
-                  // Round Avatar
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.avatarGradient(firstName),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white10,
-                        width: 1,
+                  color: AppTheme.bgCard,
+                  onSelected: (value) {
+                    if (value == 'logout') _logout();
+                  },
+                  itemBuilder: (ctx) => [
+                    PopupMenuItem(
+                      enabled: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            fullName,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Collector',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: AppTheme.textMuted,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Center(
-                      child: Text(
-                        initials,
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.logout_outlined,
+                              size: 18, color: AppTheme.accentRose),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Sign Out',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: AppTheme.accentRose,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        firstName,
                         style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textSecondary,
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.avatarGradient(firstName),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accentBlue.withValues(alpha: 0.15),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            initials,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  // Subtle Logout
-                  IconButton(
-                    icon: const Icon(Icons.logout_outlined, size: 18),
-                    onPressed: _logout,
-                    tooltip: 'Logout',
-                    color: AppTheme.textMuted.withValues(alpha: 0.7),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    splashRadius: 20,
-                  ),
-                ],
+                ),
               );
             },
           ),
-          const SizedBox(width: 20),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: _screens[_currentIndex],
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          border: const Border(
             top: BorderSide(color: AppTheme.border, width: 1),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard_outlined),
-              label: 'Home',
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, Icons.dashboard_outlined, Icons.dashboard_rounded, 'Home'),
+                _buildNavItem(1, Icons.people_alt_outlined, Icons.people_alt_rounded, 'Customers'),
+                _buildNavItem(2, Icons.history_outlined, Icons.history_rounded, 'History'),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.people_alt_outlined),
-              activeIcon: Icon(Icons.people_alt_outlined),
-              label: 'Customers',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
+    final isActive = _currentIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _currentIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppTheme.accentBlue.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isActive ? activeIcon : icon,
+              color: isActive ? AppTheme.accentBlue : AppTheme.textMuted,
+              size: 22,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history_outlined),
-              activeIcon: Icon(Icons.history_outlined),
-              label: 'History',
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                color: isActive ? AppTheme.accentBlue : AppTheme.textMuted,
+              ),
             ),
           ],
         ),

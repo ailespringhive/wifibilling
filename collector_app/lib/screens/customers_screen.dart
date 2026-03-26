@@ -47,7 +47,6 @@ class _CustomersScreenState extends State<CustomersScreen> {
       final billings =
           await _billingService.getAssignedBillings(auth.collectorId);
 
-      // Map the latest billing per customer
       final Map<String, Billing?> billingMap = {};
       for (final c in customers) {
         final cBillings =
@@ -90,27 +89,34 @@ class _CustomersScreenState extends State<CustomersScreen> {
         // ── Search Bar ──
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-          child: TextField(
-            controller: _searchController,
-            onChanged: _filterCustomers,
-            style: GoogleFonts.inter(
-              color: AppTheme.textPrimary,
-              fontSize: 14,
-            ),
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search_outlined,
-                  color: AppTheme.textMuted, size: 20),
-              hintText: 'Search customers...',
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.close_outlined,
-                          color: AppTheme.textMuted, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                        _filterCustomers('');
-                      },
-                    )
-                  : null,
+          child: Container(
+            decoration: AppTheme.glassCard(radius: 14),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _filterCustomers,
+              style: GoogleFonts.inter(
+                color: AppTheme.textPrimary,
+                fontSize: 14,
+              ),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search_outlined,
+                    color: AppTheme.textMuted, size: 20),
+                hintText: 'Search customers...',
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close_outlined,
+                            color: AppTheme.textMuted, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          _filterCustomers('');
+                        },
+                      )
+                    : null,
+              ),
             ),
           ),
         ),
@@ -125,6 +131,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   color: AppTheme.textMuted,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -164,16 +171,12 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.border),
-      ),
+      decoration: AppTheme.glassCard(radius: 14),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
           onTap: () {
             Navigator.of(context).pushNamed(
               '/customer-detail',
@@ -184,14 +187,20 @@ class _CustomersScreenState extends State<CustomersScreen> {
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-                // Avatar
+                // Circular Avatar
                 Container(
-                  width: 46,
-                  height: 46,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     gradient:
                         AppTheme.avatarGradient(customer.firstName),
-                    borderRadius: BorderRadius.circular(4),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.accentBlue.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
                   child: Center(
                     child: Text(
@@ -219,7 +228,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           color: AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           const Icon(Icons.phone_outlined,
@@ -234,56 +243,35 @@ class _CustomersScreenState extends State<CustomersScreen> {
                               color: AppTheme.textMuted,
                             ),
                           ),
+                          if (customer.locationString.isNotEmpty) ...[
+                            const SizedBox(width: 10),
+                            const Icon(Icons.location_on_outlined,
+                                size: 13, color: AppTheme.textMuted),
+                            const SizedBox(width: 3),
+                            Expanded(
+                              child: Text(
+                                customer.locationString,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: AppTheme.textMuted,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-                      if (customer.locationString.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Row(
-                            children: [
-                               const Icon(Icons.location_on_outlined,
-                                  size: 13, color: AppTheme.textMuted),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  customer.locationString,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: AppTheme.textMuted,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                     ],
                   ),
                 ),
 
                 // Status badge
                 if (billing != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(2),
-                      border: Border.all(color: statusColor.withValues(alpha: 0.15)),
-                    ),
-                    child: Text(
-                      billing.statusLabel,
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
-                    ),
-                  ),
+                  AppTheme.statusBadge(billing.paymentStatus, billing.statusLabel),
 
                 const SizedBox(width: 4),
                 const Icon(Icons.chevron_right_outlined,
-                    color: AppTheme.textMuted, size: 20),
+                    color: AppTheme.textMuted, size: 18),
               ],
             ),
           ),
@@ -297,9 +285,17 @@ class _CustomersScreenState extends State<CustomersScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.people_outline_outlined,
-              size: 56, color: AppTheme.textMuted),
-          const SizedBox(height: 12),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppTheme.textMuted.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.people_outline_outlined,
+                size: 28, color: AppTheme.textMuted),
+          ),
+          const SizedBox(height: 16),
           Text(
             'No customers assigned',
             style: GoogleFonts.inter(
@@ -328,11 +324,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       itemBuilder: (context, index) => Container(
         margin: const EdgeInsets.only(bottom: 10),
         height: 80,
-        decoration: BoxDecoration(
-          color: AppTheme.bgCard,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppTheme.border),
-        ),
+        decoration: AppTheme.glassCard(radius: 14),
       ),
     );
   }

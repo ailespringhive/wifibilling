@@ -72,7 +72,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             backgroundColor: AppTheme.accentEmerald,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
         await _loadBillings();
@@ -86,7 +86,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             backgroundColor: AppTheme.accentRose,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -100,11 +100,16 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppTheme.bgCard,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: const Border(
+            top: BorderSide(color: AppTheme.border),
+            left: BorderSide(color: AppTheme.border),
+            right: BorderSide(color: AppTheme.border),
+          ),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -117,7 +122,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Text(
               'Update Payment Status',
               style: GoogleFonts.inter(
@@ -126,7 +131,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 color: AppTheme.textPrimary,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               '${billing.billingMonth} · ₱${NumberFormat('#,##0').format(billing.amount)}',
               style: GoogleFonts.inter(
@@ -134,18 +139,25 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 color: AppTheme.textMuted,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
             // Mark as Paid button
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 52,
               child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppTheme.accentEmerald, Color(0xFF10B981)],
                   ),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentEmerald.withValues(alpha: 0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: ElevatedButton.icon(
                   onPressed: _isUpdating
@@ -163,17 +175,17 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     shadowColor: Colors.transparent,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4)),
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             // Payment Confirmation button
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 52,
               child: OutlinedButton.icon(
                 onPressed: _isUpdating
                     ? null
@@ -190,7 +202,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   foregroundColor: AppTheme.accentPurple,
                   side: const BorderSide(color: AppTheme.accentPurple),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4)),
+                      borderRadius: BorderRadius.circular(14)),
                 ),
               ),
             ),
@@ -227,13 +239,34 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               const SizedBox(height: 24),
 
               // ── Billing History Header ──
-              Text(
-                'Billing History',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
+              Row(
+                children: [
+                  Text(
+                    'Billing History',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (_billings.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentBlue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${_billings.length} records',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.accentBlue,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 12),
 
@@ -253,24 +286,27 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   Widget _buildInfoCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.border),
-      ),
+      padding: const EdgeInsets.all(24),
+      decoration: AppTheme.glassCard(radius: 20),
       child: Column(
         children: [
-          // Avatar row
+          // Avatar + name
           Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   gradient:
                       AppTheme.avatarGradient(_customer!.firstName),
-                  borderRadius: BorderRadius.circular(4),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentBlue.withValues(alpha: 0.15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Center(
                   child: Text(
@@ -296,12 +332,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         color: AppTheme.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Customer',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: AppTheme.textMuted,
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentBlue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Customer',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.accentBlue,
+                        ),
                       ),
                     ),
                   ],
@@ -309,15 +353,18 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               ),
             ],
           ),
-          const Divider(height: 28),
+
+          const SizedBox(height: 20),
+          Container(height: 1, color: AppTheme.border),
+          const SizedBox(height: 16),
 
           // Details
           _infoRow(Icons.phone_outlined, 'Phone',
               _customer!.phone.isNotEmpty ? _customer!.phone : '—'),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           _infoRow(Icons.email_outlined, 'Email',
               _customer!.email.isNotEmpty ? _customer!.email : '—'),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           _infoRow(
               Icons.location_on_outlined,
               'Address',
@@ -325,7 +372,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   ? _customer!.address
                   : '—'),
           if (_customer!.locationString.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             _infoRow(Icons.map_outlined, 'Area',
                 _customer!.locationString),
           ],
@@ -338,26 +385,37 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: AppTheme.textMuted),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 60,
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: AppTheme.textMuted,
-            ),
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppTheme.textMuted.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
           ),
+          child: Icon(icon, size: 16, color: AppTheme.textMuted),
         ),
+        const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.textPrimary,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: AppTheme.textMuted,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -372,16 +430,12 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.border),
-      ),
+      decoration: AppTheme.glassCard(radius: 14),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
           onTap: billing.isPaid ? null : () => _showStatusSheet(billing),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -389,11 +443,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               children: [
                 // Month badge
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -462,23 +516,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(2),
-                        border: Border.all(color: statusColor.withValues(alpha: 0.15)),
-                      ),
-                      child: Text(
-                        billing.statusLabel,
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: statusColor,
-                        ),
-                      ),
-                    ),
+                    AppTheme.statusBadge(billing.paymentStatus, billing.statusLabel),
                     if (!billing.isPaid) ...[
                       const SizedBox(height: 6),
                       Text(
@@ -502,16 +540,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   Widget _buildEmptyBilling() {
     return Container(
       padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.border),
-      ),
+      decoration: AppTheme.glassCard(),
       child: Column(
         children: [
-          const Icon(Icons.receipt_long_outlined,
-              size: 48, color: AppTheme.textMuted),
-          const SizedBox(height: 12),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppTheme.textMuted.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.receipt_long_outlined,
+                size: 28, color: AppTheme.textMuted),
+          ),
+          const SizedBox(height: 16),
           Text(
             'No billing records',
             style: GoogleFonts.inter(
@@ -539,11 +581,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       (_) => Container(
         margin: const EdgeInsets.only(bottom: 10),
         height: 82,
-        decoration: BoxDecoration(
-          color: AppTheme.bgCard,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppTheme.border),
-        ),
+        decoration: AppTheme.glassCard(radius: 14),
       ),
     );
   }

@@ -57,26 +57,26 @@ class _CollectionHistoryScreenState extends State<CollectionHistoryScreen> {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: AppTheme.primaryGradient,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.accentBlue.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
+                  color: AppTheme.accentBlue.withValues(alpha: 0.25),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
             child: Row(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
+                    shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.account_balance_wallet_outlined,
@@ -96,39 +96,46 @@ class _CollectionHistoryScreenState extends State<CollectionHistoryScreen> {
                           color: Colors.white70,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         _isLoading
                             ? '—'
                             : '₱${NumberFormat('#,##0.00').format(_totalAmount)}',
                         style: GoogleFonts.inter(
-                          fontSize: 24,
+                          fontSize: 26,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
+                          letterSpacing: -0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${_collections.length}',
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        '${_collections.length}',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'payments',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.white70,
+                      Text(
+                        'payments',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: Colors.white70,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -166,21 +173,17 @@ class _CollectionHistoryScreenState extends State<CollectionHistoryScreen> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.border),
-      ),
+      decoration: AppTheme.glassCard(radius: 14),
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          // Check icon
+          // Circular check icon
           Container(
-            width: 42,
-            height: 42,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: AppTheme.accentEmerald.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(4),
+              shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.check_circle_outlined,
@@ -235,9 +238,17 @@ class _CollectionHistoryScreenState extends State<CollectionHistoryScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.history_outlined,
-              size: 56, color: AppTheme.textMuted),
-          const SizedBox(height: 12),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppTheme.textMuted.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.history_outlined,
+                size: 28, color: AppTheme.textMuted),
+          ),
+          const SizedBox(height: 16),
           Text(
             'No collections yet',
             style: GoogleFonts.inter(
@@ -266,11 +277,7 @@ class _CollectionHistoryScreenState extends State<CollectionHistoryScreen> {
       itemBuilder: (context, index) => Container(
         margin: const EdgeInsets.only(bottom: 10),
         height: 74,
-        decoration: BoxDecoration(
-          color: AppTheme.bgCard,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppTheme.border),
-        ),
+        decoration: AppTheme.glassCard(radius: 14),
       ),
     );
   }

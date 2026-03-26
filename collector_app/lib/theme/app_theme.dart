@@ -8,6 +8,7 @@ class AppTheme {
   static const Color bgCardHover = Color(0xFF1C202B);
   static const Color surface = Color(0xFF1A1D26);
   static const Color border = Color(0xFF262A37);
+  static const Color borderLight = Color(0xFF2E3345);
 
   static const Color textPrimary = Color(0xFFF1F3F5);
   static const Color textSecondary = Color(0xFFA0A7B8);
@@ -30,6 +31,48 @@ class AppTheme {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  // ── Glassmorphism Card Decoration ──
+  static BoxDecoration glassCard({
+    double radius = 16,
+    Color? borderColor,
+    Color? bgColor,
+  }) {
+    return BoxDecoration(
+      color: bgColor ?? const Color(0xFF161922).withValues(alpha: 0.85),
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: borderColor ?? const Color(0xFF2A2E3D),
+        width: 1,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.2),
+          blurRadius: 20,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
+
+  // ── Stat Card Decoration with colored glow ──
+  static BoxDecoration statCard(Color accentColor) {
+    return BoxDecoration(
+      color: const Color(0xFF161922).withValues(alpha: 0.9),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: accentColor.withValues(alpha: 0.15),
+        width: 1,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: accentColor.withValues(alpha: 0.08),
+          blurRadius: 24,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
 
   // ── Theme Data ──
   static ThemeData get darkTheme {
@@ -56,6 +99,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: bgDark,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: GoogleFonts.inter(
           fontSize: 20,
@@ -68,16 +112,18 @@ class AppTheme {
         color: bgCard,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: border, width: 1),
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: bgCard,
+        backgroundColor: Colors.transparent,
         selectedItemColor: accentBlue,
         unselectedItemColor: textMuted,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
+        selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: TextStyle(fontSize: 11),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -86,7 +132,7 @@ class AppTheme {
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(12),
           ),
           textStyle: GoogleFonts.inter(
             fontSize: 15,
@@ -101,15 +147,15 @@ class AppTheme {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: accentBlue, width: 1.5),
         ),
       ),
@@ -145,6 +191,27 @@ class AppTheme {
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
+    );
+  }
+
+  // ── Status Badge Widget ──
+  static Widget statusBadge(String status, String label) {
+    final color = statusColor(status);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
     );
   }
 }
