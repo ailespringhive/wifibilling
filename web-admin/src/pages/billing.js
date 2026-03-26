@@ -163,11 +163,13 @@ export function initBillingPage(services, preFilter = null) {
 
   loadBillings();
 
-  // Filter dropdown
-  document.getElementById('billing-status-filter').addEventListener('change', (e) => {
-    currentFilter = e.target.value;
-    applyFilters();
-  });
+  // Filter dropdown (may not exist on sub-pages)
+  if (filterDropdown) {
+    filterDropdown.addEventListener('change', (e) => {
+      currentFilter = e.target.value;
+      applyFilters();
+    });
+  }
 
   // Search
   let searchTimeout;
@@ -227,26 +229,28 @@ export function initBillingPage(services, preFilter = null) {
     }
   });
 
-  // Generate monthly billing
-  document.getElementById('generate-billing-btn').addEventListener('click', async () => {
-    const month = new Date().toISOString().slice(0, 7);
-    if (!confirm(`Generate billing for all active subscriptions for ${month}?`)) return;
-    try {
-      const results = await services.billing.generateMonthlyBilling(month);
-      showToast(`Generated ${results.length} billing records!`, 'success');
-      loadBillings();
-    } catch (error) {
-      showToast('Could not generate — ensure Appwrite is connected', 'warning');
-    }
-  });
+  // Generate monthly billing (button may not exist on sub-pages)
+  const genBillingBtn = document.getElementById('generate-billing-btn');
+  if (genBillingBtn) {
+    genBillingBtn.addEventListener('click', async () => {
+      const month = new Date().toISOString().slice(0, 7);
+      if (!confirm(`Generate billing for all active subscriptions for ${month}?`)) return;
+      try {
+        const results = await services.billing.generateMonthlyBilling(month);
+        showToast(`Generated ${results.length} billing records!`, 'success');
+        loadBillings();
+      } catch (error) {
+        showToast('Could not generate — ensure Appwrite is connected', 'warning');
+      }
+    });
+  }
 
   // Select All checkbox
   document.getElementById('billing-select-all').addEventListener('change', (e) => {
     document.querySelectorAll('.billing-row-check').forEach(cb => {
       cb.checked = e.target.checked;
     });
-    const countEl = document.getElementById('billing-selected-count');
-    if (countEl) countEl.textContent = e.target.checked ? document.querySelectorAll('.billing-row-check').length : 0;
+    updateSelectedCount();
   });
 
   // Pay Selected
@@ -537,8 +541,8 @@ export function initBillingPage(services, preFilter = null) {
 
   function updateSelectedCount() {
     const count = getSelectedIds().length;
-    const el = document.getElementById('billing-selected-count');
-    if (el) el.textContent = count;
+    const el = document.getElementById('selected-count');
+    if (el) el.textContent = `${count} selected`;
   }
 }
 

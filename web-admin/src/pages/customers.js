@@ -26,13 +26,13 @@ export function renderCustomersPage() {
             <th>Customer</th>
             <th>Phone</th>
             <th>Plan</th>
+            <th>Assigned Collector</th>
             <th>Address</th>
-            <th>Created</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="customers-tbody">
-          ${skeletonRows(6, 5)}
+          ${skeletonRows(6, 6)}
         </tbody>
       </table>
     </div>
@@ -72,6 +72,12 @@ export function renderCustomersPage() {
                   <option value="" disabled selected>Select a plan</option>
                 </select>
               </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Assign Collector *</label>
+              <select class="form-input" id="cust-collector" required>
+                <option value="" disabled selected>Select a collector</option>
+              </select>
             </div>
             <div class="form-group">
               <label class="form-label">Street Address *</label>
@@ -124,11 +130,14 @@ export function renderCustomersPage() {
 export function initCustomersPage(services, navigateFn) {
   let allCustomers = [];
   let allPlans = [];
+  let allCollectors = [];
+  let customerSubscriptions = {}; // customerId -> subscription (with collectorId)
   let editingId = null;
 
-  // Load customers and plans
+  // Load all data
   loadCustomers();
   loadPlans();
+  loadCollectors();
 
   async function loadPlans() {
     const select = document.getElementById('cust-plan');
@@ -136,7 +145,6 @@ export function initCustomersPage(services, navigateFn) {
       const response = await services.plan.getAll();
       allPlans = response.documents || [];
     } catch (e) {
-      // Demo plans fallback
       allPlans = [
         { $id: 'basic', name: 'Basic', monthlyRate: 699 },
         { $id: 'standard', name: 'Standard', monthlyRate: 999 },
@@ -144,9 +152,38 @@ export function initCustomersPage(services, navigateFn) {
         { $id: 'enterprise', name: 'Enterprise', monthlyRate: 2499 },
       ];
     }
-    // Populate dropdown
     select.innerHTML = '<option value="" disabled selected>Select a plan</option>' +
       allPlans.map(p => `<option value="${p.$id || p.id}">\u20B1${(p.monthlyRate || 0).toLocaleString()} — ${p.name}</option>`).join('');
+  }
+
+  async function loadCollectors() {
+    const select = document.getElementById('cust-collector');
+    try {
+      const response = await services.collector.getAll(50, 0);
+      allCollectors = response.documents || [];
+    } catch (e) {
+      allCollectors = [
+        { $id: 'col1', id: 'col1', firstName: 'Ricardo', lastName: 'Mendoza', userId: 'col_usr1' },
+        { $id: 'col2', id: 'col2', firstName: 'Fernando', lastName: 'Aquino', userId: 'col_usr2' },
+        { $id: 'col3', id: 'col3', firstName: 'Lorna', lastName: 'Bautista', userId: 'col_usr3' },
+        { $id: 'col4', id: 'col4', firstName: 'Dennis', lastName: 'Torres', userId: 'col_usr4' },
+      ];
+    }
+    select.innerHTML = '<option value="" disabled selected>Select a collector</option>' +
+      allCollectors.map(c => `<option value="${c.$id || c.id}">${c.firstName || ''} ${c.lastName || ''}</option>`).join('');
+  }
+
+  async function loadSubscriptions() {
+    try {
+      const response = await services.subscription.getAll('active', 100);
+      const subs = response.documents || [];
+      customerSubscriptions = {};
+      subs.forEach(s => {
+        customerSubscriptions[s.customerId] = s;
+      });
+    } catch (e) {
+      customerSubscriptions = {};
+    }
   }
 
   // Add customer button
@@ -155,6 +192,7 @@ export function initCustomersPage(services, navigateFn) {
     document.getElementById('customer-modal-title').textContent = 'Add New Customer';
     document.getElementById('customer-form').reset();
     document.getElementById('customer-doc-id').value = '';
+    document.getElementById('cust-collector').value = '';
     openModal('customer-modal');
   });
 
@@ -189,12 +227,15 @@ export function initCustomersPage(services, navigateFn) {
       return;
     }
 
+    const collectorDocId = document.getElementById('cust-collector').value;
+    const planId = document.getElementById('cust-plan').value;
+
     const data = {
       firstName: document.getElementById('cust-firstName').value.trim(),
       middleName: document.getElementById('cust-middleName').value.trim(),
       lastName: document.getElementById('cust-lastName').value.trim(),
       phone: document.getElementById('cust-phone').value.trim(),
-      planId: document.getElementById('cust-plan').value,
+      planId: planId,
       address: document.getElementById('cust-address').value.trim(),
       barangay: document.getElementById('cust-barangay').value.trim(),
       city: document.getElementById('cust-city').value.trim(),
@@ -208,12 +249,43 @@ export function initCustomersPage(services, navigateFn) {
     try {
       const docId = document.getElementById('customer-doc-id').value;
       if (docId) {
+        // Update existing customer
         await services.customer.update(docId, data);
+
+        // Update or create subscription with the assigned collector
+        const existingSub = customerSubscriptions[allCustomers.find(c => (c.$id || c.id) === docId)?.userId];
+        if (existingSub) {
+          await services.subscription.update(existingSub.$id || existingSub.id, {
+            collectorId: collectorDocId,
+            planId: planId,
+          });
+        } else {
+          const customer = allCustomers.find(c => (c.$id || c.id) === docId);
+          if (customer) {
+            await services.subscription.create({
+              customerId: customer.userId,
+              planId: planId,
+              collectorId: collectorDocId,
+            });
+          }
+        }
         showToast('Customer updated successfully!', 'success');
       } else {
+        // Create new customer
         data.userId = 'usr_' + Date.now();
-        await services.customer.create(data);
-        showToast('Customer added successfully!', 'success');
+        const newCustomer = await services.customer.create(data);
+
+        // Auto-create subscription with the selected collector
+        try {
+          await services.subscription.create({
+            customerId: data.userId,
+            planId: planId,
+            collectorId: collectorDocId,
+          });
+        } catch (subErr) {
+          console.warn('Subscription creation failed:', subErr);
+        }
+        showToast('Customer added & collector assigned!', 'success');
       }
       closeModal('customer-modal');
       loadCustomers();
@@ -227,16 +299,26 @@ export function initCustomersPage(services, navigateFn) {
 
   // Load customers
   async function loadCustomers() {
-    const tbody = document.getElementById('customers-tbody');
     try {
       const response = await services.customer.getAll(50, 0);
       allCustomers = response.documents;
-      renderCustomerTable(allCustomers);
     } catch (error) {
       console.warn('Using demo data for customers:', error.message);
       allCustomers = getDemoCustomers();
-      renderCustomerTable(allCustomers);
     }
+    // Load subscriptions to map collectors
+    await loadSubscriptions();
+    renderCustomerTable(allCustomers);
+  }
+
+  function getCollectorForCustomer(customer) {
+    const sub = customerSubscriptions[customer.userId];
+    if (!sub) return null;
+    const collector = allCollectors.find(c =>
+      (c.$id || c.id) === sub.collectorId ||
+      c.userId === sub.collectorId
+    );
+    return collector || null;
   }
 
   function renderCustomerTable(customers) {
@@ -252,7 +334,11 @@ export function initCustomersPage(services, navigateFn) {
       return;
     }
 
-    tbody.innerHTML = customers.map(c => `
+    tbody.innerHTML = customers.map(c => {
+      const collector = getCollectorForCustomer(c);
+      const collectorName = collector ? `${collector.firstName || ''} ${collector.lastName || ''}` : null;
+
+      return `
       <tr>
         <td>
           <div style="display:flex; align-items:center; gap:10px;">
@@ -267,10 +353,20 @@ export function initCustomersPage(services, navigateFn) {
         </td>
         <td>${c.phone || '—'}</td>
         <td>${(() => { const p = allPlans.find(x => (x.$id || x.id) === c.planId); return p ? p.name : '—'; })()}</td>
-        <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+        <td>
+          ${collectorName
+            ? `<div style="display:flex; align-items:center; gap:8px;">
+                <div class="avatar avatar-sm" style="width:24px; height:24px; font-size:0.6rem; background:linear-gradient(135deg, hsl(${hashCode(collectorName)},70%,50%), hsl(${hashCode(collectorName)+40},60%,40%));">
+                  ${getInitials(collector.firstName, collector.lastName)}
+                </div>
+                <span style="font-size:0.82rem; color:var(--text-primary);">${collectorName}</span>
+              </div>`
+            : `<span style="font-size:0.78rem; color:var(--accent-amber);">⚠ Unassigned</span>`
+          }
+        </td>
+        <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
           ${c.address || ''}, ${c.barangay || ''}, ${c.city || ''}
         </td>
-        <td>${formatDate(c.createdAt || c.$createdAt)}</td>
         <td>
           <div class="table-actions">
             <button class="btn btn-ghost btn-sm btn-icon" title="View" data-view="${c.$id || c.id}"><span class="material-icons-outlined" style="font-size:18px;">visibility</span></button>
@@ -279,7 +375,7 @@ export function initCustomersPage(services, navigateFn) {
           </div>
         </td>
       </tr>
-    `).join('');
+    `}).join('');
 
     // Attach row events
     tbody.querySelectorAll('[data-view]').forEach(btn => {
@@ -301,7 +397,9 @@ export function initCustomersPage(services, navigateFn) {
     const filtered = allCustomers.filter(c => {
       const plan = allPlans.find(x => (x.$id || x.id) === c.planId);
       const planName = plan ? plan.name : '';
-      return `${c.firstName} ${c.middleName} ${c.lastName} ${c.phone} ${planName} ${c.address} ${c.barangay} ${c.city}`
+      const collector = getCollectorForCustomer(c);
+      const collectorName = collector ? `${collector.firstName} ${collector.lastName}` : '';
+      return `${c.firstName} ${c.middleName} ${c.lastName} ${c.phone} ${planName} ${collectorName} ${c.address} ${c.barangay} ${c.city}`
         .toLowerCase().includes(query);
     });
     renderCustomerTable(filtered);
@@ -310,6 +408,8 @@ export function initCustomersPage(services, navigateFn) {
   function viewCustomer(id) {
     const c = allCustomers.find(x => (x.$id || x.id) === id);
     if (!c) return;
+    const collector = getCollectorForCustomer(c);
+    const collectorName = collector ? `${collector.firstName || ''} ${collector.lastName || ''}` : 'Unassigned';
     const body = document.getElementById('customer-detail-body');
     body.innerHTML = `
       <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
@@ -328,6 +428,12 @@ export function initCustomersPage(services, navigateFn) {
             <ul class="info-list">
               <li><span class="info-label">Phone</span><span class="info-value">${c.phone || '—'}</span></li>
               <li><span class="info-label">WiFi Plan</span><span class="info-value">${(() => { const p = allPlans.find(x => (x.$id || x.id) === c.planId); return p ? `${p.name} (₱${(p.monthlyRate || 0).toLocaleString()}/mo)` : '—'; })()}</span></li>
+              <li>
+                <span class="info-label">Assigned Collector</span>
+                <span class="info-value" style="color: ${collector ? 'var(--accent-emerald)' : 'var(--accent-amber)'};">
+                  ${collector ? `<span class="material-icons-outlined" style="font-size:14px; vertical-align:-2px;">person</span> ${collectorName}` : '⚠ Unassigned'}
+                </span>
+              </li>
               <li><span class="info-label">User ID</span><span class="info-value" style="font-size:0.75rem;">${c.userId || '—'}</span></li>
               <li><span class="info-label">Registered</span><span class="info-value">${formatDate(c.createdAt || c.$createdAt)}</span></li>
             </ul>
@@ -371,6 +477,16 @@ export function initCustomersPage(services, navigateFn) {
     document.getElementById('cust-barangay').value = c.barangay || '';
     document.getElementById('cust-city').value = c.city || '';
     document.getElementById('cust-province').value = c.province || '';
+
+    // Pre-select the assigned collector from subscription
+    const sub = customerSubscriptions[c.userId];
+    const collectorSelect = document.getElementById('cust-collector');
+    if (sub && sub.collectorId) {
+      collectorSelect.value = sub.collectorId;
+    } else {
+      collectorSelect.value = '';
+    }
+
     openModal('customer-modal');
   }
 
@@ -400,11 +516,11 @@ function hashCode(str) {
 
 function getDemoCustomers() {
   return [
-    { id: '1', $id: '1', firstName: 'Juan', middleName: 'Santos', lastName: 'Dela Cruz', phone: '09171234567', email: 'juan@email.com', address: '123 Main St', barangay: 'Brgy. Poblacion', city: 'Makati', province: 'Metro Manila', createdAt: '2026-01-15' },
-    { id: '2', $id: '2', firstName: 'Maria', middleName: '', lastName: 'Santos', phone: '09189876543', email: 'maria@email.com', address: '456 Rizal Ave', barangay: 'Brgy. San Antonio', city: 'Pasig', province: 'Metro Manila', createdAt: '2026-02-01' },
-    { id: '3', $id: '3', firstName: 'Pedro', middleName: 'Andrade', lastName: 'Reyes', phone: '09201112222', email: '', address: '789 Mabini St', barangay: 'Brgy. Guadalupe', city: 'Cebu City', province: 'Cebu', createdAt: '2026-02-10' },
-    { id: '4', $id: '4', firstName: 'Ana', middleName: '', lastName: 'Garcia', phone: '09223334444', email: 'ana.garcia@email.com', address: '321 Luna St', barangay: 'Brgy. Bagumbayan', city: 'Quezon City', province: 'Metro Manila', createdAt: '2026-02-20' },
-    { id: '5', $id: '5', firstName: 'Jose', middleName: 'Miguel', lastName: 'Rivera', phone: '09255556666', email: 'jose.r@email.com', address: '654 Del Pilar St', barangay: 'Brgy. Santa Cruz', city: 'Manila', province: 'Metro Manila', createdAt: '2026-03-01' },
-    { id: '6', $id: '6', firstName: 'Rosa', middleName: '', lastName: 'Mabini', phone: '09267778888', email: '', address: '987 Bonifacio Blvd', barangay: 'Brgy. Pag-asa', city: 'Taguig', province: 'Metro Manila', createdAt: '2026-03-10' },
+    { id: '1', $id: '1', firstName: 'Juan', middleName: 'Santos', lastName: 'Dela Cruz', phone: '09171234567', email: 'juan@email.com', address: '123 Main St', barangay: 'Brgy. Poblacion', city: 'Makati', province: 'Metro Manila', userId: 'usr1', planId: 'standard', createdAt: '2026-01-15' },
+    { id: '2', $id: '2', firstName: 'Maria', middleName: '', lastName: 'Santos', phone: '09189876543', email: 'maria@email.com', address: '456 Rizal Ave', barangay: 'Brgy. San Antonio', city: 'Pasig', province: 'Metro Manila', userId: 'usr2', planId: 'premium', createdAt: '2026-02-01' },
+    { id: '3', $id: '3', firstName: 'Pedro', middleName: 'Andrade', lastName: 'Reyes', phone: '09201112222', email: '', address: '789 Mabini St', barangay: 'Brgy. Guadalupe', city: 'Cebu City', province: 'Cebu', userId: 'usr3', planId: 'basic', createdAt: '2026-02-10' },
+    { id: '4', $id: '4', firstName: 'Ana', middleName: '', lastName: 'Garcia', phone: '09223334444', email: 'ana.garcia@email.com', address: '321 Luna St', barangay: 'Brgy. Bagumbayan', city: 'Quezon City', province: 'Metro Manila', userId: 'usr4', planId: 'standard', createdAt: '2026-02-20' },
+    { id: '5', $id: '5', firstName: 'Jose', middleName: 'Miguel', lastName: 'Rivera', phone: '09255556666', email: 'jose.r@email.com', address: '654 Del Pilar St', barangay: 'Brgy. Santa Cruz', city: 'Manila', province: 'Metro Manila', userId: 'usr5', planId: 'premium', createdAt: '2026-03-01' },
+    { id: '6', $id: '6', firstName: 'Rosa', middleName: '', lastName: 'Mabini', phone: '09267778888', email: '', address: '987 Bonifacio Blvd', barangay: 'Brgy. Pag-asa', city: 'Taguig', province: 'Metro Manila', userId: 'usr6', planId: 'basic', createdAt: '2026-03-10' },
   ];
 }
