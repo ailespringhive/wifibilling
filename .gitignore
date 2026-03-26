@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.dart_tool/
+.packages
+
+# Build outputs
+build/
+web-admin/dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Flutter
+collector_app/.dart_tool/
+collector_app/.packages
+collector_app/build/
+collector_app/.flutter-plugins
+collector_app/.flutter-plugins-dependencies
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local

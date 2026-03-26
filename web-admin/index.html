@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="WiFi Billing Admin Dashboard — Manage customers, billing, collectors, and WiFi plans">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
+  <title>WiFi Billing — Admin Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📡</text></svg>">
+</head>
+<body>
+  <div id="app">
+    <!-- App renders here -->
+    <div style="display:flex; align-items:center; justify-content:center; min-height:100vh; font-family:Inter,sans-serif; color:#94a3b8; background:#0a0e1a;">
+      <div style="text-align:center;">
+        <div class="spinner" style="width:32px;height:32px;border:3px solid rgba(148,163,184,0.12);border-top-color:#3b82f6;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 16px;"></div>
+        <div>Loading WiFi Billing...</div>
+      </div>
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
