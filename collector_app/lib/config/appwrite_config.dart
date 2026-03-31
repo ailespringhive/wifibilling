@@ -4,7 +4,7 @@ import 'package:appwrite/appwrite.dart';
 // APPWRITE CONFIGURATION
 // Replace these with your actual Appwrite project credentials
 // ============================================================
-const String appwriteEndpoint = 'https://cloud.appwrite.io/v1';
+const String appwriteEndpoint = 'https://appwrite.springhive.co/v1';
 const String appwriteProjectId = '69c4840a0022d6824d83';
 const String appwriteDatabaseId = 'wifi_billing_db';
 

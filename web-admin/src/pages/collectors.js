@@ -38,23 +38,35 @@ export function renderCollectorsPage() {
 
     <!-- Add/Edit Collector Modal -->
     <div class="modal-overlay" id="collector-modal">
-      <div class="modal">
+      <div class="modal modal-lg">
         <div class="modal-header">
           <h3 id="collector-modal-title">Add Collector</h3>
           <button class="modal-close" id="close-collector-modal">✕</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body-scroll">
           <form id="collector-form">
             <input type="hidden" id="collector-doc-id">
+
+            <div class="form-section-title">
+              <span class="material-icons-outlined">person</span> Personal Information
+            </div>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">First Name *</label>
                 <input type="text" class="form-input" id="col-firstName" required placeholder="First name">
               </div>
               <div class="form-group">
+                <label class="form-label">Middle Name</label>
+                <input type="text" class="form-input" id="col-middleName" placeholder="Middle name">
+              </div>
+              <div class="form-group">
                 <label class="form-label">Last Name *</label>
                 <input type="text" class="form-input" id="col-lastName" required placeholder="Last name">
               </div>
+            </div>
+
+            <div class="form-section-title">
+              <span class="material-icons-outlined">contact_phone</span> Contact Details
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -66,9 +78,13 @@ export function renderCollectorsPage() {
                 <input type="email" class="form-input" id="col-email" placeholder="collector@email.com">
               </div>
             </div>
+
+            <div class="form-section-title">
+              <span class="material-icons-outlined">location_on</span> Address
+            </div>
             <div class="form-group">
-              <label class="form-label">Address</label>
-              <input type="text" class="form-input" id="col-address" placeholder="Full address">
+              <label class="form-label">Street Address</label>
+              <input type="text" class="form-input" id="col-address" placeholder="123 Main Street">
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -88,14 +104,16 @@ export function renderCollectorsPage() {
         </div>
         <div class="modal-footer">
           <button class="btn btn-ghost" id="cancel-collector-btn">Cancel</button>
-          <button class="btn btn-primary" id="save-collector-btn">Save Collector</button>
+          <button class="btn btn-primary" id="save-collector-btn">
+            <span class="material-icons-outlined" style="font-size:16px;">save</span> Save Collector
+          </button>
         </div>
       </div>
     </div>
   `;
 }
 
-export function initCollectorsPage(services) {
+export function initCollectorsPage(services, navigateFn) {
   let allCollectors = [];
 
   loadCollectors();
@@ -141,7 +159,7 @@ export function initCollectorsPage(services) {
       barangay: document.getElementById('col-barangay').value.trim(),
       city: document.getElementById('col-city').value.trim(),
       province: document.getElementById('col-province').value.trim(),
-      middleName: '',
+      middleName: document.getElementById('col-middleName').value.trim(),
     };
 
     try {
@@ -235,51 +253,10 @@ export function initCollectorsPage(services) {
         </tr>`;
     }).join('');
 
-    // View detail
+    // View detail — navigate to full page
     tbody.querySelectorAll('[data-view-col]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const c = allCollectors.find(x => (x.$id || x.id) === btn.dataset.viewCol);
-        if (!c) return;
-        const h = hashCode(c.firstName || '');
-        const fullName = `${c.firstName || ''} ${c.lastName || ''}`.trim();
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay active';
-        modal.style.zIndex = '300';
-        modal.innerHTML = `
-          <div class="modal">
-            <div class="modal-header">
-              <h3>Collector Details</h3>
-              <button class="modal-close" id="close-col-view">✕</button>
-            </div>
-            <div class="modal-body">
-              <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
-                <div class="avatar avatar-lg" style="background:linear-gradient(135deg, hsl(${h},70%,55%), hsl(${h + 60},60%,45%));">
-                  ${getInitials(c.firstName, c.lastName)}
-                </div>
-                <div>
-                  <div style="font-size:1.1rem; font-weight:700; color:var(--text-primary);">${fullName}</div>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">Collector</div>
-                </div>
-              </div>
-              <table style="width:100%; font-size:0.85rem;">
-                <tr><td style="padding:8px 0; color:var(--text-muted); width:120px;">Phone</td><td style="padding:8px 0; color:var(--text-primary);">${c.phone || '—'}</td></tr>
-                <tr><td style="padding:8px 0; color:var(--text-muted);">Email</td><td style="padding:8px 0;">${c.email || '—'}</td></tr>
-                <tr><td style="padding:8px 0; color:var(--text-muted);">Address</td><td style="padding:8px 0;">${c.address || '—'}</td></tr>
-                <tr><td style="padding:8px 0; color:var(--text-muted);">Barangay</td><td style="padding:8px 0;">${c.barangay || '—'}</td></tr>
-                <tr><td style="padding:8px 0; color:var(--text-muted);">City</td><td style="padding:8px 0;">${c.city || '—'}</td></tr>
-                <tr><td style="padding:8px 0; color:var(--text-muted);">Province</td><td style="padding:8px 0;">${c.province || '—'}</td></tr>
-                <tr><td style="padding:8px 0; color:var(--text-muted);">Joined</td><td style="padding:8px 0;">${formatDate(c.createdAt || c.$createdAt)}</td></tr>
-              </table>
-            </div>
-            <div class="modal-footer">
-              <button class="btn btn-ghost" id="close-col-view-btn">Close</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(modal);
-        modal.querySelector('#close-col-view').addEventListener('click', () => modal.remove());
-        modal.querySelector('#close-col-view-btn').addEventListener('click', () => modal.remove());
-        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        navigateFn('collector_detail:' + btn.dataset.viewCol);
       });
     });
 

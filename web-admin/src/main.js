@@ -25,6 +25,9 @@ import { renderCustomersPage, initCustomersPage } from './pages/customers.js';
 import { renderBillingPage, initBillingPage } from './pages/billing.js';
 import { renderCollectorsPage, initCollectorsPage } from './pages/collectors.js';
 import { renderPlansPage, initPlansPage } from './pages/plans.js';
+import { renderCustomerDetailPage, initCustomerDetailPage } from './pages/customer-detail.js';
+import { renderCollectorDetailPage, initCollectorDetailPage } from './pages/collector-detail.js';
+import { renderNotificationsPage, initNotificationsPage } from './pages/notifications.js';
 
 // Bundle services
 const services = {
@@ -51,20 +54,31 @@ const PAGE_META = {
   billing_payment_confirmation: { title: 'Billing — Payment Confirmation', subtitle: 'Payments awaiting confirmation' },
   collectors: { title: 'Collectors', subtitle: 'Manage payment collectors' },
   plans: { title: 'WiFi Plans', subtitle: 'Manage your service plans & pricing' },
+  notifications: { title: 'Notifications', subtitle: 'All system notifications & alerts' },
+  customer_detail: { title: 'Customer Details', subtitle: 'View customer information & payment history' },
+  collector_detail: { title: 'Collector Details', subtitle: 'View collector information & assigned customers' },
 };
 
 /**
  * Initialize the app
  */
 async function init() {
+  const isAdminPath = window.location.pathname.startsWith('/admin');
+
   // Check for saved demo session first
   const savedSession = localStorage.getItem('wifi_admin_session');
   if (savedSession) {
     try {
       currentUser = JSON.parse(savedSession);
-      // If collector session is saved, redirect to collector app
-      if (currentUser.profile && currentUser.profile.role === 'collector') {
-        window.location.href = '/collector';
+      // If collector session is saved and we're NOT on /admin/, redirect to collector
+      if (currentUser.profile && currentUser.profile.role === 'collector' && !isAdminPath) {
+        window.location.href = '/collector/';
+        return;
+      }
+      // If collector session on admin path, clear it and show admin login
+      if (currentUser.profile && currentUser.profile.role === 'collector' && isAdminPath) {
+        localStorage.removeItem('wifi_admin_session');
+        showLogin();
         return;
       }
       isLoggedIn = true;
@@ -75,26 +89,8 @@ async function init() {
     }
   }
 
-  // Check if user is logged in via Appwrite (with timeout so demo mode works)
-  try {
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
-    const session = await Promise.race([services.auth.getCurrentUser(), timeout]);
-    if (session && session.user) {
-      // Route based on role
-      const role = session.profile?.role;
-      if (role === 'collector') {
-        window.location.href = '/collector';
-        return;
-      }
-      currentUser = session;
-      isLoggedIn = true;
-      navigateTo(currentPage);
-    } else {
-      showLogin();
-    }
-  } catch (error) {
-    showLogin();
-  }
+  // No saved session — show login immediately (avoids hanging on Appwrite connection)
+  showLogin();
 }
 
 /**
@@ -112,7 +108,7 @@ function showLogin() {
       // Route based on role
       if (role === 'collector') {
         // Redirect to the collector mobile app
-        window.location.href = '/collector';
+        window.location.href = '/collector/';
         return;
       }
 
@@ -132,7 +128,7 @@ function showLogin() {
           user: { name: 'Demo Collector', email: 'collector@demo.com' },
           profile: { firstName: 'Demo', lastName: 'Collector', role: 'collector' }
         }));
-        window.location.href = '/collector';
+        window.location.href = '/collector/';
       } else {
         throw new Error(error.message || 'Login failed. Please check your credentials.');
       }
@@ -157,20 +153,32 @@ function navigateTo(page) {
   }
 
   currentPage = page;
-  const meta = PAGE_META[page] || { title: page, subtitle: '' };
-  const app = document.getElementById('app');
 
-  // Determine the actual page component to render
-  const basePage = page.startsWith('billing') ? 'billing' : page;
+  // Extract base page and params (e.g., customer_detail:abc123)
+  let basePage = page;
+  let pageParam = null;
+  if (page.includes(':')) {
+    const parts = page.split(':');
+    basePage = parts[0];
+    pageParam = parts[1];
+  } else if (page.startsWith('billing')) {
+    basePage = 'billing';
+  }
+
+  const meta = PAGE_META[basePage] || { title: basePage, subtitle: '' };
+  const app = document.getElementById('app');
 
   // Build layout
   let pageContent = '';
   switch (basePage) {
     case 'dashboard': pageContent = renderDashboardPage(); break;
     case 'customers': pageContent = renderCustomersPage(); break;
+    case 'customer_detail': pageContent = renderCustomerDetailPage(); break;
     case 'billing': pageContent = renderBillingPage(); break;
     case 'collectors': pageContent = renderCollectorsPage(); break;
+    case 'collector_detail': pageContent = renderCollectorDetailPage(); break;
     case 'plans': pageContent = renderPlansPage(); break;
+    case 'notifications': pageContent = renderNotificationsPage(); break;
     default: pageContent = renderDashboardPage(); break;
   }
 
@@ -288,7 +296,8 @@ function navigateTo(page) {
   if (viewAllBtn) {
     viewAllBtn.addEventListener('click', () => {
       notifDropdown.classList.remove('open');
-      navigateTo('billing');
+      userDropdown?.classList.remove('open');
+      navigateTo('notifications');
     });
   }
 
@@ -343,14 +352,14 @@ function navigateTo(page) {
             <h3>Admin Profile</h3>
             <button class="modal-close" id="close-profile-modal">✕</button>
           </div>
-          <div class="modal-body">
-            <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px; padding:16px; background:var(--bg-secondary); border-radius:var(--radius-lg); border:1px solid var(--border-color);">
-              <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; color:white; flex-shrink:0;">
+          <div class="modal-body-scroll">
+            <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px; padding:12px; background:var(--bg-secondary); border-radius:var(--radius-lg); border:1px solid var(--border-color);">
+              <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:700; color:white; flex-shrink:0;">
                 ${firstName.charAt(0).toUpperCase()}
               </div>
               <div>
-                <div style="font-size:1.1rem; font-weight:700; color:var(--text-primary);">${firstName} ${lastName}</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">${role.charAt(0).toUpperCase() + role.slice(1)}</div>
+                <div style="font-size:1rem; font-weight:700; color:var(--text-primary);">${firstName} ${lastName}</div>
+                <div style="font-size:0.78rem; color:var(--text-muted);">${role.charAt(0).toUpperCase() + role.slice(1)}</div>
               </div>
             </div>
             <form id="profile-form">
@@ -383,6 +392,33 @@ function navigateTo(page) {
                 </select>
               </div>
             </form>
+
+            <!-- Password Change Section -->
+            <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border-color);">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                <span class="material-icons-outlined" style="font-size:16px; color:var(--accent-amber);">lock</span>
+                <span style="font-size:0.88rem; font-weight:700; color:var(--text-primary);">Change Password</span>
+              </div>
+              <form id="password-form">
+                <div class="form-group">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" class="form-input" id="profile-current-password" placeholder="Enter current password">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-input" id="profile-new-password" placeholder="Enter new password">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-input" id="profile-confirm-password" placeholder="Re-enter new password">
+                  </div>
+                </div>
+                <button type="button" class="btn btn-ghost" id="change-password-btn" style="margin-top:4px; border-color:var(--accent-amber); color:var(--accent-amber);">
+                  <span class="material-icons-outlined" style="font-size:16px;">vpn_key</span> Update Password
+                </button>
+              </form>
+            </div>
           </div>
           <div class="modal-footer">
             <button class="btn btn-ghost" id="cancel-profile-btn">Cancel</button>
@@ -442,6 +478,45 @@ function navigateTo(page) {
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 3000);
     });
+
+    // Change password handler
+    document.getElementById('change-password-btn').addEventListener('click', async () => {
+      const currentPw = document.getElementById('profile-current-password').value;
+      const newPw = document.getElementById('profile-new-password').value;
+      const confirmPw = document.getElementById('profile-confirm-password').value;
+
+      if (!currentPw || !newPw || !confirmPw) {
+        alert('Please fill in all password fields.');
+        return;
+      }
+      if (newPw !== confirmPw) {
+        alert('New passwords do not match.');
+        return;
+      }
+      if (newPw.length < 8) {
+        alert('New password must be at least 8 characters.');
+        return;
+      }
+
+      const btn = document.getElementById('change-password-btn');
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+
+      try {
+        await services.auth.updatePassword(newPw, currentPw);
+        const successToast = document.createElement('div');
+        successToast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 20px;background:var(--accent-emerald);color:white;border-radius:8px;font-size:0.85rem;font-weight:600;z-index:9999;animation:fadeIn 0.3s;';
+        successToast.textContent = 'Password updated successfully!';
+        document.body.appendChild(successToast);
+        setTimeout(() => successToast.remove(), 3000);
+        document.getElementById('password-form').reset();
+      } catch (err) {
+        alert('Failed to update password: ' + (err.message || 'Check your current password'));
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons-outlined" style="font-size:16px;">vpn_key</span> Update Password';
+      }
+    });
   }
 
   // Init page-specific logic
@@ -454,11 +529,26 @@ function navigateTo(page) {
   const billingPreFilter = billingFilterMap[page] || null;
 
   switch (basePage) {
-    case 'dashboard': initDashboardPage(services); break;
+    case 'dashboard': initDashboardPage(services, navigateTo); break;
     case 'customers': initCustomersPage(services, navigateTo); break;
+    case 'customer_detail': initCustomerDetailPage(services, navigateTo, pageParam); break;
     case 'billing': initBillingPage(services, billingPreFilter); break;
-    case 'collectors': initCollectorsPage(services); break;
+    case 'collectors': initCollectorsPage(services, navigateTo); break;
+    case 'collector_detail': initCollectorDetailPage(services, navigateTo, pageParam); break;
     case 'plans': initPlansPage(services); break;
+    case 'notifications': initNotificationsPage(); break;
+  }
+
+  // Fix 4: Wire up any "View All" / "data-page" buttons inside page content via event delegation
+  const pageContentEl = document.querySelector('.page-content');
+  if (pageContentEl) {
+    pageContentEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-page]');
+      if (btn) {
+        const target = btn.dataset.page;
+        if (target) navigateTo(target);
+      }
+    });
   }
 
   // Close mobile sidebar

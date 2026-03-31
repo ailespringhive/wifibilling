@@ -202,8 +202,18 @@ export function initPlansPage(services) {
       return `
         <div class="pricing-card ${isRecommended ? 'pricing-recommended' : ''} ${!isActive ? 'pricing-inactive' : ''}">
           ${isRecommended ? '<div class="pricing-badge">Recommended</div>' : ''}
-          <div class="pricing-header">
-            <h3 class="pricing-plan-name">${p.planName}</h3>
+          <div class="pricing-header" style="position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <h3 class="pricing-plan-name">${p.planName}</h3>
+              <div class="pricing-actions" style="gap:4px;">
+                <button class="btn btn-ghost btn-sm btn-icon" title="Edit" data-edit-plan="${p.$id || p.id}">
+                  <span class="material-icons-outlined" style="font-size:16px;">edit</span>
+                </button>
+                <button class="btn btn-ghost btn-sm btn-icon" title="Delete" data-delete-plan="${p.$id || p.id}" style="color:var(--accent-rose);">
+                  <span class="material-icons-outlined" style="font-size:16px;">delete</span>
+                </button>
+              </div>
+            </div>
             <div class="pricing-price">
               <span class="pricing-amount">₱${Number(p.monthlyRate).toLocaleString('en-PH')}</span>
               <span class="pricing-period">/month</span>
@@ -217,14 +227,6 @@ export function initPlansPage(services) {
             <button class="pricing-btn ${isRecommended ? 'pricing-btn-primary' : ''}" data-toggle-plan="${p.$id || p.id}">
               ${isActive ? (isRecommended ? 'Popular Plan' : 'Active Plan') : 'Enable Plan'}
             </button>
-            <div class="pricing-actions">
-              <button class="btn btn-ghost btn-sm btn-icon" title="Edit" data-edit-plan="${p.$id || p.id}">
-                <span class="material-icons-outlined" style="font-size:16px;">edit</span>
-              </button>
-              <button class="btn btn-ghost btn-sm btn-icon" title="Delete" data-delete-plan="${p.$id || p.id}" style="color:var(--accent-rose);">
-                <span class="material-icons-outlined" style="font-size:16px;">delete</span>
-              </button>
-            </div>
           </div>
         </div>`;
     }).join('');

@@ -72,5 +72,16 @@ export const AuthService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  /**
+   * Update current user's password
+   */
+  async updatePassword(newPassword, currentPassword) {
+    try {
+      return await account.updatePassword(newPassword, currentPassword);
+    } catch (error) {
+      throw error;
+    }
   }
 };

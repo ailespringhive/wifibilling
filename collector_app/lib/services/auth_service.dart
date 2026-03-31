@@ -110,6 +110,14 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  /// Update password
+  Future<void> updatePassword(String newPassword, String currentPassword) async {
+    await _account.updatePassword(
+      password: newPassword,
+      oldPassword: currentPassword,
+    );
+  }
+
   /// Logout
   Future<void> logout() async {
     try {

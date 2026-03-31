@@ -4,7 +4,7 @@ import { Client, Account, Databases, ID, Query } from 'appwrite';
 // APPWRITE CONFIGURATION
 // Replace these with your actual Appwrite project credentials
 // ============================================================
-const APPWRITE_ENDPOINT = 'https://cloud.appwrite.io/v1';
+const APPWRITE_ENDPOINT = 'https://appwrite.springhive.co/v1';
 const APPWRITE_PROJECT_ID = '69c4840a0022d6824d83';
 const APPWRITE_DATABASE_ID = 'wifi_billing_db';
 

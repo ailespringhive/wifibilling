@@ -44,9 +44,13 @@ export function renderCustomersPage() {
           <h3 id="customer-modal-title">Add New Customer</h3>
           <button class="modal-close" id="close-customer-modal">✕</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body-scroll">
           <form id="customer-form">
             <input type="hidden" id="customer-doc-id">
+
+            <div class="form-section-title">
+              <span class="material-icons-outlined">person</span> Personal Information
+            </div>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">First Name *</label>
@@ -60,6 +64,10 @@ export function renderCustomersPage() {
                 <label class="form-label">Last Name *</label>
                 <input type="text" class="form-input" id="cust-lastName" required placeholder="Dela Cruz">
               </div>
+            </div>
+
+            <div class="form-section-title">
+              <span class="material-icons-outlined">wifi</span> Subscription Details
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -78,6 +86,10 @@ export function renderCustomersPage() {
               <select class="form-input" id="cust-collector" required>
                 <option value="" disabled selected>Select a collector</option>
               </select>
+            </div>
+
+            <div class="form-section-title">
+              <span class="material-icons-outlined">location_on</span> Address
             </div>
             <div class="form-group">
               <label class="form-label">Street Address *</label>
@@ -101,26 +113,13 @@ export function renderCustomersPage() {
         </div>
         <div class="modal-footer">
           <button class="btn btn-ghost" id="cancel-customer-btn">Cancel</button>
-          <button class="btn btn-primary" id="save-customer-btn">Save Customer</button>
+          <button class="btn btn-primary" id="save-customer-btn">
+            <span class="material-icons-outlined" style="font-size:16px;">save</span> Save Customer
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- View Customer Detail Modal -->
-    <div class="modal-overlay" id="customer-detail-modal">
-      <div class="modal modal-lg">
-        <div class="modal-header">
-          <h3>Customer Details</h3>
-          <button class="modal-close" id="close-detail-modal">✕</button>
-        </div>
-        <div class="modal-body" id="customer-detail-body">
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-ghost" id="close-detail-btn">Close</button>
-          <button class="btn btn-primary" id="edit-from-detail-btn">Edit Customer</button>
-        </div>
-      </div>
-    </div>
   `;
 }
 
@@ -199,8 +198,6 @@ export function initCustomersPage(services, navigateFn) {
   // Close modals
   document.getElementById('close-customer-modal').addEventListener('click', () => closeModal('customer-modal'));
   document.getElementById('cancel-customer-btn').addEventListener('click', () => closeModal('customer-modal'));
-  document.getElementById('close-detail-modal').addEventListener('click', () => closeModal('customer-detail-modal'));
-  document.getElementById('close-detail-btn').addEventListener('click', () => closeModal('customer-detail-modal'));
 
   // Close modals on overlay click
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -370,23 +367,23 @@ export function initCustomersPage(services, navigateFn) {
         <td>
           <div class="table-actions">
             <button class="btn btn-ghost btn-sm btn-icon" title="View" data-view="${c.$id || c.id}"><span class="material-icons-outlined" style="font-size:18px;">visibility</span></button>
-            <button class="btn btn-ghost btn-sm btn-icon" title="Edit" data-edit="${c.$id || c.id}"><span class="material-icons-outlined" style="font-size:18px;">edit</span></button>
             <button class="btn btn-ghost btn-sm btn-icon" title="Delete" data-delete="${c.$id || c.id}" style="color:var(--accent-rose);"><span class="material-icons-outlined" style="font-size:18px;">delete</span></button>
           </div>
         </td>
       </tr>
     `}).join('');
 
-    // Attach row events
+    // Clicking view or row → navigate to detail page
     tbody.querySelectorAll('[data-view]').forEach(btn => {
-      btn.addEventListener('click', () => viewCustomer(btn.dataset.view));
+      btn.addEventListener('click', () => navigateFn('customer_detail:' + btn.dataset.view));
     });
-    tbody.querySelectorAll('[data-edit]').forEach(btn => {
-      btn.addEventListener('click', () => editCustomer(btn.dataset.edit));
-    });
+
     tbody.querySelectorAll('[data-delete]').forEach(btn => {
-      btn.addEventListener('click', () => deleteCustomer(btn.dataset.delete));
+      btn.addEventListener('click', (e) => { e.stopPropagation(); deleteCustomer(btn.dataset.delete); });
     });
+
+    // Make entire rows clickable
+    makeRowsClickable();
   }
 
   function filterCustomers(query) {
@@ -405,61 +402,20 @@ export function initCustomersPage(services, navigateFn) {
     renderCustomerTable(filtered);
   }
 
-  function viewCustomer(id) {
-    const c = allCustomers.find(x => (x.$id || x.id) === id);
-    if (!c) return;
-    const collector = getCollectorForCustomer(c);
-    const collectorName = collector ? `${collector.firstName || ''} ${collector.lastName || ''}` : 'Unassigned';
-    const body = document.getElementById('customer-detail-body');
-    body.innerHTML = `
-      <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
-        <div class="avatar avatar-xl" style="background:linear-gradient(135deg, hsl(${hashCode(c.firstName || '')},70%,55%), hsl(${hashCode(c.lastName || '')},60%,45%));">
-          ${getInitials(c.firstName, c.lastName)}
-        </div>
-        <div>
-          <h2 style="font-size:1.3rem; font-weight:700;">${c.firstName || ''} ${c.middleName || ''} ${c.lastName || ''}</h2>
-          <p style="color:var(--text-muted); font-size:0.85rem;">Customer</p>
-        </div>
-      </div>
-      <div class="detail-grid">
-        <div class="card">
-          <div class="card-header"><span class="card-title">Personal Information</span></div>
-          <div class="card-body">
-            <ul class="info-list">
-              <li><span class="info-label">Phone</span><span class="info-value">${c.phone || '—'}</span></li>
-              <li><span class="info-label">WiFi Plan</span><span class="info-value">${(() => { const p = allPlans.find(x => (x.$id || x.id) === c.planId); return p ? `${p.name} (₱${(p.monthlyRate || 0).toLocaleString()}/mo)` : '—'; })()}</span></li>
-              <li>
-                <span class="info-label">Assigned Collector</span>
-                <span class="info-value" style="color: ${collector ? 'var(--accent-emerald)' : 'var(--accent-amber)'};">
-                  ${collector ? `<span class="material-icons-outlined" style="font-size:14px; vertical-align:-2px;">person</span> ${collectorName}` : '⚠ Unassigned'}
-                </span>
-              </li>
-              <li><span class="info-label">User ID</span><span class="info-value" style="font-size:0.75rem;">${c.userId || '—'}</span></li>
-              <li><span class="info-label">Registered</span><span class="info-value">${formatDate(c.createdAt || c.$createdAt)}</span></li>
-            </ul>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Address</span></div>
-          <div class="card-body">
-            <ul class="info-list">
-              <li><span class="info-label">Street</span><span class="info-value">${c.address || '—'}</span></li>
-              <li><span class="info-label">Barangay</span><span class="info-value">${c.barangay || '—'}</span></li>
-              <li><span class="info-label">City</span><span class="info-value">${c.city || '—'}</span></li>
-              <li><span class="info-label">Province</span><span class="info-value">${c.province || '—'}</span></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Bind edit from detail
-    document.getElementById('edit-from-detail-btn').onclick = () => {
-      closeModal('customer-detail-modal');
-      editCustomer(id);
-    };
-
-    openModal('customer-detail-modal');
+  // Make entire customer row clickable (except action buttons)
+  function makeRowsClickable() {
+    const tbody = document.getElementById('customers-tbody');
+    if (!tbody) return;
+    tbody.querySelectorAll('tr').forEach(row => {
+      const viewBtn = row.querySelector('[data-view]');
+      if (!viewBtn) return;
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', (e) => {
+        // Don't navigate if clicking action buttons
+        if (e.target.closest('.table-actions')) return;
+        navigateFn('customer_detail:' + viewBtn.dataset.view);
+      });
+    });
   }
 
   function editCustomer(id) {

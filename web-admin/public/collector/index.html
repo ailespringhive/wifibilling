@@ -1,46 +1,168 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="/collector/">
-
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="WiFi Billing Collector">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="collector_app">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WiFi Collector">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="theme-color" content="#0f172a">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>collector_app</title>
+  <title>WiFi Collector</title>
   <link rel="manifest" href="manifest.json">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cupertino-icons@1.0.1/css/cupertino-icons.css">
+  
+  <style>
+    /* Force Material Icons font to load from CDN if local fails */
+    @font-face {
+      font-family: 'MaterialIcons';
+      font-style: normal;
+      font-weight: 400;
+      src: url(https://fonts.gstatic.com/s/materialicons/v142/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+    }
+    
+    body {
+      margin: 0;
+      background: #0f172a;
+      overflow: hidden;
+    }
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      transition: opacity 0.4s ease;
+    }
+    .loading-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loading-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 30px rgba(59,130,246,0.3);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .loading-icon svg {
+      width: 36px;
+      height: 36px;
+      fill: white;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .loading-title {
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .loading-sub {
+      color: rgba(148,163,184,0.7);
+      font-size: 13px;
+      margin-bottom: 28px;
+    }
+    .progress-bar-track {
+      width: 200px;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #3b82f6, #06b6d4);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <!-- Branded loading screen -->
+  <div class="loading-screen" id="loading-screen">
+    <div class="loading-icon">
+      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+    </div>
+    <div class="loading-title">WiFi Collector</div>
+    <div class="loading-sub" id="loading-status">Starting up...</div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+  </div>
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+  <script>
+    // Simulate fast progress while Flutter loads
+    const fill = document.getElementById('progress-fill');
+    const status = document.getElementById('loading-status');
+    let progress = 0;
+
+    function setProgress(value, text) {
+      progress = value;
+      fill.style.width = value + '%';
+      if (text) status.textContent = text;
+    }
+
+    setProgress(10, 'Loading resources...');
+    setTimeout(() => setProgress(25, 'Initializing engine...'), 300);
+    setTimeout(() => setProgress(45, 'Loading app code...'), 800);
+    setTimeout(() => setProgress(60, 'Preparing interface...'), 1500);
+    setTimeout(() => setProgress(75, 'Almost ready...'), 2500);
+
+    // Hide loading screen once Flutter renders
+    window.addEventListener('flutter-first-frame', () => {
+      setProgress(100, 'Ready!');
+      setTimeout(() => {
+        document.getElementById('loading-screen').classList.add('fade-out');
+        setTimeout(() => document.getElementById('loading-screen').remove(), 500);
+      }, 200);
+    });
+
+    // Fallback: hide after 8 seconds even if no event fires
+    setTimeout(() => {
+      const ls = document.getElementById('loading-screen');
+      if (ls) {
+        setProgress(100, 'Ready!');
+        setTimeout(() => {
+          ls.classList.add('fade-out');
+          setTimeout(() => ls.remove(), 500);
+        }, 200);
+      }
+    }, 8000);
+  </script>
+
+  <!-- Unregister old service workers that slow down loading -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(r => r.unregister());
+      });
+    }
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

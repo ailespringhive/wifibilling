@@ -300,6 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPendingCard(Billing billing) {
     final statusColor = AppTheme.statusColor(billing.paymentStatus);
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.only(bottom: 10),
       decoration: AppTheme.glassCard(radius: 14),
       child: ListTile(
@@ -345,6 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildEmptyPending() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(40),
       decoration: AppTheme.glassCard(),
       child: Column(
@@ -386,6 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: List.generate(
         3,
         (i) => Container(
+          width: double.infinity,
           margin: const EdgeInsets.only(bottom: 10),
           height: 72,
           decoration: AppTheme.glassCard(radius: 14),

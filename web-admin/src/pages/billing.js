@@ -291,6 +291,13 @@ export function initBillingPage(services, preFilter = null) {
   // Print buttons — open actual print windows
   ['btn-print-dot', 'btn-print-a4', 'btn-print-thermal', 'btn-print-all', 'btn-print-small'].forEach(btnId => {
     document.getElementById(btnId).addEventListener('click', () => {
+      if (btnId === 'btn-print-all') {
+        // "All" prints every billing record in A4 format
+        if (allBillings.length === 0) { showToast('No billing records to print', 'warning'); return; }
+        printBillings(allBillings, 'a4');
+        showToast(`Printing all ${allBillings.length} record(s)`, 'success');
+        return;
+      }
       const ids = [...document.querySelectorAll('.billing-row-check:checked')].map(cb => cb.dataset.billId);
       if (ids.length === 0) { showToast('Select records to print', 'warning'); return; }
       const selected = allBillings.filter(b => ids.includes(b.$id || b.id));

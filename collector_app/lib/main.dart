@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'config/appwrite_config.dart';
@@ -9,6 +10,7 @@ import 'screens/home_screen.dart';
 import 'screens/customers_screen.dart';
 import 'screens/collection_history_screen.dart';
 import 'screens/customer_detail_screen.dart';
+import 'screens/profile_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
@@ -46,6 +48,7 @@ class CollectorApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const MainShell(),
           '/customer-detail': (context) => const CustomerDetailScreen(),
+          '/profile': (context) => const ProfileScreen(),
         },
       ),
     );
@@ -234,7 +237,37 @@ class _MainShellState extends State<MainShell> {
 
               return Padding(
                 padding: const EdgeInsets.only(right: 16),
-                child: PopupMenuButton<String>(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      children: [
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            CupertinoIcons.bell,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                          tooltip: 'Notifications',
+                        ),
+                        Positioned(
+                          right: 12,
+                          top: 12,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentRose,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppTheme.bgDark, width: 1.5),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 4),
+                    PopupMenuButton<String>(
                   offset: const Offset(0, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -242,7 +275,11 @@ class _MainShellState extends State<MainShell> {
                   ),
                   color: AppTheme.bgCard,
                   onSelected: (value) {
-                    if (value == 'logout') _logout();
+                    if (value == 'profile') {
+                      Navigator.of(context).pushNamed('/profile');
+                    } else if (value == 'logout') {
+                      _logout();
+                    }
                   },
                   itemBuilder: (ctx) => [
                     PopupMenuItem(
@@ -271,10 +308,27 @@ class _MainShellState extends State<MainShell> {
                     ),
                     const PopupMenuDivider(),
                     PopupMenuItem(
+                      value: 'profile',
+                      child: Row(
+                        children: [
+                          const Icon(CupertinoIcons.person,
+                              size: 18, color: AppTheme.accentBlue),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Profile',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
                       value: 'logout',
                       child: Row(
                         children: [
-                          const Icon(Icons.logout_outlined,
+                          const Icon(CupertinoIcons.square_arrow_right,
                               size: 18, color: AppTheme.accentRose),
                           const SizedBox(width: 10),
                           Text(
@@ -291,6 +345,12 @@ class _MainShellState extends State<MainShell> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      const Icon(
+                        CupertinoIcons.person,
+                        size: 18,
+                        color: AppTheme.textSecondary,
+                      ),
+                      const SizedBox(width: 8),
                       Text(
                         firstName,
                         style: GoogleFonts.inter(
@@ -330,6 +390,8 @@ class _MainShellState extends State<MainShell> {
                       ),
                     ],
                   ),
+                    ),
+                  ],
                 ),
               );
             },
