@@ -31,7 +31,10 @@ export function renderBillingPage() {
           <input type="text" placeholder="Search customers..." id="billing-search">
         </div>
       </div>
-      <div class="toolbar-right">
+      <div class="toolbar-right" style="display:flex; gap:8px;">
+        <button class="btn btn-ghost" id="generate-billing-btn" style="border-color:var(--accent-emerald); color:var(--accent-emerald);">
+          <span class="material-icons-outlined" style="font-size:16px;">auto_fix_high</span> Generate Monthly Billing
+        </button>
         <button class="btn btn-ghost" id="add-billing-btn"><span class="material-icons-outlined" style="font-size:16px;">add</span> Add Billing</button>
       </div>
     </div>
@@ -105,8 +108,10 @@ export function renderBillingPage() {
         <div class="modal-body">
           <form id="billing-form">
             <div class="form-group">
-              <label class="form-label">Customer ID *</label>
-              <input type="text" class="form-input" id="bill-customerId" required placeholder="Customer ID">
+              <label class="form-label">Customer *</label>
+              <select class="form-input" id="bill-customerId" required>
+                <option value="" disabled selected>Select a customer...</option>
+              </select>
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -182,6 +187,24 @@ export function initBillingPage(services, preFilter = null) {
   });
 
   // Add billing modal
+  // Load customer dropdown for Add Billing
+  let allCustomersForBilling = [];
+  async function loadCustomerDropdown() {
+    try {
+      const res = await services.customer.getAll(100, 0);
+      allCustomersForBilling = res.documents || [];
+      const select = document.getElementById('bill-customerId');
+      select.innerHTML = '<option value="" disabled selected>Select a customer...</option>' +
+        allCustomersForBilling.map(c => {
+          const name = `${c.firstName || ''} ${c.lastName || ''}`.trim();
+          return `<option value="${c.userId || c.$id}" data-name="${name}">${name} (${c.phone || c.email || ''})</option>`;
+        }).join('');
+    } catch (e) {
+      console.warn('Could not load customers for billing dropdown:', e);
+    }
+  }
+  loadCustomerDropdown();
+
   document.getElementById('add-billing-btn').addEventListener('click', () => {
     document.getElementById('billing-form').reset();
     document.getElementById('bill-month').value = new Date().toISOString().slice(0, 7);
@@ -203,8 +226,13 @@ export function initBillingPage(services, preFilter = null) {
     const form = document.getElementById('billing-form');
     if (!form.checkValidity()) { form.reportValidity(); return; }
 
+    const custSelect = document.getElementById('bill-customerId');
+    const selectedOption = custSelect.options[custSelect.selectedIndex];
+    const customerName = selectedOption ? selectedOption.dataset.name || '' : '';
+
     const data = {
-      customerId: document.getElementById('bill-customerId').value.trim(),
+      customerId: custSelect.value,
+      customerName: customerName,
       billingMonth: document.getElementById('bill-month').value,
       amount: parseFloat(document.getElementById('bill-amount').value),
       dueDate: new Date(document.getElementById('bill-dueDate').value).toISOString(),
@@ -229,19 +257,66 @@ export function initBillingPage(services, preFilter = null) {
     }
   });
 
-  // Generate monthly billing (button may not exist on sub-pages)
+  // Generate monthly billing for all real customers
   const genBillingBtn = document.getElementById('generate-billing-btn');
   if (genBillingBtn) {
     genBillingBtn.addEventListener('click', async () => {
       const month = new Date().toISOString().slice(0, 7);
-      if (!confirm(`Generate billing for all active subscriptions for ${month}?`)) return;
+      if (!confirm(`Generate billing for all customers for ${month}?`)) return;
+
+      genBillingBtn.disabled = true;
+      genBillingBtn.innerHTML = '<span class="material-icons-outlined" style="font-size:16px;">hourglass_empty</span> Generating...';
+
       try {
+        // Try the subscription-based method first
         const results = await services.billing.generateMonthlyBilling(month);
-        showToast(`Generated ${results.length} billing records!`, 'success');
+        if (results.length > 0) {
+          showToast(`Generated ${results.length} billing records!`, 'success');
+        } else {
+          showToast('No new billing records needed — all customers already have bills for this month', 'info');
+        }
         loadBillings();
       } catch (error) {
-        showToast('Could not generate — ensure Appwrite is connected', 'warning');
+        // Fallback: generate for all customers directly
+        try {
+          const custRes = await services.customer.getAll(100, 0);
+          const customers = custRes.documents || [];
+          let created = 0;
+
+          for (const c of customers) {
+            const custId = c.userId || c.$id;
+            const custName = `${c.firstName || ''} ${c.lastName || ''}`.trim();
+            // Check if billing already exists for this month
+            try {
+              const existing = await services.billing.getByCustomer(custId);
+              const hasThisMonth = (existing.documents || []).some(b => b.billingMonth === month);
+              if (!hasThisMonth) {
+                await services.billing.create({
+                  customerId: custId,
+                  customerName: custName,
+                  billingMonth: month,
+                  amount: 0,
+                  dueDate: new Date(month + '-15').toISOString(),
+                  paymentStatus: 'not_yet_paid',
+                  paidDate: null,
+                  collectedBy: null,
+                  subscriptionId: '',
+                  notes: '',
+                });
+                created++;
+              }
+            } catch (_) {}
+          }
+
+          showToast(created > 0 ? `Generated ${created} billing records!` : 'All customers already have billing for this month', 'success');
+          loadBillings();
+        } catch (e2) {
+          showToast('Could not generate billing — check Appwrite connection', 'warning');
+        }
       }
+
+      genBillingBtn.disabled = false;
+      genBillingBtn.innerHTML = '<span class="material-icons-outlined" style="font-size:16px;">auto_fix_high</span> Generate Monthly Billing';
     });
   }
 
@@ -259,16 +334,23 @@ export function initBillingPage(services, preFilter = null) {
     if (ids.length === 0) { showToast('No records selected', 'warning'); return; }
     if (!confirm(`Mark ${ids.length} record(s) as Already Paid?`)) return;
 
+    let successCount = 0;
     for (const id of ids) {
       try {
         await services.billing.updateStatus(id, 'already_paid', { paidDate: new Date().toISOString() });
-      } catch (_) {
-        const bill = allBillings.find(b => (b.$id || b.id) === id);
-        if (bill) { bill.paymentStatus = 'already_paid'; bill.paidDate = new Date().toISOString(); }
+        successCount++;
+      } catch (err) {
+        console.error('Pay error:', err);
       }
     }
-    showToast(`${ids.length} record(s) marked as paid`, 'success');
-    loadBillings();
+    if (successCount > 0) {
+      showToast(`${successCount} record(s) marked as paid`, 'success');
+      document.getElementById('billing-select-all').checked = false;
+      document.getElementById('selected-count').textContent = '0 selected';
+      loadBillings();
+    } else {
+      showToast('Could not update records', 'danger');
+    }
   });
 
   // Delete Selected
@@ -277,15 +359,23 @@ export function initBillingPage(services, preFilter = null) {
     if (ids.length === 0) { showToast('No records selected', 'warning'); return; }
     if (!confirm(`Delete ${ids.length} billing record(s)?`)) return;
 
+    let successCount = 0;
     for (const id of ids) {
       try {
         await services.billing.delete(id);
-      } catch (_) {
-        allBillings = allBillings.filter(b => (b.$id || b.id) !== id);
+        successCount++;
+      } catch (err) {
+        console.error('Delete error:', err);
       }
     }
-    showToast(`${ids.length} record(s) deleted`, 'success');
-    loadBillings();
+    if (successCount > 0) {
+      showToast(`${successCount} record(s) deleted`, 'success');
+      document.getElementById('billing-select-all').checked = false;
+      document.getElementById('selected-count').textContent = '0 selected';
+      loadBillings();
+    } else {
+      showToast('Could not delete records', 'danger');
+    }
   });
 
   // Print buttons — open actual print windows
@@ -309,12 +399,34 @@ export function initBillingPage(services, preFilter = null) {
 
   async function loadBillings() {
     try {
-      const response = await services.billing.getAll(null, 50, 0);
-      allBillings = response.documents;
+      const response = await services.billing.getAll(null, 100, 0);
+      allBillings = response.documents || [];
+
+      // Resolve customer names from users_profile if customerName is missing
+      if (allBillings.length > 0) {
+        try {
+          const customerRes = await services.customer.getAll(100, 0);
+          const customers = customerRes.documents || [];
+          const customerMap = {};
+          customers.forEach(c => {
+            customerMap[c.userId] = `${c.firstName || ''} ${c.lastName || ''}`.trim();
+            customerMap[c.$id] = `${c.firstName || ''} ${c.lastName || ''}`.trim();
+          });
+
+          allBillings.forEach(b => {
+            if (!b.customerName && b.customerId) {
+              b.customerName = customerMap[b.customerId] || b.customerId;
+            }
+          });
+        } catch (e) {
+          console.warn('Could not resolve customer names:', e);
+        }
+      }
+
       applyFilters();
     } catch (error) {
-      console.warn('Using demo billing data:', error.message);
-      allBillings = getDemoBillings();
+      console.warn('Could not load billings from Appwrite:', error.message);
+      allBillings = [];
       applyFilters();
     }
   }
@@ -411,15 +523,8 @@ export function initBillingPage(services, preFilter = null) {
           showToast(`Status updated to "${getStatusLabel(newStatus)}"`, 'success');
           loadBillings();
         } catch (error) {
-          // Demo mode
-          const bill = allBillings.find(x => (x.$id || x.id) === billingId);
-          if (bill) {
-            bill.paymentStatus = newStatus;
-            if (newStatus === 'already_paid') bill.paidDate = new Date().toISOString();
-            else if (newStatus !== 'already_paid') bill.paidDate = null;
-          }
-          applyFilters();
-          showToast(`Status updated to "${getStatusLabel(newStatus)}" (demo)`, 'success');
+          showToast(`Error updating status: ` + error.message, 'danger');
+          applyFilters(); // Revert UI dropdown
         }
       });
     });
@@ -529,9 +634,7 @@ export function initBillingPage(services, preFilter = null) {
           showToast('Billing record deleted', 'success');
           loadBillings();
         } catch (error) {
-          allBillings = allBillings.filter(b => (b.$id || b.id) !== id);
-          applyFilters();
-          showToast('Billing record removed (demo)', 'success');
+          showToast('Error deleting record: ' + error.message, 'danger');
         }
       });
     });

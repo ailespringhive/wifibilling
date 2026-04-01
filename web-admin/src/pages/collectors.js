@@ -22,7 +22,7 @@ export function renderCollectorsPage() {
       <table class="data-table" id="collectors-table">
         <thead>
           <tr>
-            <th>COLLECTOR</th>
+            <th>PERSONNEL</th>
             <th>PHONE</th>
             <th>EMAIL</th>
             <th>ADDRESS</th>
@@ -46,6 +46,7 @@ export function renderCollectorsPage() {
         <div class="modal-body-scroll">
           <form id="collector-form">
             <input type="hidden" id="collector-doc-id">
+            <input type="hidden" id="col-role" value="collector">
 
             <div class="form-section-title">
               <span class="material-icons-outlined">person</span> Personal Information
@@ -74,8 +75,23 @@ export function renderCollectorsPage() {
                 <input type="tel" class="form-input" id="col-phone" required placeholder="09XX XXX XXXX">
               </div>
               <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="col-email" placeholder="collector@email.com">
+                <label class="form-label">Email *</label>
+                <input type="email" class="form-input" id="col-email" required placeholder="collector@email.com">
+              </div>
+            </div>
+
+            <div class="form-section-title" id="col-login-section">
+              <span class="material-icons-outlined">lock</span> Login Credentials
+              <span style="font-size:0.72rem; color:var(--text-muted); margin-left:8px;">(for mobile app login)</span>
+            </div>
+            <div class="form-row" id="col-password-row">
+              <div class="form-group">
+                <label class="form-label">Password *</label>
+                <input type="password" class="form-input" id="col-password" required minlength="8" placeholder="Min 8 characters">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm Password *</label>
+                <input type="password" class="form-input" id="col-confirmPassword" required minlength="8" placeholder="Repeat password">
               </div>
             </div>
 
@@ -121,8 +137,17 @@ export function initCollectorsPage(services, navigateFn) {
   // Add collector
   document.getElementById('add-collector-btn').addEventListener('click', () => {
     document.getElementById('collector-modal-title').textContent = 'Add Collector';
+    document.getElementById('save-collector-btn').innerHTML = '<span class="material-icons-outlined" style="font-size:16px;">save</span> Save Collector';
     document.getElementById('collector-form').reset();
     document.getElementById('collector-doc-id').value = '';
+    document.getElementById('col-role').value = 'collector';
+    
+    // Show password fields for new collector
+    document.getElementById('col-login-section').style.display = '';
+    document.getElementById('col-password-row').style.display = '';
+    document.getElementById('col-password').required = true;
+    document.getElementById('col-confirmPassword').required = true;
+    document.getElementById('col-email').required = true;
     openModal('collector-modal');
   });
 
@@ -150,6 +175,24 @@ export function initCollectorsPage(services, navigateFn) {
     const form = document.getElementById('collector-form');
     if (!form.checkValidity()) { form.reportValidity(); return; }
 
+    const docId = document.getElementById('collector-doc-id').value;
+    const isEditing = !!docId;
+
+    // Validate passwords for new collector
+    if (!isEditing) {
+      const password = document.getElementById('col-password').value;
+      const confirmPassword = document.getElementById('col-confirmPassword').value;
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match!', 'error');
+        return;
+      }
+      if (password.length < 8) {
+        showToast('Password must be at least 8 characters!', 'error');
+        return;
+      }
+    }
+
+    const role = document.getElementById('col-role').value;
     const data = {
       firstName: document.getElementById('col-firstName').value.trim(),
       lastName: document.getElementById('col-lastName').value.trim(),
@@ -159,33 +202,84 @@ export function initCollectorsPage(services, navigateFn) {
       barangay: document.getElementById('col-barangay').value.trim(),
       city: document.getElementById('col-city').value.trim(),
       province: document.getElementById('col-province').value.trim(),
-      middleName: document.getElementById('col-middleName').value.trim(),
+      role: role
     };
 
+    const saveBtn = document.getElementById('save-collector-btn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="material-icons-outlined" style="font-size:16px;">hourglass_empty</span> Saving...';
+
     try {
-      const docId = document.getElementById('collector-doc-id').value;
-      if (docId) {
+      if (isEditing) {
         await services.collector.update(docId, data);
         showToast('Collector updated!', 'success');
       } else {
-        data.userId = 'col_' + Date.now();
-        await services.collector.create(data);
-        showToast('Collector added!', 'success');
+        // Step 1: Create Appwrite user account for mobile app login
+        const password = document.getElementById('col-password').value;
+        const fullName = `${data.firstName} ${data.lastName}`.trim();
+        
+        // Use Server API to create user account
+        const userRes = await fetch(`${import.meta.env.VITE_APPWRITE_ENDPOINT}/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Appwrite-Project': import.meta.env.VITE_APPWRITE_PROJECT_ID,
+            'X-Appwrite-Key': import.meta.env.VITE_APPWRITE_API_KEY,
+          },
+          body: JSON.stringify({
+            userId: 'col_' + Date.now(),
+            email: data.email,
+            password: password,
+            name: fullName,
+          }),
+        });
+
+        if (!userRes.ok) {
+          const err = await userRes.json();
+          throw new Error(err.message || 'Failed to create user account');
+        }
+
+        const newUser = await userRes.json();
+        data.userId = newUser.$id;
+
+        // Step 2: Create collector profile in database
+        const profileDoc = await services.collector.create(data);
+
+        // Step 3: Grant explicit read/update permissions to the new collector using Server API
+        await fetch(`${import.meta.env.VITE_APPWRITE_ENDPOINT}/databases/${import.meta.env.VITE_APPWRITE_DATABASE_ID}/collections/users_profile/documents/${profileDoc.$id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Appwrite-Project': import.meta.env.VITE_APPWRITE_PROJECT_ID,
+            'X-Appwrite-Key': import.meta.env.VITE_APPWRITE_API_KEY,
+          },
+          body: JSON.stringify({
+            permissions: [
+              `read("any")`,
+              `update("user:${data.userId}")`,
+              `read("user:admin001")`,
+              `update("user:admin001")`,
+              `delete("user:admin001")`
+            ]
+          })
+        });
+
+        showToast(`${role === 'technician' ? 'Technician' : 'Collector'} added! Login: ${data.email}`, 'success');
       }
       closeModal('collector-modal');
       loadCollectors();
     } catch (error) {
-      allCollectors.push({ ...data, id: 'col_' + Date.now(), $id: 'col_' + Date.now(), assignedCount: 0, createdAt: new Date().toISOString() });
-      renderCollectorTable(allCollectors);
-      closeModal('collector-modal');
-      showToast('Collector added (demo)', 'success');
+      showToast(error.message || 'Failed to save collector', 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<span class="material-icons-outlined" style="font-size:16px;">save</span> Save Collector';
     }
   });
 
   async function loadCollectors() {
     try {
       const response = await services.collector.getAll();
-      allCollectors = response.documents;
+      allCollectors = response.documents.filter(c => c.role === 'collector');
       renderCollectorTable(allCollectors);
     } catch (error) {
       allCollectors = getDemoCollectors();
@@ -229,7 +323,12 @@ export function initCollectorsPage(services, navigateFn) {
               </div>
               <div>
                 <div style="font-weight:600; color:var(--text-primary);">${fullName}</div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">${location || '—'}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); display:flex; align-items:center; gap:6px; margin-top:4px;">
+                  <span style="display:inline-block; padding:2px 6px; border-radius:4px; border:1px solid var(--accent-blue); color:var(--accent-blue); background:rgba(255,255,255,0.05); font-weight: 500; font-size: 0.65rem; text-transform: uppercase;">
+                     Collector
+                  </span>
+                  ${location ? `<span>${location}</span>` : ''}
+                </div>
               </div>
             </div>
           </td>
@@ -267,6 +366,7 @@ export function initCollectorsPage(services, navigateFn) {
         if (!c) return;
         document.getElementById('collector-modal-title').textContent = 'Edit Collector';
         document.getElementById('collector-doc-id').value = c.$id || c.id;
+        document.getElementById('col-role').value = c.role || 'collector';
         document.getElementById('col-firstName').value = c.firstName || '';
         document.getElementById('col-lastName').value = c.lastName || '';
         document.getElementById('col-phone').value = c.phone || '';
@@ -275,6 +375,12 @@ export function initCollectorsPage(services, navigateFn) {
         document.getElementById('col-barangay').value = c.barangay || '';
         document.getElementById('col-city').value = c.city || '';
         document.getElementById('col-province').value = c.province || '';
+        // Hide password fields when editing
+        document.getElementById('col-login-section').style.display = 'none';
+        document.getElementById('col-password-row').style.display = 'none';
+        document.getElementById('col-password').required = false;
+        document.getElementById('col-confirmPassword').required = false;
+        document.getElementById('col-email').required = false;
         openModal('collector-modal');
       });
     });
@@ -288,7 +394,7 @@ export function initCollectorsPage(services, navigateFn) {
           showToast('Collector removed', 'success');
           loadCollectors();
         } catch (error) {
-          allCollectors = allCollectors.filter(c => (c.$id || c.id) !== btn.dataset.deleteCol);
+          allCollectors = allCollectors.filter(x => (x.$id || x.id) !== btn.dataset.deleteCol);
           renderCollectorTable(allCollectors);
           showToast('Collector removed (demo)', 'success');
         }

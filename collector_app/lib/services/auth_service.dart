@@ -27,6 +27,13 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Clear any existing session first to prevent "session already active" error
+      try {
+        await _account.deleteSession(sessionId: 'current');
+      } catch (_) {
+        // No session to delete, that's fine
+      }
+
       await _account.createEmailPasswordSession(
         email: email,
         password: password,

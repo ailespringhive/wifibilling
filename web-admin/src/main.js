@@ -7,12 +7,14 @@ import './styles/components.css';
 import './styles/pages.css';
 
 // Services
+import { databases, DATABASE_ID, Query } from './config/appwrite.js';
 import { AuthService } from './services/auth.service.js';
 import { CustomerService } from './services/customer.service.js';
 import { BillingService } from './services/billing.service.js';
 import { CollectorService } from './services/collector.service.js';
 import { PlanService } from './services/plan.service.js';
 import { SubscriptionService } from './services/subscription.service.js';
+import { MobileNotificationService } from './services/notification.service.js';
 
 // Components
 import { renderSidebar, initSidebar } from './components/sidebar.js';
@@ -27,6 +29,7 @@ import { renderCollectorsPage, initCollectorsPage } from './pages/collectors.js'
 import { renderPlansPage, initPlansPage } from './pages/plans.js';
 import { renderCustomerDetailPage, initCustomerDetailPage } from './pages/customer-detail.js';
 import { renderCollectorDetailPage, initCollectorDetailPage } from './pages/collector-detail.js';
+import { renderTechniciansPage, initTechniciansPage } from './pages/technicians.js';
 import { renderNotificationsPage, initNotificationsPage } from './pages/notifications.js';
 
 // Bundle services
@@ -37,6 +40,7 @@ const services = {
   collector: CollectorService,
   plan: PlanService,
   subscription: SubscriptionService,
+  mobileNotification: MobileNotificationService,
 };
 
 // Current state
@@ -54,6 +58,7 @@ const PAGE_META = {
   billing_payment_confirmation: { title: 'Billing — Payment Confirmation', subtitle: 'Payments awaiting confirmation' },
   collectors: { title: 'Collectors', subtitle: 'Manage payment collectors' },
   plans: { title: 'WiFi Plans', subtitle: 'Manage your service plans & pricing' },
+  technicians: { title: 'Technicians', subtitle: 'Manage repair technicians' },
   notifications: { title: 'Notifications', subtitle: 'All system notifications & alerts' },
   customer_detail: { title: 'Customer Details', subtitle: 'View customer information & payment history' },
   collector_detail: { title: 'Collector Details', subtitle: 'View collector information & assigned customers' },
@@ -65,17 +70,36 @@ const PAGE_META = {
 async function init() {
   const isAdminPath = window.location.pathname.startsWith('/admin');
 
-  // Check for saved demo session first
+  // First, try to resume a real Appwrite session
+  try {
+    const existing = await services.auth.getCurrentUser();
+    if (existing && existing.user && existing.profile) {
+      const role = existing.profile.role;
+      if (role === 'collector' && isAdminPath) {
+        // Collector on admin path — logout and show admin login
+        await services.auth.logout();
+        localStorage.removeItem('wifi_admin_session');
+        showLogin();
+        return;
+      }
+      if (role === 'collector' && !isAdminPath) {
+        window.location.href = '/collector/';
+        return;
+      }
+      // Admin — proceed
+      currentUser = existing;
+      isLoggedIn = true;
+      localStorage.setItem('wifi_admin_session', JSON.stringify(currentUser));
+      navigateTo(currentPage);
+      return;
+    }
+  } catch (_) { /* no active Appwrite session */ }
+
+  // Fallback: check localStorage for demo session
   const savedSession = localStorage.getItem('wifi_admin_session');
   if (savedSession) {
     try {
       currentUser = JSON.parse(savedSession);
-      // If collector session is saved and we're NOT on /admin/, redirect to collector
-      if (currentUser.profile && currentUser.profile.role === 'collector' && !isAdminPath) {
-        window.location.href = '/collector/';
-        return;
-      }
-      // If collector session on admin path, clear it and show admin login
       if (currentUser.profile && currentUser.profile.role === 'collector' && isAdminPath) {
         localStorage.removeItem('wifi_admin_session');
         showLogin();
@@ -89,7 +113,7 @@ async function init() {
     }
   }
 
-  // No saved session — show login immediately (avoids hanging on Appwrite connection)
+  // No session — show login
   showLogin();
 }
 
@@ -98,6 +122,7 @@ async function init() {
  */
 function showLogin() {
   isLoggedIn = false;
+  localStorage.removeItem('wifi_admin_session');
   const app = document.getElementById('app');
   app.innerHTML = renderLoginPage();
   initLoginPage(async (email, password) => {
@@ -107,7 +132,7 @@ function showLogin() {
 
       // Route based on role
       if (role === 'collector') {
-        // Redirect to the collector mobile app
+        localStorage.setItem('wifi_admin_session', JSON.stringify(result));
         window.location.href = '/collector/';
         return;
       }
@@ -115,6 +140,7 @@ function showLogin() {
       // Admin — stay on admin dashboard
       currentUser = result;
       isLoggedIn = true;
+      localStorage.setItem('wifi_admin_session', JSON.stringify(currentUser));
       navigateTo('dashboard');
     } catch (error) {
       // Demo mode: allow demo login for both roles
@@ -177,6 +203,7 @@ function navigateTo(page) {
     case 'billing': pageContent = renderBillingPage(); break;
     case 'collectors': pageContent = renderCollectorsPage(); break;
     case 'collector_detail': pageContent = renderCollectorDetailPage(); break;
+    case 'technicians': pageContent = renderTechniciansPage(); break;
     case 'plans': pageContent = renderPlansPage(); break;
     case 'notifications': pageContent = renderNotificationsPage(); break;
     default: pageContent = renderDashboardPage(); break;
@@ -236,6 +263,42 @@ function navigateTo(page) {
   function saveNotifications() {
     localStorage.setItem('wifi_admin_notifications', JSON.stringify(notifications));
   }
+  // Fetch repair status notifications from Appwrite
+  async function fetchRepairNotifs() {
+    try {
+      const res = await databases.listDocuments(DATABASE_ID, 'notifications', [
+        Query.equal('type', ['status_update']),
+        Query.orderDesc('$createdAt'),
+        Query.limit(20)
+      ]);
+      const data = { documents: res.documents };
+      const repairNotifs = (data.documents || []).map(doc => {
+        const diff = Date.now() - new Date(doc.$createdAt).getTime();
+        const mins = Math.floor(diff / 60000);
+        let timeStr;
+        if (mins < 60) timeStr = `${mins}m ago`;
+        else if (mins < 1440) timeStr = `${Math.floor(mins/60)}h ago`;
+        else timeStr = `${Math.floor(mins/1440)}d ago`;
+
+        return {
+          id: doc.$id,
+          icon: doc.title?.includes('Resolved') ? 'check_circle' : 'engineering',
+          color: doc.title?.includes('Resolved') ? 'var(--accent-emerald)' : 'var(--accent-blue)',
+          text: `<strong>${doc.title || 'Repair Update'}</strong> — ${doc.message || ''}`,
+          time: timeStr,
+          read: doc.isRead === true,
+          fromAppwrite: true,
+        };
+      });
+      if (repairNotifs.length > 0) {
+        // Remove old Appwrite entries, add fresh ones at top
+        notifications = [...repairNotifs, ...notifications.filter(n => !n.fromAppwrite)];
+        renderNotifications();
+      }
+    } catch (e) {
+      console.warn('Could not fetch repair notifications', e);
+    }
+  }
 
   function renderNotifications() {
     const unread = notifications.filter(n => !n.read).length;
@@ -263,8 +326,8 @@ function navigateTo(page) {
     // Mark individual as read on click
     notifList.querySelectorAll('.notif-item').forEach(item => {
       item.addEventListener('click', () => {
-        const id = parseInt(item.dataset.notifId);
-        const notif = notifications.find(n => n.id === id);
+        const id = item.dataset.notifId;
+        const notif = notifications.find(n => String(n.id) === String(id));
         if (notif) notif.read = true;
         saveNotifications();
         renderNotifications();
@@ -273,6 +336,7 @@ function navigateTo(page) {
   }
 
   renderNotifications();
+  fetchRepairNotifs();
 
   if (notifBtn && notifDropdown) {
     notifBtn.addEventListener('click', (e) => {
@@ -285,10 +349,20 @@ function navigateTo(page) {
 
   const markAllBtn = document.getElementById('mark-all-read-btn');
   if (markAllBtn) {
-    markAllBtn.addEventListener('click', () => {
+    markAllBtn.addEventListener('click', async () => {
       notifications.forEach(n => n.read = true);
       saveNotifications();
       renderNotifications();
+
+      // Also update Appwrite notifications so the notifications page stays in sync
+      const appwriteNotifs = notifications.filter(n => n.fromAppwrite);
+      for (const n of appwriteNotifs) {
+        try {
+          await databases.updateDocument(DATABASE_ID, 'notifications', n.id, { isRead: true });
+        } catch (e) {
+          console.warn('Failed to mark appwrite notification as read:', e);
+        }
+      }
     });
   }
 
@@ -535,6 +609,7 @@ function navigateTo(page) {
     case 'billing': initBillingPage(services, billingPreFilter); break;
     case 'collectors': initCollectorsPage(services, navigateTo); break;
     case 'collector_detail': initCollectorDetailPage(services, navigateTo, pageParam); break;
+    case 'technicians': initTechniciansPage(services, navigateTo); break;
     case 'plans': initPlansPage(services); break;
     case 'notifications': initNotificationsPage(); break;
   }

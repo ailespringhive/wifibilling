@@ -1,6 +1,7 @@
 /**
  * Notifications Page — Full notifications list
  */
+import { databases, DATABASE_ID, Query } from '../config/appwrite.js';
 export function renderNotificationsPage() {
   return `
     <div class="notifications-page">
@@ -169,9 +170,53 @@ function saveNotifications(notifications) {
   localStorage.setItem('wifi_admin_notifications', JSON.stringify(notifications));
 }
 
-export function initNotificationsPage() {
+// Fetch repair status update notifications from Appwrite
+async function fetchRepairNotifications() {
+  try {
+    const res = await databases.listDocuments(DATABASE_ID, 'notifications', [
+      Query.equal('type', ['status_update']),
+      Query.orderDesc('$createdAt'),
+      Query.limit(50)
+    ]);
+    const documents = res.documents || [];
+    return documents.map(doc => ({
+      id: doc.$id,
+      icon: doc.title?.includes('Resolved') ? 'check_circle' : 'engineering',
+      color: doc.title?.includes('Resolved') ? 'var(--accent-emerald)' : 'var(--accent-blue)',
+      text: `<strong>${doc.title}</strong> — ${doc.message}`,
+      time: _timeAgo(doc.$createdAt),
+      read: doc.isRead === true,
+      fromAppwrite: true,
+    }));
+  } catch (e) {
+    console.warn('Failed to fetch repair notifications:', e);
+    return [];
+  }
+}
+
+function _timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+export async function initNotificationsPage() {
   let notifications = loadNotifications();
   let activeFilter = 'all';
+
+  // Fetch repair status notifications from Appwrite and merge
+  const repairNotifs = await fetchRepairNotifications();
+  if (repairNotifs.length > 0) {
+    // Remove previously merged Appwrite notifications (by fromAppwrite flag)
+    notifications = notifications.filter(n => !n.fromAppwrite);
+    // Add fresh ones at the top
+    notifications = [...repairNotifs, ...notifications];
+  }
 
   function getFiltered() {
     if (activeFilter === 'unread') return notifications.filter(n => !n.read);
@@ -238,12 +283,24 @@ export function initNotificationsPage() {
 
     // Dismiss buttons
     container.querySelectorAll('.full-notif-dismiss').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        const id = parseInt(btn.dataset.dismissId);
-        notifications = notifications.filter(n => n.id !== id);
+        const id = btn.dataset.dismissId; // Appwrite IDs are strings
+        const notifToDelete = notifications.find(n => String(n.id) === String(id));
+        
+        // Optimistic UI update
+        notifications = notifications.filter(n => String(n.id) !== String(id));
         saveNotifications(notifications);
         renderList();
+
+        // Delete from Appwrite if applicable
+        if (notifToDelete && notifToDelete.fromAppwrite) {
+          try {
+            await databases.deleteDocument(DATABASE_ID, 'notifications', id);
+          } catch (err) {
+            console.warn('Failed to dismiss appwrite notification', err);
+          }
+        }
       });
     });
   }
@@ -261,26 +318,48 @@ export function initNotificationsPage() {
   // Mark all read
   const markAllBtn = document.getElementById('notifs-mark-all-read');
   if (markAllBtn) {
-    markAllBtn.addEventListener('click', () => {
+    markAllBtn.addEventListener('click', async () => {
+      // Setup UI optimistic update
       notifications.forEach(n => n.read = true);
       saveNotifications(notifications);
       renderList();
-      // Also sync header badge
       const headerBadge = document.getElementById('overdue-badge');
       if (headerBadge) headerBadge.style.display = 'none';
+
+      // Update Appwrite
+      const appwriteNotifs = notifications.filter(n => n.fromAppwrite);
+      for (const n of appwriteNotifs) {
+        try {
+          await databases.updateDocument(DATABASE_ID, 'notifications', n.id, { isRead: true });
+        } catch (e) {
+          console.warn('Failed to update appwrite notification', e);
+        }
+      }
     });
   }
 
   // Clear all
   const clearAllBtn = document.getElementById('notifs-clear-all');
   if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', () => {
+    clearAllBtn.addEventListener('click', async () => {
       if (confirm('Clear all notifications?')) {
+        const appwriteNotifs = notifications.filter(n => n.fromAppwrite);
+        
+        // Optimistic UI update
         notifications = [];
         saveNotifications(notifications);
         renderList();
         const headerBadge = document.getElementById('overdue-badge');
         if (headerBadge) headerBadge.style.display = 'none';
+
+        // Delete from Appwrite
+        for (const n of appwriteNotifs) {
+          try {
+            await databases.deleteDocument(DATABASE_ID, 'notifications', n.id);
+          } catch (e) {
+            console.warn('Failed to delete appwrite notification', e);
+          }
+        }
       }
     });
   }

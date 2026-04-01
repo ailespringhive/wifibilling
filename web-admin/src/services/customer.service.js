@@ -53,7 +53,6 @@ export const CustomerService = {
         {
           ...data,
           role: 'customer',
-          createdAt: new Date().toISOString(),
         }
       );
     } catch (error) {

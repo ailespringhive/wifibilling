@@ -44,7 +44,7 @@ export function initCollectorDetailPage(services, navigateFn, collectorId) {
       const customerIds = subs.map(s => s.customerId);
 
       if (customerIds.length > 0) {
-        const custResp = await services.customer.getAll(200, 0);
+        const custResp = await services.customer.getAll(100, 0);
         const allCustomers = custResp.documents || [];
         assignedCustomers = allCustomers.filter(c => customerIds.includes(c.userId));
       }

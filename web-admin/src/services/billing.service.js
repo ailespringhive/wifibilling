@@ -30,14 +30,17 @@ export const BillingService = {
    */
   async getByCustomer(customerId) {
     try {
-      return await databases.listDocuments(
+      const res = await databases.listDocuments(
         DATABASE_ID,
         COLLECTIONS.BILLINGS,
         [
-          Query.equal('customerId', customerId),
-          Query.orderDesc('billingMonth'),
+          Query.limit(100)
         ]
       );
+      // Filter locally to avoid index errors
+      const filtered = res.documents.filter(b => b.customerId === customerId);
+      filtered.sort((a, b) => (b.billingMonth || '').localeCompare(a.billingMonth || ''));
+      return { documents: filtered, total: filtered.length };
     } catch (error) {
       throw error;
     }
@@ -130,39 +133,39 @@ export const BillingService = {
    */
   async generateMonthlyBilling(billingMonth) {
     try {
-      // Get all active subscriptions
-      const subs = await databases.listDocuments(
+      // Get all subscriptions locally and filter to avoid missing index errors
+      const subsResponse = await databases.listDocuments(
         DATABASE_ID,
         COLLECTIONS.SUBSCRIPTIONS,
-        [Query.equal('status', 'active'), Query.limit(100)]
+        [Query.limit(100)]
+      );
+      const activeSubs = subsResponse.documents.filter(s => s.status === 'active');
+
+      const billingsResponse = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.BILLINGS,
+        [Query.limit(100)]
       );
 
       const results = [];
-      for (const sub of subs.documents) {
-        // Get the plan to know the amount
-        const plan = await databases.getDocument(
-          DATABASE_ID,
-          COLLECTIONS.WIFI_PLANS,
-          sub.planId
-        );
+      for (const sub of activeSubs) {
+        // Fallback or skip if plan missing
+        let planRate = 0;
+        try {
+          const plan = await databases.getDocument(DATABASE_ID, COLLECTIONS.WIFI_PLANS, sub.planId);
+          planRate = plan.monthlyRate || 0;
+        } catch (e) {
+          console.warn("Could not find plan for sub", sub);
+        }
 
-        // Check if billing already exists for this month
-        const existing = await databases.listDocuments(
-          DATABASE_ID,
-          COLLECTIONS.BILLINGS,
-          [
-            Query.equal('customerId', sub.customerId),
-            Query.equal('billingMonth', billingMonth),
-            Query.limit(1),
-          ]
-        );
+        const hasThisMonth = billingsResponse.documents.some(b => b.customerId === sub.customerId && b.billingMonth === billingMonth);
 
-        if (existing.total === 0) {
+        if (!hasThisMonth) {
           const billing = await this.create({
             customerId: sub.customerId,
             subscriptionId: sub.$id,
             billingMonth: billingMonth,
-            amount: plan.monthlyRate,
+            amount: planRate,
             dueDate: new Date(billingMonth + '-15').toISOString(),
             paymentStatus: 'unpaid',
             paidDate: null,
@@ -173,6 +176,21 @@ export const BillingService = {
         }
       }
       return results;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Delete a billing record
+   */
+  async delete(documentId) {
+    try {
+      return await databases.deleteDocument(
+        DATABASE_ID,
+        COLLECTIONS.BILLINGS,
+        documentId
+      );
     } catch (error) {
       throw error;
     }

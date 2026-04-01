@@ -11,6 +11,8 @@ import 'screens/customers_screen.dart';
 import 'screens/collection_history_screen.dart';
 import 'screens/customer_detail_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'services/notification_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
@@ -158,6 +160,22 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
+  int _unreadCount = 0;
+  final NotificationService _notificationService = NotificationService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    try {
+      final auth = context.read<AuthService>();
+      final count = await _notificationService.getUnreadCount(auth.collectorId);
+      if (mounted) setState(() => _unreadCount = count);
+    } catch (_) {}
+  }
 
   final _screens = const [
     HomeScreen(),
@@ -243,27 +261,37 @@ class _MainShellState extends State<MainShell> {
                     Stack(
                       children: [
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            if (profile != null) {
+                              await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (ctx) => NotificationsScreen(collector: profile),
+                                ),
+                              );
+                              _loadUnreadCount();
+                            }
+                          },
                           icon: const Icon(
-                            CupertinoIcons.bell,
-                            size: 20,
+                            Icons.notifications_outlined,
+                            size: 24,
                             color: Colors.white,
                           ),
                           tooltip: 'Notifications',
                         ),
-                        Positioned(
-                          right: 12,
-                          top: 12,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentRose,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppTheme.bgDark, width: 1.5),
+                        if (_unreadCount > 0)
+                          Positioned(
+                            right: 8,
+                            top: 8,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentRose,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppTheme.bgDark, width: 1.5),
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                     const SizedBox(width: 4),

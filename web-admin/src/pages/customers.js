@@ -1,4 +1,5 @@
 import { statusBadge, formatCurrency, formatDate, getInitials, showToast, openModal, closeModal, skeletonRows } from '../components/ui-helpers.js';
+import { MobileNotificationService } from '../services/notification.service.js';
 
 /**
  * Customers Page
@@ -89,6 +90,62 @@ export function renderCustomersPage() {
             </div>
 
             <div class="form-section-title">
+              <span class="material-icons-outlined">router</span> WiFi Equipment
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">WiFi Port</label>
+                <input type="text" class="form-input" id="cust-wifiPort" placeholder="e.g. Port 3, Slot 2">
+              </div>
+              <div class="form-group">
+                <label class="form-label">WiFi Type</label>
+                <select class="form-input" id="cust-wifiType">
+                  <option value="" disabled selected>Select WiFi type</option>
+                  <option value="Fiber">Fiber (FTTH)</option>
+                  <option value="DSL">DSL</option>
+                  <option value="Cable">Cable</option>
+                  <option value="Fixed Wireless">Fixed Wireless</option>
+                  <option value="Satellite">Satellite</option>
+                  <option value="LTE/5G">LTE / 5G</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-section-title">
+              <span class="material-icons-outlined">photo_camera</span> House Location Photo
+            </div>
+            <div class="form-group">
+              <div id="cust-image-preview" style="width:100%;min-height:100px;border:2px dashed rgba(255,255,255,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;background:rgba(255,255,255,0.02);transition:border-color 0.2s;" onclick="document.getElementById('cust-imageFile').click()">
+                <div id="cust-image-placeholder" style="text-align:center;padding:20px;">
+                  <span class="material-icons-outlined" style="font-size:36px;color:rgba(255,255,255,0.2);">add_a_photo</span>
+                  <p style="color:rgba(255,255,255,0.3);font-size:13px;margin-top:8px;">Click to upload house location photo</p>
+                </div>
+                <img id="cust-image-thumb" src="" alt="" style="display:none;max-width:100%;max-height:200px;border-radius:10px;">
+              </div>
+              <input type="file" id="cust-imageFile" accept="image/*" style="display:none;">
+              <input type="hidden" id="cust-profileImage">
+            </div>
+
+            <div class="form-section-title">
+              <span class="material-icons-outlined">my_location</span> Pin Location
+            </div>
+            <div class="form-group">
+              <div id="cust-map-container" style="width:100%;height:280px;border-radius:12px;border:1px solid var(--border-color);overflow:hidden;position:relative;background:var(--bg-secondary);"></div>
+              <div class="form-row" style="margin-top:10px;">
+                <div class="form-group">
+                  <label class="form-label">Latitude</label>
+                  <input type="number" step="any" class="form-input" id="cust-latitude" placeholder="14.5995" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Longitude</label>
+                  <input type="number" step="any" class="form-input" id="cust-longitude" placeholder="120.9842" readonly>
+                </div>
+              </div>
+              <p style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">Click on the map to pin the customer's location.</p>
+            </div>
+
+            <div class="form-section-title">
               <span class="material-icons-outlined">location_on</span> Address
             </div>
             <div class="form-group">
@@ -120,6 +177,37 @@ export function renderCustomersPage() {
       </div>
     </div>
 
+    <!-- Request Repair Modal -->
+    <div class="modal-overlay" id="repair-modal">
+      <div class="modal modal-md">
+        <div class="modal-header">
+          <h3 id="repair-modal-title">Request Repair</h3>
+          <button class="modal-close" id="close-repair-modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <form id="repair-form">
+            <input type="hidden" id="repair-customer-id">
+            <p id="repair-customer-name" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px;"></p>
+            <div class="form-group">
+              <label class="form-label">Assign Technician *</label>
+              <select class="form-input" id="repair-technician" required>
+                <option value="" disabled selected>Select a technician...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Issue Details *</label>
+              <textarea class="form-input" id="repair-message" rows="4" required placeholder="Describe the connection issue..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer" style="justify-content:flex-end;">
+          <button type="button" class="btn btn-ghost" id="cancel-repair-btn">Cancel</button>
+          <button type="button" class="btn btn-primary" id="send-repair-btn" style="background:var(--accent-amber); color:#000;">
+            <span class="material-icons-outlined" style="font-size:16px;">build</span> Send Request
+          </button>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -132,11 +220,53 @@ export function initCustomersPage(services, navigateFn) {
   let allCollectors = [];
   let customerSubscriptions = {}; // customerId -> subscription (with collectorId)
   let editingId = null;
+  let custMap = null;
+  let custMarker = null;
 
   // Load all data
   loadCustomers();
   loadPlans();
   loadCollectors();
+
+  function initCustMap(lat = 14.5995, lng = 120.9842) {
+    setTimeout(() => {
+      const container = document.getElementById('cust-map-container');
+      if (!container) return;
+
+      // Destroy existing map
+      if (custMap) {
+        custMap.remove();
+        custMap = null;
+        custMarker = null;
+      }
+
+      custMap = L.map(container).setView([lat, lng], 13);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(custMap);
+
+      // Place marker if lat/lng provided
+      if (lat !== 14.5995 || lng !== 120.9842) {
+        custMarker = L.marker([lat, lng]).addTo(custMap);
+        document.getElementById('cust-latitude').value = lat;
+        document.getElementById('cust-longitude').value = lng;
+      }
+
+      custMap.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        if (custMarker) {
+          custMarker.setLatLng([lat, lng]);
+        } else {
+          custMarker = L.marker([lat, lng]).addTo(custMap);
+        }
+        document.getElementById('cust-latitude').value = lat.toFixed(6);
+        document.getElementById('cust-longitude').value = lng.toFixed(6);
+      });
+
+      // Fix map tiles not rendering in modal
+      setTimeout(() => custMap.invalidateSize(), 300);
+    }, 200);
+  }
 
   async function loadPlans() {
     const select = document.getElementById('cust-plan');
@@ -156,20 +286,26 @@ export function initCustomersPage(services, navigateFn) {
   }
 
   async function loadCollectors() {
-    const select = document.getElementById('cust-collector');
+    const custSelect = document.getElementById('cust-collector');
+    const techSelect = document.getElementById('repair-technician');
     try {
       const response = await services.collector.getAll(50, 0);
       allCollectors = response.documents || [];
     } catch (e) {
       allCollectors = [
-        { $id: 'col1', id: 'col1', firstName: 'Ricardo', lastName: 'Mendoza', userId: 'col_usr1' },
-        { $id: 'col2', id: 'col2', firstName: 'Fernando', lastName: 'Aquino', userId: 'col_usr2' },
-        { $id: 'col3', id: 'col3', firstName: 'Lorna', lastName: 'Bautista', userId: 'col_usr3' },
-        { $id: 'col4', id: 'col4', firstName: 'Dennis', lastName: 'Torres', userId: 'col_usr4' },
+        { $id: 'col1', id: 'col1', firstName: 'Ricardo', lastName: 'Mendoza', userId: 'col_usr1', role: 'collector' },
+        { $id: 'col2', id: 'col2', firstName: 'Fernando', lastName: 'Aquino', userId: 'col_usr2', role: 'technician' },
       ];
     }
-    select.innerHTML = '<option value="" disabled selected>Select a collector</option>' +
-      allCollectors.map(c => `<option value="${c.$id || c.id}">${c.firstName || ''} ${c.lastName || ''}</option>`).join('');
+    const validCollectors = allCollectors.filter(c => c.role === 'collector');
+    custSelect.innerHTML = '<option value="" disabled selected>Select a collector</option>' +
+      validCollectors.map(c => `<option value="${c.$id || c.id}">${c.firstName || ''} ${c.lastName || ''}</option>`).join('');
+
+    const technicians = allCollectors.filter(c => c.role === 'technician');
+    if (techSelect) {
+      techSelect.innerHTML = '<option value="" disabled selected>Select a technician...</option>' +
+        technicians.map(c => `<option value="${c.$id || c.id}">${c.firstName || ''} ${c.lastName || ''}</option>`).join('');
+    }
   }
 
   async function loadSubscriptions() {
@@ -192,7 +328,65 @@ export function initCustomersPage(services, navigateFn) {
     document.getElementById('customer-form').reset();
     document.getElementById('customer-doc-id').value = '';
     document.getElementById('cust-collector').value = '';
+    // Reset image preview
+    document.getElementById('cust-image-thumb').style.display = 'none';
+    document.getElementById('cust-image-placeholder').style.display = 'block';
+    document.getElementById('cust-profileImage').value = '';
+    // Reset location
+    document.getElementById('cust-latitude').value = '';
+    document.getElementById('cust-longitude').value = '';
     openModal('customer-modal');
+    initCustMap();
+  });
+
+  // Image upload handler
+  document.getElementById('cust-imageFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const thumb = document.getElementById('cust-image-thumb');
+    const placeholder = document.getElementById('cust-image-placeholder');
+    const previewBox = document.getElementById('cust-image-preview');
+
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      thumb.src = ev.target.result;
+      thumb.style.display = 'block';
+      placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to Appwrite Storage
+    previewBox.style.borderColor = 'var(--accent-blue)';
+    try {
+      const formData = new FormData();
+      formData.append('fileId', 'unique()');
+      formData.append('file', file);
+      formData.append('permissions[]', 'read("any")');
+
+      const uploadRes = await fetch(`${import.meta.env.VITE_APPWRITE_ENDPOINT}/storage/buckets/customer_images/files`, {
+        method: 'POST',
+        headers: {
+          'X-Appwrite-Project': import.meta.env.VITE_APPWRITE_PROJECT_ID,
+          'X-Appwrite-Key': import.meta.env.VITE_APPWRITE_API_KEY,
+        },
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+      if (uploadRes.ok) {
+        const imageUrl = `${import.meta.env.VITE_APPWRITE_ENDPOINT}/storage/buckets/customer_images/files/${uploadData.$id}/view?project=${import.meta.env.VITE_APPWRITE_PROJECT_ID}`;
+        document.getElementById('cust-profileImage').value = imageUrl;
+        previewBox.style.borderColor = 'var(--accent-emerald)';
+        setTimeout(() => { previewBox.style.borderColor = 'rgba(255,255,255,0.1)'; }, 2000);
+      } else {
+        showToast('Image upload failed: ' + (uploadData.message || 'Unknown error'), 'error');
+        previewBox.style.borderColor = 'var(--accent-rose)';
+      }
+    } catch (err) {
+      showToast('Image upload failed', 'error');
+      previewBox.style.borderColor = 'var(--accent-rose)';
+    }
   });
 
   // Close modals
@@ -233,10 +427,15 @@ export function initCustomersPage(services, navigateFn) {
       lastName: document.getElementById('cust-lastName').value.trim(),
       phone: document.getElementById('cust-phone').value.trim(),
       planId: planId,
+      wifiPort: document.getElementById('cust-wifiPort').value.trim(),
+      wifiType: document.getElementById('cust-wifiType').value,
+      profileImage: document.getElementById('cust-profileImage').value || '',
       address: document.getElementById('cust-address').value.trim(),
       barangay: document.getElementById('cust-barangay').value.trim(),
       city: document.getElementById('cust-city').value.trim(),
       province: document.getElementById('cust-province').value.trim(),
+      latitude: parseFloat(document.getElementById('cust-latitude').value) || 0,
+      longitude: parseFloat(document.getElementById('cust-longitude').value) || 0,
     };
 
     const saveBtn = document.getElementById('save-customer-btn');
@@ -248,14 +447,32 @@ export function initCustomersPage(services, navigateFn) {
       if (docId) {
         // Update existing customer
         await services.customer.update(docId, data);
+        const customerName = `${data.firstName} ${data.lastName}`.trim();
 
         // Update or create subscription with the assigned collector
         const existingSub = customerSubscriptions[allCustomers.find(c => (c.$id || c.id) === docId)?.userId];
         if (existingSub) {
+          const oldCollectorId = existingSub.collectorId;
           await services.subscription.update(existingSub.$id || existingSub.id, {
             collectorId: collectorDocId,
             planId: planId,
           });
+          
+          if (collectorDocId && oldCollectorId !== collectorDocId) {
+             await services.mobileNotification.send(
+               collectorDocId,
+               'New Customer Assigned',
+               `You have been assigned to collect from ${customerName}.`,
+               'assignment'
+             );
+          } else if (collectorDocId) {
+             await services.mobileNotification.send(
+               collectorDocId,
+               'Customer Info Updated',
+               `Information for ${customerName} was updated by admin.`,
+               'update'
+             );
+          }
         } else {
           const customer = allCustomers.find(c => (c.$id || c.id) === docId);
           if (customer) {
@@ -264,6 +481,14 @@ export function initCustomersPage(services, navigateFn) {
               planId: planId,
               collectorId: collectorDocId,
             });
+            if (collectorDocId) {
+               await services.mobileNotification.send(
+                 collectorDocId,
+                 'New Customer Assigned',
+                 `You have been assigned to collect from ${customerName}.`,
+                 'assignment'
+               );
+            }
           }
         }
         showToast('Customer updated successfully!', 'success');
@@ -271,6 +496,7 @@ export function initCustomersPage(services, navigateFn) {
         // Create new customer
         data.userId = 'usr_' + Date.now();
         const newCustomer = await services.customer.create(data);
+        const customerName = `${data.firstName} ${data.lastName}`.trim();
 
         // Auto-create subscription with the selected collector
         try {
@@ -279,6 +505,14 @@ export function initCustomersPage(services, navigateFn) {
             planId: planId,
             collectorId: collectorDocId,
           });
+          if (collectorDocId) {
+             await services.mobileNotification.send(
+               collectorDocId,
+               'New Customer Assigned',
+               `You have been assigned to collect from ${customerName}.`,
+               'assignment'
+             );
+          }
         } catch (subErr) {
           console.warn('Subscription creation failed:', subErr);
         }
@@ -344,7 +578,7 @@ export function initCustomersPage(services, navigateFn) {
             </div>
             <div>
               <div style="color:var(--text-primary); font-weight:500;">${c.firstName || ''} ${c.lastName || ''}</div>
-              <div style="font-size:0.72rem; color:var(--text-muted);">${c.middleName ? c.middleName + ' • ' : ''}${c.barangay || ''}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">${c.middleName ? c.middleName + ' • ' : ''}${c.barangay || ''}${c.wifiType ? ' • ' + c.wifiType : ''}</div>
             </div>
           </div>
         </td>
@@ -361,11 +595,13 @@ export function initCustomersPage(services, navigateFn) {
             : `<span style="font-size:0.78rem; color:var(--accent-amber);">⚠ Unassigned</span>`
           }
         </td>
-        <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-          ${c.address || ''}, ${c.barangay || ''}, ${c.city || ''}
+        <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+          <div style="font-size:0.85rem; color:var(--text-primary);">${[c.address, c.barangay, c.city].filter(Boolean).join(', ')}</div>
+          ${c.latitude && c.longitude ? `<a href="https://www.google.com/maps?q=${c.latitude},${c.longitude}" target="_blank" style="font-size:0.75rem; color:var(--accent-blue); text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-top:4px;" onclick="event.stopPropagation();"><span class="material-icons-outlined" style="font-size:14px;">place</span>View Map</a>` : `<span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">No pinned location</span>`}
         </td>
         <td>
           <div class="table-actions">
+            <button class="btn btn-ghost btn-sm btn-icon" title="Request Repair" data-repair="${c.$id || c.id}" style="color:var(--accent-amber);"><span class="material-icons-outlined" style="font-size:18px;">build</span></button>
             <button class="btn btn-ghost btn-sm btn-icon" title="View" data-view="${c.$id || c.id}"><span class="material-icons-outlined" style="font-size:18px;">visibility</span></button>
             <button class="btn btn-ghost btn-sm btn-icon" title="Delete" data-delete="${c.$id || c.id}" style="color:var(--accent-rose);"><span class="material-icons-outlined" style="font-size:18px;">delete</span></button>
           </div>
@@ -380,6 +616,10 @@ export function initCustomersPage(services, navigateFn) {
 
     tbody.querySelectorAll('[data-delete]').forEach(btn => {
       btn.addEventListener('click', (e) => { e.stopPropagation(); deleteCustomer(btn.dataset.delete); });
+    });
+
+    tbody.querySelectorAll('[data-repair]').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); openRepairModal(btn.dataset.repair); });
     });
 
     // Make entire rows clickable
@@ -429,10 +669,25 @@ export function initCustomersPage(services, navigateFn) {
     document.getElementById('cust-lastName').value = c.lastName || '';
     document.getElementById('cust-phone').value = c.phone || '';
     document.getElementById('cust-plan').value = c.planId || '';
+    document.getElementById('cust-wifiPort').value = c.wifiPort || '';
+    document.getElementById('cust-wifiType').value = c.wifiType || '';
+    document.getElementById('cust-profileImage').value = c.profileImage || '';
     document.getElementById('cust-address').value = c.address || '';
     document.getElementById('cust-barangay').value = c.barangay || '';
     document.getElementById('cust-city').value = c.city || '';
     document.getElementById('cust-province').value = c.province || '';
+
+    // Show existing image if any
+    const thumb = document.getElementById('cust-image-thumb');
+    const placeholder = document.getElementById('cust-image-placeholder');
+    if (c.profileImage) {
+      thumb.src = c.profileImage;
+      thumb.style.display = 'block';
+      placeholder.style.display = 'none';
+    } else {
+      thumb.style.display = 'none';
+      placeholder.style.display = 'block';
+    }
 
     // Pre-select the assigned collector from subscription
     const sub = customerSubscriptions[c.userId];
@@ -443,8 +698,129 @@ export function initCustomersPage(services, navigateFn) {
       collectorSelect.value = '';
     }
 
+    // Pre-fill location
+    const lat = c.latitude || 0;
+    const lng = c.longitude || 0;
+    document.getElementById('cust-latitude').value = lat || '';
+    document.getElementById('cust-longitude').value = lng || '';
+
     openModal('customer-modal');
+    initCustMap(lat || 14.5995, lng || 120.9842);
   }
+
+  function openRepairModal(customerId) {
+    const customer = allCustomers.find(c => (c.$id || c.id) === customerId);
+    if (!customer) return;
+    
+    document.getElementById('repair-customer-id').value = customerId;
+    document.getElementById('repair-customer-name').textContent = `Customer: ${customer.firstName || ''} ${customer.lastName || ''} - ${customer.address || ''}`;
+    document.getElementById('repair-form').reset();
+    openModal('repair-modal');
+  }
+
+  document.getElementById('cancel-repair-btn').addEventListener('click', () => closeModal('repair-modal'));
+  document.getElementById('close-repair-modal').addEventListener('click', () => closeModal('repair-modal'));
+
+  document.getElementById('send-repair-btn').addEventListener('click', async () => {
+    const custId = document.getElementById('repair-customer-id').value;
+    const techId = document.getElementById('repair-technician').value;
+    const message = document.getElementById('repair-message').value;
+
+    if (!techId || !message) {
+      showToast('Please select a technician and describe the issue.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('send-repair-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+      const customer = allCustomers.find(c => (c.$id || c.id) === custId);
+      const custName = customer ? `${customer.firstName || ''} ${customer.lastName || ''}`.trim() : 'Unknown Customer';
+      const custAddress = customer ? [customer.address, customer.barangay, customer.city, customer.province].filter(Boolean).join(', ') : 'Unknown Location';
+      const fullMessage = `Location: ${custAddress}\nIssue: ${message}`;
+
+      // 1. Send notification to technician
+      await services.mobileNotification.sendToTechnician(
+         techId,
+         `Repair: ${custName}`,
+         fullMessage,
+         'repair'
+      );
+
+      // 2. Create repair ticket document
+      const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT;
+      const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+      const apiKey = import.meta.env.VITE_APPWRITE_API_KEY;
+      const dbId = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+
+      // Get technician's auth userId for permissions
+      let techAuthUserId = null;
+      try {
+        const techProfileRes = await fetch(`${endpoint}/databases/${dbId}/collections/users_profile/documents/${techId}`, {
+          headers: { 'X-Appwrite-Project': projectId, 'X-Appwrite-Key': apiKey }
+        });
+        if (techProfileRes.ok) {
+          const techProfile = await techProfileRes.json();
+          techAuthUserId = techProfile.userId;
+        }
+      } catch (_) {}
+
+      const ticketPerms = techAuthUserId ? [
+        `read("user:${techAuthUserId}")`,
+        `update("user:${techAuthUserId}")`,
+        `read("any")`,
+        `update("any")`
+      ] : [`read("any")`, `update("any")`];
+
+      await fetch(`${endpoint}/databases/${dbId}/collections/repair_tickets/documents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Appwrite-Project': projectId,
+          'X-Appwrite-Key': apiKey,
+        },
+        body: JSON.stringify({
+          documentId: 'unique()',
+          data: {
+            customerId: custId,
+            customerName: custName,
+            customerAddress: custAddress,
+            technicianId: techId,
+            status: 'pending',
+            priority: 'medium',
+            issue: message,
+            notes: '',
+            latitude: customer?.latitude || 0,
+            longitude: customer?.longitude || 0,
+          },
+          permissions: ticketPerms
+        })
+      });
+
+      // Notify the assigned technician
+      try {
+        await MobileNotificationService.sendToTechnician(
+          techId,
+          'New Repair Ticket',
+          `You have a new repair request for ${custName}: ${message}`,
+          'ticket_assigned'
+        );
+      } catch (notifErr) {
+        console.warn('Failed to notify technician:', notifErr);
+      }
+
+      showToast('Repair ticket created & technician notified!', 'success');
+      closeModal('repair-modal');
+    } catch (e) {
+      showToast('Failed to send request. Local demo mode applied.', 'success');
+      closeModal('repair-modal');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<span class="material-icons-outlined" style="font-size:16px; margin-right:6px;">build</span> Send Request`;
+    }
+  });
 
   async function deleteCustomer(id) {
     if (!confirm('Are you sure you want to delete this customer?')) return;

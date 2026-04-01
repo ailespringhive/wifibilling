@@ -159,17 +159,46 @@ export function initCustomerDetailPage(services, navigateFn, customerId) {
           </div>
         </div>
 
-        <!-- Address Card -->
+        <!-- WiFi Equipment Card -->
         <div class="card glass-card">
+          <div class="card-header">
+            <span class="card-title"><span class="material-icons-outlined" style="font-size:18px; vertical-align:-3px; margin-right:8px;">router</span>WiFi Equipment</span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <ul class="info-list">
+              <li><span class="info-label">WiFi Port</span><span class="info-value">${customer.wifiPort || '—'}</span></li>
+              <li><span class="info-label">WiFi Type</span><span class="info-value">${customer.wifiType || '—'}</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Address Card -->
+        <div class="card glass-card" style="grid-column: 1 / -1;">
           <div class="card-header">
             <span class="card-title"><span class="material-icons-outlined" style="font-size:18px; vertical-align:-3px; margin-right:8px;">location_on</span>Address</span>
           </div>
           <div class="card-body" style="padding:0;">
-            <ul class="info-list">
-              <li><span class="info-label">Street</span><span class="info-value">${customer.address || '—'}</span></li>
-              <li><span class="info-label">Barangay</span><span class="info-value">${customer.barangay || '—'}</span></li>
-              <li><span class="info-label">City / Municipality</span><span class="info-value">${customer.city || '—'}</span></li>
-              <li><span class="info-label">Province</span><span class="info-value">${customer.province || '—'}</span></li>
+            <ul class="info-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; padding:16px;">
+              <li style="border:none; padding:0;"><span class="info-label">Street</span><span class="info-value">${customer.address || '—'}</span></li>
+              <li style="border:none; padding:0;"><span class="info-label">Barangay</span><span class="info-value">${customer.barangay || '—'}</span></li>
+              <li style="border:none; padding:0;"><span class="info-label">City / Municipality</span><span class="info-value">${customer.city || '—'}</span></li>
+              <li style="border:none; padding:0;"><span class="info-label">Province</span><span class="info-value">${customer.province || '—'}</span></li>
+              <li style="grid-column: 1 / -1; margin-top:0px; border-top:1px solid rgba(255,255,255,0.05); padding-top:16px; display:grid; grid-template-columns: ${customer.profileImage ? '1fr 1fr' : '1fr'}; gap: 16px;">
+                ${customer.profileImage ? `
+                <div style="width:100%;">
+                  <span class="info-label" style="display:block; margin-bottom:8px;">House Location Photo</span>
+                  <div style="width:100%; height:200px; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+                    <img src="${customer.profileImage}" alt="House Location" style="width:100%; height:100%; object-fit:cover; display:block;" />
+                  </div>
+                </div>
+                ` : ''}
+                <div style="width:100%;">
+                  <span class="info-label" style="display:block; margin-bottom:8px;">Location Pin</span>
+                  <div id="map-preview" style="width:100%; height:200px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; color:var(--text-muted); overflow:hidden; z-index:1;">
+                    ${customer.latitude && customer.longitude ? 'Loading map...' : 'No location recorded'}
+                  </div>
+                </div>
+              </li>
             </ul>
           </div>
         </div>
@@ -221,6 +250,24 @@ export function initCustomerDetailPage(services, navigateFn, customerId) {
       </div>
     `;
 
+    // Render Leaflet map securely after DOM injected
+    if (customer.latitude && customer.longitude && window.L) {
+      setTimeout(() => {
+        const mapDiv = document.getElementById('map-preview');
+        if (mapDiv) {
+          mapDiv.innerHTML = '';
+          const lat = parseFloat(customer.latitude);
+          const lng = parseFloat(customer.longitude);
+          const map = window.L.map(mapDiv).setView([lat, lng], 16);
+          window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap'
+          }).addTo(map);
+          window.L.marker([lat, lng]).addTo(map)
+           .bindPopup(`<b>${customer.firstName} ${customer.lastName}</b><br>${customer.address || ''}`).openPopup();
+        }
+      }, 100);
+    }
+
     // Event listeners
     document.getElementById('back-to-customers').addEventListener('click', () => {
       navigateFn('customers');
@@ -263,7 +310,46 @@ export function initCustomerDetailPage(services, navigateFn, customerId) {
                 <span class="info-label">Collector</span>
                 <select class="form-select form-input-inline" id="edit-collector">
                   <option value="">— None —</option>
-                  ${allCollectors.map(c => `<option value="${c.$id || c.id}" ${customerSub && customerSub.collectorId === (c.$id || c.id) ? 'selected' : ''}>${c.firstName || ''} ${c.lastName || ''}</option>`).join('')}
+                  ${allCollectors.filter(c => c.role === 'collector').map(c => `<option value="${c.$id || c.id}" ${customerSub && customerSub.collectorId === (c.$id || c.id) ? 'selected' : ''}>${c.firstName || ''} ${c.lastName || ''}</option>`).join('')}
+                </select>
+              </li>
+              <li>
+                <span class="info-label">WiFi Port</span>
+                <input type="text" class="form-input form-input-inline" id="edit-wifiPort" value="${customer.wifiPort || ''}">
+              </li>
+              <li>
+                <span class="info-label">WiFi Type</span>
+                <select class="form-select form-input-inline" id="edit-wifiType">
+                  <option value="" ${!customer.wifiType ? 'selected' : ''}>— None —</option>
+                  <option value="PPPoE" ${customer.wifiType === 'PPPoE' ? 'selected' : ''}>PPPoE</option>
+                  <option value="Static/Dynamic IP" ${customer.wifiType === 'Static/Dynamic IP' ? 'selected' : ''}>Static/Dynamic IP</option>
+                  <option value="Voucher" ${customer.wifiType === 'Voucher' ? 'selected' : ''}>Voucher</option>
+                  <option value="P2P/Antenna" ${customer.wifiType === 'P2P/Antenna' ? 'selected' : ''}>P2P/Antenna</option>
+                </select>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- WiFi Equipment Card (Edit Mode) -->
+        <div class="card glass-card">
+          <div class="card-header">
+            <span class="card-title"><span class="material-icons-outlined" style="font-size:18px; vertical-align:-3px; margin-right:8px;">edit</span>Edit WiFi Equipment</span>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <ul class="info-list edit-mode">
+              <li>
+                <span class="info-label">WiFi Port</span>
+                <input type="text" class="form-input form-input-inline" id="edit-wifiPort" value="${customer.wifiPort || ''}" placeholder="e.g. Port 3, Slot 2">
+              </li>
+              <li>
+                <span class="info-label">WiFi Type</span>
+                <select class="form-select form-input-inline" id="edit-wifiType">
+                  <option value="" disabled ${!customer.wifiType ? 'selected' : ''}>Select WiFi type</option>
+                  <option value="PPPoE" ${customer.wifiType === 'PPPoE' ? 'selected' : ''}>PPPoE</option>
+                  <option value="Static/Dynamic IP" ${customer.wifiType === 'Static/Dynamic IP' ? 'selected' : ''}>Static/Dynamic IP</option>
+                  <option value="Voucher" ${customer.wifiType === 'Voucher' ? 'selected' : ''}>Voucher</option>
+                  <option value="P2P/Antenna" ${customer.wifiType === 'P2P/Antenna' ? 'selected' : ''}>P2P/Antenna</option>
                 </select>
               </li>
             </ul>
@@ -326,10 +412,57 @@ export function initCustomerDetailPage(services, navigateFn, customerId) {
           barangay: document.getElementById('edit-barangay').value.trim(),
           city: document.getElementById('edit-city').value.trim(),
           province: document.getElementById('edit-province').value.trim(),
+          wifiPort: document.getElementById('edit-wifiPort').value.trim(),
+          wifiType: document.getElementById('edit-wifiType').value,
         };
+
+        const selectedCollectorId = document.getElementById('edit-collector').value || '';
 
         try {
           await services.customer.update(id, updatedData);
+          const customerName = `${updatedData.firstName} ${updatedData.lastName}`.trim();
+          
+          // Also handle subscription/collector updating
+          if (customerSub) {
+            const oldCollectorId = customerSub.collectorId;
+            await services.subscription.update(customerSub.$id, {
+              planId: updatedData.planId,
+              collectorId: selectedCollectorId
+            });
+            
+            if (selectedCollectorId && oldCollectorId !== selectedCollectorId) {
+              await services.mobileNotification.send(
+                selectedCollectorId,
+                'New Customer Assigned',
+                `You have been assigned to collect from ${customerName}.`,
+                'assignment'
+              );
+            } else if (selectedCollectorId) {
+              await services.mobileNotification.send(
+                selectedCollectorId,
+                'Customer Info Updated',
+                `Information for ${customerName} was updated by admin.`,
+                'update'
+              );
+            }
+          } else {
+            await services.subscription.create({
+              customerId: customer.userId,
+              planId: updatedData.planId,
+              collectorId: selectedCollectorId,
+              status: 'active'
+            });
+            
+            if (selectedCollectorId) {
+               await services.mobileNotification.send(
+                 selectedCollectorId,
+                 'New Customer Assigned',
+                 `You have been assigned to collect from ${customerName}.`,
+                 'assignment'
+               );
+            }
+          }
+
           showToast('Customer updated successfully!', 'success');
         } catch (e) {
           Object.assign(customer, updatedData);

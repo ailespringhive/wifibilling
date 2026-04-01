@@ -6,6 +6,9 @@ export const AuthService = {
    */
   async login(email, password) {
     try {
+      // Clear any existing session first to prevent "session already active" error
+      try { await account.deleteSession('current'); } catch (_) { /* no session to delete, that's fine */ }
+
       const session = await account.createEmailPasswordSession(email, password);
       const user = await account.get();
       const profile = await this.getUserProfile(user.$id);

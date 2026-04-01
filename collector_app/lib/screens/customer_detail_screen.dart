@@ -437,6 +437,58 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           _infoRow('City / Municipality', _customer!.city.isNotEmpty ? _customer!.city : '—'),
           _divider(),
           _infoRow('Province', _customer!.province.isNotEmpty ? _customer!.province : '—'),
+          if (_customer!.profileImage != null && _customer!.profileImage!.isNotEmpty) ...[
+            _divider(),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'House Location Photo',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: AppTheme.textMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      _customer!.profileImage!,
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const SizedBox(
+                          height: 200,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 120,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppTheme.textMuted.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.broken_image_outlined, color: AppTheme.textMuted, size: 32),
+                            const SizedBox(height: 8),
+                            Text('Failed to load image', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

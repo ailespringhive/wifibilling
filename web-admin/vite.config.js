@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export default defineConfig({
+  envDir: '../backend',
   server: {
     port: 5174,
     host: true,

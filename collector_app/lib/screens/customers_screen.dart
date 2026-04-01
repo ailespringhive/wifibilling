@@ -24,6 +24,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
   List<UserProfile> _filteredCustomers = [];
   Map<String, Billing?> _latestBillings = {};
   bool _isLoading = true;
+  String _currentFilter = 'All';
 
   @override
   void initState() {
@@ -68,17 +69,47 @@ class _CustomersScreenState extends State<CustomersScreen> {
     }
   }
 
-  void _filterCustomers(String query) {
-    if (query.isEmpty) {
-      setState(() => _filteredCustomers = _allCustomers);
-      return;
-    }
+  void _applyFilters() {
     setState(() {
       _filteredCustomers = _allCustomers.where((c) {
-        final searchable =
-            '${c.fullName} ${c.phone} ${c.barangay} ${c.city}'.toLowerCase();
-        return searchable.contains(query.toLowerCase());
+        // Query match
+        final searchable = '${c.fullName} ${c.phone} ${c.barangay} ${c.city}'.toLowerCase();
+        final matchesQuery = _searchController.text.isEmpty || 
+            searchable.contains(_searchController.text.toLowerCase());
+            
+        // Status match
+        bool matchesStatus = true;
+        if (_currentFilter != 'All') {
+          final billing = _latestBillings[c.userId];
+          if (billing == null) {
+             matchesStatus = _currentFilter == 'not_yet_paid'; 
+          } else {
+             if (_currentFilter == 'not_yet_paid') {
+               matchesStatus = billing.paymentStatus == 'not_yet_paid';
+             } else if (_currentFilter == 'duedate') {
+               matchesStatus = billing.paymentStatus == 'not_yet_paid' && billing.dueDate != null;
+             } else if (_currentFilter == 'already_paid') {
+               matchesStatus = billing.paymentStatus == 'already_paid';
+             } else if (_currentFilter == 'overdue') {
+               matchesStatus = billing.paymentStatus == 'not_yet_paid' && 
+                 billing.dueDate != null && DateTime.parse(billing.dueDate!).isBefore(DateTime.now());
+             }
+          }
+        }
+        return matchesQuery && matchesStatus;
       }).toList();
+
+      // Sort by due date if the 'duedate' filter is active
+      if (_currentFilter == 'duedate') {
+        _filteredCustomers.sort((a, b) {
+          final bA = _latestBillings[a.userId];
+          final bB = _latestBillings[b.userId];
+          if (bA?.dueDate == null && bB?.dueDate == null) return 0;
+          if (bA?.dueDate == null) return 1;
+          if (bB?.dueDate == null) return -1;
+          return DateTime.parse(bA!.dueDate!).compareTo(DateTime.parse(bB!.dueDate!));
+        });
+      }
     });
   }
 
@@ -93,7 +124,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             decoration: AppTheme.glassCard(radius: 14),
             child: TextField(
               controller: _searchController,
-              onChanged: _filterCustomers,
+              onChanged: (_) => _applyFilters(),
               style: GoogleFonts.inter(
                 color: AppTheme.textPrimary,
                 fontSize: 14,
@@ -112,7 +143,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             color: AppTheme.textMuted, size: 18),
                         onPressed: () {
                           _searchController.clear();
-                          _filterCustomers('');
+                          _applyFilters();
                         },
                       )
                     : null,
@@ -120,6 +151,27 @@ class _CustomersScreenState extends State<CustomersScreen> {
             ),
           ),
         ),
+
+        // ── Filter Chips ──
+        SizedBox(
+          height: 36,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: [
+              _buildFilterChip('All', 'All'),
+              const SizedBox(width: 8),
+              _buildFilterChip('overdue', 'Overdue'),
+              const SizedBox(width: 8),
+              _buildFilterChip('not_yet_paid', 'Unpaid'),
+              const SizedBox(width: 8),
+              _buildFilterChip('duedate', 'Due Date'),
+              const SizedBox(width: 8),
+              _buildFilterChip('already_paid', 'Paid'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
 
         // ── Customer Count ──
         Padding(
@@ -151,6 +203,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       onRefresh: _loadCustomers,
                       child: ListView.builder(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: _filteredCustomers.length,
                         itemBuilder: (context, index) {
                           return _buildCustomerCard(
@@ -181,7 +234,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
             Navigator.of(context).pushNamed(
               '/customer-detail',
               arguments: customer,
-            );
+            ).then((_) {
+              // Refresh when returning in case data was changed
+              _loadCustomers();
+            });
           },
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -267,7 +323,13 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
                 // Status badge
                 if (billing != null)
-                  AppTheme.statusBadge(billing.paymentStatus, billing.statusLabel),
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 85),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: AppTheme.statusBadge(billing.paymentStatus, billing.statusLabel),
+                    ),
+                  ),
 
                 const SizedBox(width: 4),
                 const Icon(Icons.chevron_right_outlined,
@@ -281,38 +343,48 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }
 
   Widget _buildEmpty() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: AppTheme.textMuted.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.people_outline_outlined,
-                size: 28, color: AppTheme.textMuted),
+    return RefreshIndicator(
+      color: AppTheme.accentBlue,
+      backgroundColor: AppTheme.bgCard,
+      onRefresh: _loadCustomers,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.5,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppTheme.textMuted.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.people_outline_outlined,
+                    size: 28, color: AppTheme.textMuted),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No customers found',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Pull to refresh or check assigning logic.',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: AppTheme.textMuted,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'No customers assigned',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Contact your admin to get customer assignments.',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppTheme.textMuted,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -328,4 +400,41 @@ class _CustomersScreenState extends State<CustomersScreen> {
       ),
     );
   }
+
+  Widget _buildFilterChip(String filterId, String label) {
+    final isSelected = _currentFilter == filterId;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _currentFilter = filterId;
+        });
+        _applyFilters();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? AppTheme.accentBlue.withValues(alpha: 0.2) 
+              : AppTheme.textMuted.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected 
+                ? AppTheme.accentBlue.withValues(alpha: 0.5) 
+                : Colors.transparent,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              color: isSelected ? AppTheme.accentBlue : AppTheme.textSecondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
+

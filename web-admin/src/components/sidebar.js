@@ -68,6 +68,13 @@ export function renderSidebar(activePage = 'dashboard') {
           <span>Collectors</span>
         </div>
 
+        <div class="nav-item ${activePage === 'technicians' ? 'active' : ''}" data-page="technicians">
+          <span class="nav-icon-badge" style="--icon-color: var(--accent-emerald); --icon-bg: rgba(16,185,129,0.12);">
+            <span class="material-icons-outlined">engineering</span>
+          </span>
+          <span>Technicians</span>
+        </div>
+
         <div class="nav-item ${activePage === 'plans' ? 'active' : ''}" data-page="plans">
           <span class="nav-icon-badge" style="--icon-color: var(--accent-cyan); --icon-bg: rgba(6,182,212,0.12);">
             <span class="material-icons-outlined">router</span>

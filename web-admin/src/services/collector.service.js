@@ -1,4 +1,4 @@
-import { databases, DATABASE_ID, COLLECTIONS, ID, Query } from '../config/appwrite.js';
+import { databases, COLLECTIONS, DATABASE_ID, ID, Query, Permission, Role } from '../config/appwrite.js';
 
 export const CollectorService = {
   /**
@@ -10,7 +10,7 @@ export const CollectorService = {
         DATABASE_ID,
         COLLECTIONS.USERS_PROFILE,
         [
-          Query.equal('role', 'collector'),
+          Query.equal('role', ['collector', 'technician']),
           Query.limit(limit),
           Query.offset(offset),
           Query.orderDesc('$createdAt'),
@@ -33,8 +33,7 @@ export const CollectorService = {
         ID.unique(),
         {
           ...data,
-          role: 'collector',
-          createdAt: new Date().toISOString(),
+          role: data.role || 'collector',
         }
       );
     } catch (error) {
@@ -97,7 +96,7 @@ export const CollectorService = {
       const response = await databases.listDocuments(
         DATABASE_ID,
         COLLECTIONS.USERS_PROFILE,
-        [Query.equal('role', 'collector'), Query.limit(1)]
+        [Query.equal('role', ['collector', 'technician']), Query.limit(1)]
       );
       return response.total;
     } catch (error) {

@@ -214,6 +214,12 @@
   background: var(--bg-input-focus);
 }
 
+.form-select option {
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 10px;
+}
+
 /* ====================== STATUS BADGES ====================== */
 .badge {
   padding: 6px 14px;

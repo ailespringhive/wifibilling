@@ -1,12 +1,12 @@
-import { Client, Account, Databases, ID, Query } from 'appwrite';
+import { Client, Account, Databases, ID, Query, Permission, Role } from 'appwrite';
 
 // ============================================================
 // APPWRITE CONFIGURATION
-// Replace these with your actual Appwrite project credentials
+// Reads from backend/.env via Vite's envDir
 // ============================================================
-const APPWRITE_ENDPOINT = 'https://appwrite.springhive.co/v1';
-const APPWRITE_PROJECT_ID = '69c4840a0022d6824d83';
-const APPWRITE_DATABASE_ID = 'wifi_billing_db';
+const APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT;
+const APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+const APPWRITE_DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 
 // Collection IDs
 export const COLLECTIONS = {
@@ -27,5 +27,5 @@ client
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const DATABASE_ID = APPWRITE_DATABASE_ID;
-export { ID, Query };
+export { ID, Query, Permission, Role };
 export default client;
