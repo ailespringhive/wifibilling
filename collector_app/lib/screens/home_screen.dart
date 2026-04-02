@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/billing_service.dart';
 import '../services/customer_service.dart';
-import '../models/billing.dart';
 import '../models/user_profile.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
@@ -25,7 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _unpaidCount = 0;
   int _paidTodayCount = 0;
   double _totalCollected = 0;
-  List<Billing> _recentBillings = [];
+  
+  Map<String, double> _monthlyCollected = {};
 
   @override
   void initState() {
@@ -52,20 +52,28 @@ class _HomeScreenState extends State<HomeScreen> {
         return b.paidDate!.startsWith(today) && b.isPaid;
       }).toList();
 
-      final currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
-      final collected = billings
-          .where((b) =>
-              b.isPaid &&
-              b.billingMonth == currentMonth)
-          .fold<double>(0, (sum, b) => sum + b.amount);
+      final currentMonth = DateFormat('MMMM yyyy').format(DateTime.now());
+      double collected = 0;
+      final Map<String, double> monthlySums = {};
+
+      for (var b in billings) {
+        if (b.isPaid) {
+          final amt = (b.amountPaid != null && b.amountPaid! > 0) ? b.amountPaid! : b.amount;
+          if (b.billingMonth == currentMonth) collected += amt;
+
+          final monthKey = b.billingMonth;
+          if (monthKey.isNotEmpty) {
+            monthlySums[monthKey] = (monthlySums[monthKey] ?? 0) + amt;
+          }
+        }
+      }
 
       setState(() {
         _totalAssigned = customers.length;
         _unpaidCount = counts['not_yet_paid'] ?? 0;
         _paidTodayCount = paidToday.length;
         _totalCollected = collected;
-        _recentBillings =
-            billings.where((b) => !b.isPaid).take(5).toList();
+        _monthlyCollected = monthlySums;
         _isLoading = false;
       });
     } catch (e) {
@@ -96,11 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildStatsGrid(),
             const SizedBox(height: 28),
 
-            // ── Pending Collections ──
+            // ── Monthly Collections Chart ──
             Row(
               children: [
                 Text(
-                  'Pending Collections',
+                  'Monthly Progress',
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -108,36 +116,118 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const Spacer(),
-                if (_recentBillings.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accentAmber.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${_recentBillings.length} pending',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.accentAmber,
-                      ),
-                    ),
-                  ),
+                const Icon(Icons.bar_chart_rounded, color: AppTheme.accentPurple, size: 20),
               ],
             ),
-            const SizedBox(height: 12),
-            _isLoading
-                ? _buildShimmer()
-                : _recentBillings.isEmpty
-                    ? _buildEmptyPending()
-                    : Column(
-                        children: _recentBillings
-                            .map((b) => _buildPendingCard(b))
-                            .toList(),
-                      ),
+            const SizedBox(height: 16),
+            _isLoading ? _buildShimmer() : _buildMonthlyChart(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMonthlyChart() {
+    if (_monthlyCollected.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(40),
+        decoration: AppTheme.glassCard(radius: 16),
+        child: Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppTheme.accentPurple.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.show_chart_rounded, size: 28, color: AppTheme.accentPurple),
+            ),
+            const SizedBox(height: 16),
+            Text('No collection data', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+            const SizedBox(height: 4),
+            Text('Completed collections will appear here as a chart.', textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textMuted)),
+          ],
+        ),
+      );
+    }
+
+    // Sort by recent months. Note: Month format like "April 2026".
+    var monthsList = _monthlyCollected.keys.toList();
+    monthsList.sort((a, b) {
+      // Basic fallback sort, parsing "MMMM yyyy" if possible
+      try {
+        final dA = DateFormat('MMMM yyyy').parse(a);
+        final dB = DateFormat('MMMM yyyy').parse(b);
+        return dA.compareTo(dB);
+      } catch (_) {
+        return a.compareTo(b);
+      }
+    });
+
+    final recentMonths = monthsList.reversed.take(6).toList().reversed.toList();
+
+    double maxAmount = 10;
+    for (var m in recentMonths) {
+      if (_monthlyCollected[m]! > maxAmount) maxAmount = _monthlyCollected[m]!;
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+      decoration: AppTheme.glassCard(radius: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '₱${NumberFormat('#,##0').format(recentMonths.map((e)=>_monthlyCollected[e]!).fold(0.0,(a,b)=>a+b))}',
+            style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -1),
+          ),
+          Text('Collected across last ${recentMonths.length} months', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
+          const SizedBox(height: 32),
+          
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: recentMonths.map((month) {
+              final amount = _monthlyCollected[month]!;
+              final heightRatio = amount / maxAmount;
+              
+              String shortName = month;
+              if (month.contains(' ')) shortName = month.split(' ')[0].substring(0, 3);
+              
+              return Tooltip(
+                message: '$month: ₱${NumberFormat('#,##0').format(amount)}',
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: 120 * heightRatio + 8, // base height 8 for 0
+                      width: 28,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF38BDF8), Color(0xFF818CF8)],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          )
+                        ]
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(shortName, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textMuted)),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -297,91 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPendingCard(Billing billing) {
-    final statusColor = AppTheme.statusColor(billing.paymentStatus);
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: AppTheme.glassCard(radius: 14),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: statusColor.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              '₱',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: statusColor,
-              ),
-            ),
-          ),
-        ),
-        title: Text(
-          billing.customerName ?? billing.customerId.substring(0, 12),
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
-          ),
-        ),
-        subtitle: Text(
-          '${billing.billingMonth} · ₱${NumberFormat('#,##0').format(billing.amount)}',
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            color: AppTheme.textMuted,
-          ),
-        ),
-        trailing: AppTheme.statusBadge(billing.paymentStatus, billing.statusLabel),
-      ),
-    );
-  }
 
-  Widget _buildEmptyPending() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(40),
-      decoration: AppTheme.glassCard(),
-      child: Column(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppTheme.accentEmerald.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.check_circle_outline_rounded,
-                size: 28, color: AppTheme.accentEmerald),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'All caught up!',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'No pending collections right now.',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppTheme.textMuted,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildShimmer() {
     return Column(

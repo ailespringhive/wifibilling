@@ -10,6 +10,7 @@ import 'screens/home_screen.dart';
 import 'screens/customers_screen.dart';
 import 'screens/collection_history_screen.dart';
 import 'screens/customer_detail_screen.dart';
+import 'screens/receipt_preview_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'services/notification_service.dart';
@@ -50,6 +51,7 @@ class CollectorApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const MainShell(),
           '/customer-detail': (context) => const CustomerDetailScreen(),
+          '/receipt-preview': (context) => const ReceiptPreviewScreen(),
           '/profile': (context) => const ProfileScreen(),
         },
       ),

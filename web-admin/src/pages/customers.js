@@ -27,13 +27,12 @@ export function renderCustomersPage() {
             <th>Customer</th>
             <th>Phone</th>
             <th>Plan</th>
-            <th>Assigned Collector</th>
             <th>Address</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="customers-tbody">
-          ${skeletonRows(6, 6)}
+          ${skeletonRows(6, 5)}
         </tbody>
       </table>
     </div>
@@ -82,33 +81,31 @@ export function renderCustomersPage() {
                 </select>
               </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Assign Collector *</label>
-              <select class="form-input" id="cust-collector" required>
-                <option value="" disabled selected>Select a collector</option>
-              </select>
-            </div>
+
 
             <div class="form-section-title">
-              <span class="material-icons-outlined">router</span> WiFi Equipment
+              <span class="material-icons-outlined">router</span> WiFi Facilities
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">WiFi Port</label>
-                <input type="text" class="form-input" id="cust-wifiPort" placeholder="e.g. Port 3, Slot 2">
+                <label class="form-label">Nutbox</label>
+                <select class="form-input" id="cust-nutbox">
+                  <option value="" disabled selected>Select nutbox</option>
+                  <option value="NB-01">NB-01</option>
+                  <option value="NB-02">NB-02</option>
+                  <option value="NB-03">NB-03</option>
+                  <option value="NB-04">NB-04</option>
+                  <option value="NB-05">NB-05</option>
+                  <option value="NB-06">NB-06</option>
+                  <option value="NB-07">NB-07</option>
+                  <option value="NB-08">NB-08</option>
+                  <option value="NB-09">NB-09</option>
+                  <option value="NB-10">NB-10</option>
+                </select>
               </div>
               <div class="form-group">
-                <label class="form-label">WiFi Type</label>
-                <select class="form-input" id="cust-wifiType">
-                  <option value="" disabled selected>Select WiFi type</option>
-                  <option value="Fiber">Fiber (FTTH)</option>
-                  <option value="DSL">DSL</option>
-                  <option value="Cable">Cable</option>
-                  <option value="Fixed Wireless">Fixed Wireless</option>
-                  <option value="Satellite">Satellite</option>
-                  <option value="LTE/5G">LTE / 5G</option>
-                  <option value="Other">Other</option>
-                </select>
+                <label class="form-label">Port</label>
+                <input type="text" class="form-input" id="cust-wifiPort" placeholder="e.g. Port 3">
               </div>
             </div>
 
@@ -286,7 +283,6 @@ export function initCustomersPage(services, navigateFn) {
   }
 
   async function loadCollectors() {
-    const custSelect = document.getElementById('cust-collector');
     const techSelect = document.getElementById('repair-technician');
     try {
       const response = await services.collector.getAll(50, 0);
@@ -297,9 +293,6 @@ export function initCustomersPage(services, navigateFn) {
         { $id: 'col2', id: 'col2', firstName: 'Fernando', lastName: 'Aquino', userId: 'col_usr2', role: 'technician' },
       ];
     }
-    const validCollectors = allCollectors.filter(c => c.role === 'collector');
-    custSelect.innerHTML = '<option value="" disabled selected>Select a collector</option>' +
-      validCollectors.map(c => `<option value="${c.$id || c.id}">${c.firstName || ''} ${c.lastName || ''}</option>`).join('');
 
     const technicians = allCollectors.filter(c => c.role === 'technician');
     if (techSelect) {
@@ -327,7 +320,7 @@ export function initCustomersPage(services, navigateFn) {
     document.getElementById('customer-modal-title').textContent = 'Add New Customer';
     document.getElementById('customer-form').reset();
     document.getElementById('customer-doc-id').value = '';
-    document.getElementById('cust-collector').value = '';
+
     // Reset image preview
     document.getElementById('cust-image-thumb').style.display = 'none';
     document.getElementById('cust-image-placeholder').style.display = 'block';
@@ -418,7 +411,6 @@ export function initCustomersPage(services, navigateFn) {
       return;
     }
 
-    const collectorDocId = document.getElementById('cust-collector').value;
     const planId = document.getElementById('cust-plan').value;
 
     const data = {
@@ -427,8 +419,8 @@ export function initCustomersPage(services, navigateFn) {
       lastName: document.getElementById('cust-lastName').value.trim(),
       phone: document.getElementById('cust-phone').value.trim(),
       planId: planId,
+      nutbox: document.getElementById('cust-nutbox').value,
       wifiPort: document.getElementById('cust-wifiPort').value.trim(),
-      wifiType: document.getElementById('cust-wifiType').value,
       profileImage: document.getElementById('cust-profileImage').value || '',
       address: document.getElementById('cust-address').value.trim(),
       barangay: document.getElementById('cust-barangay').value.trim(),
@@ -449,46 +441,20 @@ export function initCustomersPage(services, navigateFn) {
         await services.customer.update(docId, data);
         const customerName = `${data.firstName} ${data.lastName}`.trim();
 
-        // Update or create subscription with the assigned collector
+        // Update or create subscription (no collector assignment)
         const existingSub = customerSubscriptions[allCustomers.find(c => (c.$id || c.id) === docId)?.userId];
         if (existingSub) {
-          const oldCollectorId = existingSub.collectorId;
           await services.subscription.update(existingSub.$id || existingSub.id, {
-            collectorId: collectorDocId,
             planId: planId,
           });
-          
-          if (collectorDocId && oldCollectorId !== collectorDocId) {
-             await services.mobileNotification.send(
-               collectorDocId,
-               'New Customer Assigned',
-               `You have been assigned to collect from ${customerName}.`,
-               'assignment'
-             );
-          } else if (collectorDocId) {
-             await services.mobileNotification.send(
-               collectorDocId,
-               'Customer Info Updated',
-               `Information for ${customerName} was updated by admin.`,
-               'update'
-             );
-          }
         } else {
           const customer = allCustomers.find(c => (c.$id || c.id) === docId);
           if (customer) {
             await services.subscription.create({
               customerId: customer.userId,
               planId: planId,
-              collectorId: collectorDocId,
+              collectorId: '',
             });
-            if (collectorDocId) {
-               await services.mobileNotification.send(
-                 collectorDocId,
-                 'New Customer Assigned',
-                 `You have been assigned to collect from ${customerName}.`,
-                 'assignment'
-               );
-            }
           }
         }
         showToast('Customer updated successfully!', 'success');
@@ -496,27 +462,18 @@ export function initCustomersPage(services, navigateFn) {
         // Create new customer
         data.userId = 'usr_' + Date.now();
         const newCustomer = await services.customer.create(data);
-        const customerName = `${data.firstName} ${data.lastName}`.trim();
 
-        // Auto-create subscription with the selected collector
+        // Auto-create subscription (visible to all collectors)
         try {
           await services.subscription.create({
             customerId: data.userId,
             planId: planId,
-            collectorId: collectorDocId,
+            collectorId: '',
           });
-          if (collectorDocId) {
-             await services.mobileNotification.send(
-               collectorDocId,
-               'New Customer Assigned',
-               `You have been assigned to collect from ${customerName}.`,
-               'assignment'
-             );
-          }
         } catch (subErr) {
           console.warn('Subscription creation failed:', subErr);
         }
-        showToast('Customer added & collector assigned!', 'success');
+        showToast('Customer added successfully!', 'success');
       }
       closeModal('customer-modal');
       loadCustomers();
@@ -555,7 +512,7 @@ export function initCustomersPage(services, navigateFn) {
   function renderCustomerTable(customers) {
     const tbody = document.getElementById('customers-tbody');
     if (!customers || customers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6">
+      tbody.innerHTML = `<tr><td colspan="5">
         <div class="empty-state">
           <div class="empty-icon"><span class="material-icons-outlined" style="font-size:3rem;">people</span></div>
           <div class="empty-title">No customers yet</div>
@@ -566,9 +523,6 @@ export function initCustomersPage(services, navigateFn) {
     }
 
     tbody.innerHTML = customers.map(c => {
-      const collector = getCollectorForCustomer(c);
-      const collectorName = collector ? `${collector.firstName || ''} ${collector.lastName || ''}` : null;
-
       return `
       <tr>
         <td>
@@ -578,23 +532,12 @@ export function initCustomersPage(services, navigateFn) {
             </div>
             <div>
               <div style="color:var(--text-primary); font-weight:500;">${c.firstName || ''} ${c.lastName || ''}</div>
-              <div style="font-size:0.72rem; color:var(--text-muted);">${c.middleName ? c.middleName + ' • ' : ''}${c.barangay || ''}${c.wifiType ? ' • ' + c.wifiType : ''}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">${c.middleName ? c.middleName + ' • ' : ''}${c.barangay || ''}${c.nutbox ? ' • ' + c.nutbox : ''}</div>
             </div>
           </div>
         </td>
         <td>${c.phone || '—'}</td>
         <td>${(() => { const p = allPlans.find(x => (x.$id || x.id) === c.planId); return p ? p.name : '—'; })()}</td>
-        <td>
-          ${collectorName
-            ? `<div style="display:flex; align-items:center; gap:8px;">
-                <div class="avatar avatar-sm" style="width:24px; height:24px; font-size:0.6rem; background:linear-gradient(135deg, hsl(${hashCode(collectorName)},70%,50%), hsl(${hashCode(collectorName)+40},60%,40%));">
-                  ${getInitials(collector.firstName, collector.lastName)}
-                </div>
-                <span style="font-size:0.82rem; color:var(--text-primary);">${collectorName}</span>
-              </div>`
-            : `<span style="font-size:0.78rem; color:var(--accent-amber);">⚠ Unassigned</span>`
-          }
-        </td>
         <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
           <div style="font-size:0.85rem; color:var(--text-primary);">${[c.address, c.barangay, c.city].filter(Boolean).join(', ')}</div>
           ${c.latitude && c.longitude ? `<a href="https://www.google.com/maps?q=${c.latitude},${c.longitude}" target="_blank" style="font-size:0.75rem; color:var(--accent-blue); text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-top:4px;" onclick="event.stopPropagation();"><span class="material-icons-outlined" style="font-size:14px;">place</span>View Map</a>` : `<span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">No pinned location</span>`}
@@ -634,9 +577,7 @@ export function initCustomersPage(services, navigateFn) {
     const filtered = allCustomers.filter(c => {
       const plan = allPlans.find(x => (x.$id || x.id) === c.planId);
       const planName = plan ? plan.name : '';
-      const collector = getCollectorForCustomer(c);
-      const collectorName = collector ? `${collector.firstName} ${collector.lastName}` : '';
-      return `${c.firstName} ${c.middleName} ${c.lastName} ${c.phone} ${planName} ${collectorName} ${c.address} ${c.barangay} ${c.city}`
+      return `${c.firstName} ${c.middleName} ${c.lastName} ${c.phone} ${planName} ${c.address} ${c.barangay} ${c.city} ${c.nutbox || ''}`
         .toLowerCase().includes(query);
     });
     renderCustomerTable(filtered);
@@ -669,8 +610,8 @@ export function initCustomersPage(services, navigateFn) {
     document.getElementById('cust-lastName').value = c.lastName || '';
     document.getElementById('cust-phone').value = c.phone || '';
     document.getElementById('cust-plan').value = c.planId || '';
+    document.getElementById('cust-nutbox').value = c.nutbox || '';
     document.getElementById('cust-wifiPort').value = c.wifiPort || '';
-    document.getElementById('cust-wifiType').value = c.wifiType || '';
     document.getElementById('cust-profileImage').value = c.profileImage || '';
     document.getElementById('cust-address').value = c.address || '';
     document.getElementById('cust-barangay').value = c.barangay || '';
@@ -689,14 +630,7 @@ export function initCustomersPage(services, navigateFn) {
       placeholder.style.display = 'block';
     }
 
-    // Pre-select the assigned collector from subscription
-    const sub = customerSubscriptions[c.userId];
-    const collectorSelect = document.getElementById('cust-collector');
-    if (sub && sub.collectorId) {
-      collectorSelect.value = sub.collectorId;
-    } else {
-      collectorSelect.value = '';
-    }
+
 
     // Pre-fill location
     const lat = c.latitude || 0;
@@ -823,17 +757,51 @@ export function initCustomersPage(services, navigateFn) {
   });
 
   async function deleteCustomer(id) {
-    if (!confirm('Are you sure you want to delete this customer?')) return;
-    try {
-      await services.customer.delete(id);
-      showToast('Customer deleted', 'success');
-      loadCustomers();
-    } catch (error) {
-      // Demo mode — remove from local array
-      allCustomers = allCustomers.filter(c => (c.$id || c.id) !== id);
-      renderCustomerTable(allCustomers);
-      showToast('Customer removed', 'success');
-    }
+    const customer = allCustomers.find(c => (c.$id || c.id) === id);
+    const custName = customer ? `${customer.firstName || ''} ${customer.lastName || ''}`.trim() : id;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay active';
+    modal.style.zIndex = '500';
+    modal.innerHTML = `
+      <div class="modal" style="max-width:400px;">
+        <div class="modal-header">
+          <h3>Delete Customer</h3>
+          <button class="modal-close" id="close-cust-del">✕</button>
+        </div>
+        <div class="modal-body" style="text-align:center; padding:24px;">
+          <span class="material-icons-outlined" style="font-size:3rem; color:var(--accent-rose); display:block; margin-bottom:12px;">person_remove</span>
+          <p style="color:var(--text-primary); font-weight:600; margin-bottom:4px;">Delete this customer?</p>
+          <p style="color:var(--text-muted); font-size:0.85rem;">${custName}</p>
+          <p style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">This will permanently remove the customer and cannot be undone.</p>
+        </div>
+        <div class="modal-footer" style="justify-content:center; gap:12px;">
+          <button class="btn btn-ghost" id="cancel-cust-del">Cancel</button>
+          <button class="btn btn-primary" id="confirm-cust-del" style="background:var(--accent-rose); border-color:var(--accent-rose);">
+            <span class="material-icons-outlined" style="font-size:16px;">delete</span> Delete
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#close-cust-del').addEventListener('click', () => modal.remove());
+    modal.querySelector('#cancel-cust-del').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    modal.querySelector('#confirm-cust-del').addEventListener('click', async () => {
+      modal.remove();
+      try {
+        await services.customer.delete(id);
+        showToast('Customer deleted', 'success');
+        loadCustomers();
+      } catch (error) {
+        // Demo mode — remove from local array
+        allCustomers = allCustomers.filter(c => (c.$id || c.id) !== id);
+        renderCustomerTable(allCustomers);
+        showToast('Customer removed', 'success');
+      }
+    });
   }
 }
 

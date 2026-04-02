@@ -6,18 +6,17 @@ import '../models/subscription_model.dart';
 class CustomerService {
   final Databases _databases = AppwriteService().databases;
 
-  /// Get all customers assigned to this collector via subscriptions
+  /// Get all customers with active subscriptions (visible to all collectors)
   Future<List<UserProfile>> getAssignedCustomers(String collectorId) async {
     try {
-      // Step 1: Get subscriptions where collectorId matches
+      // Step 1: Get all active subscriptions (no collector filter)
       // ignore: deprecated_member_use
       final subsResponse = await _databases.listDocuments(
         databaseId: appwriteDatabaseId,
         collectionId: AppCollections.subscriptions,
         queries: [
-          Query.equal('collectorId', collectorId),
           Query.equal('status', 'active'),
-          Query.limit(100),
+          Query.limit(200),
         ],
       );
 
@@ -31,14 +30,13 @@ class CustomerService {
 
       // Step 3: Fetch customer profiles
       final List<UserProfile> customers = [];
-      // Fetch in batches if needed; Appwrite Query.equal supports arrays
       // ignore: deprecated_member_use
       final response = await _databases.listDocuments(
         databaseId: appwriteDatabaseId,
         collectionId: AppCollections.usersProfile,
         queries: [
           Query.equal('userId', customerIds),
-          Query.limit(100),
+          Query.limit(200),
         ],
       );
 
@@ -48,7 +46,7 @@ class CustomerService {
 
       return customers;
     } catch (e) {
-      throw Exception('Failed to load assigned customers: $e');
+      throw Exception('Failed to load customers: $e');
     }
   }
 

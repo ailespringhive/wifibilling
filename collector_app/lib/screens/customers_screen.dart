@@ -317,6 +317,29 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           ],
                         ],
                       ),
+                      if (billing != null && billing.dueDate != null && billing.dueDate!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.event_outlined, size: 13, color: AppTheme.accentAmber),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Due: ${() {
+                                try {
+                                  final d = DateTime.parse(billing.dueDate!);
+                                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                  return '${months[d.month - 1]} ${d.day}, ${d.year}';
+                                } catch(_) { return billing.dueDate!; }
+                              }()}',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.accentAmber,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

@@ -11,6 +11,7 @@ class Billing {
   final String notes;
   final String? customerName;
   final String? createdAt;
+  final double? amountPaid;
 
   Billing({
     required this.id,
@@ -25,6 +26,7 @@ class Billing {
     this.notes = '',
     this.customerName,
     this.createdAt,
+    this.amountPaid,
   });
 
   bool get isPaid => paymentStatus == 'already_paid';
@@ -58,6 +60,7 @@ class Billing {
       notes: json['notes'] ?? '',
       customerName: json['customerName'],
       createdAt: json['createdAt'] ?? json['\$createdAt'],
+      amountPaid: json['amountPaid'] != null ? (json['amountPaid'] as num).toDouble() : null,
     );
   }
 
@@ -73,6 +76,7 @@ class Billing {
       'collectedBy': collectedBy,
       'notes': notes,
       'customerName': customerName,
+      if (amountPaid != null) 'amountPaid': amountPaid,
     };
   }
 }

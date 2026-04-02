@@ -5,33 +5,33 @@ import '../models/billing.dart';
 class BillingService {
   final Databases _databases = AppwriteService().databases;
 
-  /// Get all billings for customers assigned to this collector
-  /// We first get subscription IDs where collectorId matches,
-  /// then get billings for those customer IDs.
   Future<List<Billing>> getAssignedBillings(String collectorId) async {
     try {
-      // Step 1: Get subscriptions assigned to this collector
+      // Step 1: Get customers assigned to this collector
       // ignore: deprecated_member_use
-      final subsResponse = await _databases.listDocuments(
+      final usersResponse = await _databases.listDocuments(
         databaseId: appwriteDatabaseId,
-        collectionId: AppCollections.subscriptions,
+        collectionId: AppCollections.usersProfile,
         queries: [
           Query.equal('collectorId', collectorId),
-          Query.limit(100),
+          Query.equal('role', 'customer'),
+          Query.limit(200),
         ],
       );
 
-      if (subsResponse.documents.isEmpty) return [];
+      if (usersResponse.documents.isEmpty) return [];
 
       // Step 2: Extract unique customer IDs
-      final customerIds = subsResponse.documents
-          .map((doc) => doc.data['customerId'] as String)
+      final customerIds = usersResponse.documents
+          .map((doc) => doc.data['userId'] as String)
+          .where((id) => id.isNotEmpty)
           .toSet()
           .toList();
 
+      if (customerIds.isEmpty) return [];
+
       // Step 3: Get billing records for those customers
       final List<Billing> allBillings = [];
-      // Appwrite Query.equal supports arrays for OR matching
       // ignore: deprecated_member_use
       final billingsResponse = await _databases.listDocuments(
         databaseId: appwriteDatabaseId,
@@ -80,6 +80,7 @@ class BillingService {
     String billingId,
     String status, {
     String? collectedBy,
+    double? amountPaid,
   }) async {
     try {
       final Map<String, dynamic> data = {
@@ -94,6 +95,10 @@ class BillingService {
         data['collectedBy'] = collectedBy;
       }
 
+      if (amountPaid != null) {
+        data['amountPaid'] = amountPaid;
+      }
+
       // ignore: deprecated_member_use
       await _databases.updateDocument(
         databaseId: appwriteDatabaseId,
@@ -102,6 +107,49 @@ class BillingService {
         data: data,
       );
     } catch (e) {
+      // If an unknown attribute error occurs, retry with minimal fields
+      final errMsg = e.toString().toLowerCase();
+      if (errMsg.contains('unknown attribute') || errMsg.contains('invalid document')) {
+        try {
+          final Map<String, dynamic> minimalData = {
+            'paymentStatus': status,
+          };
+          if (status == 'already_paid') {
+            minimalData['paidDate'] = DateTime.now().toIso8601String();
+          }
+          // Try adding collectedBy separately
+          try {
+            if (collectedBy != null) {
+              minimalData['collectedBy'] = collectedBy;
+            }
+          } catch (_) {}
+
+          // ignore: deprecated_member_use
+          await _databases.updateDocument(
+            databaseId: appwriteDatabaseId,
+            collectionId: AppCollections.billings,
+            documentId: billingId,
+            data: minimalData,
+          );
+          return;
+        } catch (retryErr) {
+          // Last resort: just update paymentStatus and paidDate
+          final Map<String, dynamic> basicData = {
+            'paymentStatus': status,
+          };
+          if (status == 'already_paid') {
+            basicData['paidDate'] = DateTime.now().toIso8601String();
+          }
+          // ignore: deprecated_member_use
+          await _databases.updateDocument(
+            databaseId: appwriteDatabaseId,
+            collectionId: AppCollections.billings,
+            documentId: billingId,
+            data: basicData,
+          );
+          return;
+        }
+      }
       throw Exception('Failed to update billing status: $e');
     }
   }

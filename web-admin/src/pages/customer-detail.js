@@ -147,27 +147,21 @@ export function initCustomerDetailPage(services, navigateFn, customerId) {
                   ${plan ? `<span class="badge badge-paid" style="font-size:0.7rem;">${plan.name}</span> ₱${(plan.monthlyRate || 0).toLocaleString()}/mo` : '—'}
                 </span>
               </li>
-              <li>
-                <span class="info-label">Assigned Collector</span>
-                <span class="info-value" style="color: ${collectorName ? 'var(--accent-emerald)' : 'var(--accent-amber)'};">
-                  ${collectorName ? `<span class="material-icons-outlined" style="font-size:14px; vertical-align:-2px;">person</span> ${collectorName}` : '⚠ Unassigned'}
-                </span>
-              </li>
               <li><span class="info-label">Customer ID</span><span class="info-value" style="font-size:0.75rem; font-family:monospace;">${customer.userId || '—'}</span></li>
               <li><span class="info-label">Registered</span><span class="info-value">${formatDate(customer.createdAt || customer.$createdAt)}</span></li>
             </ul>
           </div>
         </div>
 
-        <!-- WiFi Equipment Card -->
+        <!-- WiFi Facilities Card -->
         <div class="card glass-card">
           <div class="card-header">
-            <span class="card-title"><span class="material-icons-outlined" style="font-size:18px; vertical-align:-3px; margin-right:8px;">router</span>WiFi Equipment</span>
+            <span class="card-title"><span class="material-icons-outlined" style="font-size:18px; vertical-align:-3px; margin-right:8px;">router</span>WiFi Facilities</span>
           </div>
           <div class="card-body" style="padding:0;">
             <ul class="info-list">
-              <li><span class="info-label">WiFi Port</span><span class="info-value">${customer.wifiPort || '—'}</span></li>
-              <li><span class="info-label">WiFi Type</span><span class="info-value">${customer.wifiType || '—'}</span></li>
+              <li><span class="info-label">Nutbox</span><span class="info-value">${customer.nutbox || '—'}</span></li>
+              <li><span class="info-label">Port</span><span class="info-value">${customer.wifiPort || '—'}</span></li>
             </ul>
           </div>
         </div>
@@ -306,51 +300,36 @@ export function initCustomerDetailPage(services, navigateFn, customerId) {
                   ${allPlans.map(p => `<option value="${p.$id || p.id}" ${customer.planId === (p.$id || p.id) ? 'selected' : ''}>${p.name} — ₱${(p.monthlyRate || 0).toLocaleString()}/mo</option>`).join('')}
                 </select>
               </li>
-              <li>
-                <span class="info-label">Collector</span>
-                <select class="form-select form-input-inline" id="edit-collector">
-                  <option value="">— None —</option>
-                  ${allCollectors.filter(c => c.role === 'collector').map(c => `<option value="${c.$id || c.id}" ${customerSub && customerSub.collectorId === (c.$id || c.id) ? 'selected' : ''}>${c.firstName || ''} ${c.lastName || ''}</option>`).join('')}
-                </select>
-              </li>
-              <li>
-                <span class="info-label">WiFi Port</span>
-                <input type="text" class="form-input form-input-inline" id="edit-wifiPort" value="${customer.wifiPort || ''}">
-              </li>
-              <li>
-                <span class="info-label">WiFi Type</span>
-                <select class="form-select form-input-inline" id="edit-wifiType">
-                  <option value="" ${!customer.wifiType ? 'selected' : ''}>— None —</option>
-                  <option value="PPPoE" ${customer.wifiType === 'PPPoE' ? 'selected' : ''}>PPPoE</option>
-                  <option value="Static/Dynamic IP" ${customer.wifiType === 'Static/Dynamic IP' ? 'selected' : ''}>Static/Dynamic IP</option>
-                  <option value="Voucher" ${customer.wifiType === 'Voucher' ? 'selected' : ''}>Voucher</option>
-                  <option value="P2P/Antenna" ${customer.wifiType === 'P2P/Antenna' ? 'selected' : ''}>P2P/Antenna</option>
-                </select>
-              </li>
             </ul>
           </div>
         </div>
 
-        <!-- WiFi Equipment Card (Edit Mode) -->
+        <!-- WiFi Facilities Card (Edit Mode) -->
         <div class="card glass-card">
           <div class="card-header">
-            <span class="card-title"><span class="material-icons-outlined" style="font-size:18px; vertical-align:-3px; margin-right:8px;">edit</span>Edit WiFi Equipment</span>
+            <span class="card-title"><span class="material-icons-outlined" style="font-size:18px; vertical-align:-3px; margin-right:8px;">edit</span>Edit WiFi Facilities</span>
           </div>
           <div class="card-body" style="padding:0;">
             <ul class="info-list edit-mode">
               <li>
-                <span class="info-label">WiFi Port</span>
-                <input type="text" class="form-input form-input-inline" id="edit-wifiPort" value="${customer.wifiPort || ''}" placeholder="e.g. Port 3, Slot 2">
+                <span class="info-label">Nutbox</span>
+                <select class="form-select form-input-inline" id="edit-nutbox">
+                  <option value="" ${!customer.nutbox ? 'selected' : ''}>— None —</option>
+                  <option value="NB-01" ${customer.nutbox === 'NB-01' ? 'selected' : ''}>NB-01</option>
+                  <option value="NB-02" ${customer.nutbox === 'NB-02' ? 'selected' : ''}>NB-02</option>
+                  <option value="NB-03" ${customer.nutbox === 'NB-03' ? 'selected' : ''}>NB-03</option>
+                  <option value="NB-04" ${customer.nutbox === 'NB-04' ? 'selected' : ''}>NB-04</option>
+                  <option value="NB-05" ${customer.nutbox === 'NB-05' ? 'selected' : ''}>NB-05</option>
+                  <option value="NB-06" ${customer.nutbox === 'NB-06' ? 'selected' : ''}>NB-06</option>
+                  <option value="NB-07" ${customer.nutbox === 'NB-07' ? 'selected' : ''}>NB-07</option>
+                  <option value="NB-08" ${customer.nutbox === 'NB-08' ? 'selected' : ''}>NB-08</option>
+                  <option value="NB-09" ${customer.nutbox === 'NB-09' ? 'selected' : ''}>NB-09</option>
+                  <option value="NB-10" ${customer.nutbox === 'NB-10' ? 'selected' : ''}>NB-10</option>
+                </select>
               </li>
               <li>
-                <span class="info-label">WiFi Type</span>
-                <select class="form-select form-input-inline" id="edit-wifiType">
-                  <option value="" disabled ${!customer.wifiType ? 'selected' : ''}>Select WiFi type</option>
-                  <option value="PPPoE" ${customer.wifiType === 'PPPoE' ? 'selected' : ''}>PPPoE</option>
-                  <option value="Static/Dynamic IP" ${customer.wifiType === 'Static/Dynamic IP' ? 'selected' : ''}>Static/Dynamic IP</option>
-                  <option value="Voucher" ${customer.wifiType === 'Voucher' ? 'selected' : ''}>Voucher</option>
-                  <option value="P2P/Antenna" ${customer.wifiType === 'P2P/Antenna' ? 'selected' : ''}>P2P/Antenna</option>
-                </select>
+                <span class="info-label">Port</span>
+                <input type="text" class="form-input form-input-inline" id="edit-wifiPort" value="${customer.wifiPort || ''}" placeholder="e.g. Port 3">
               </li>
             </ul>
           </div>
@@ -413,54 +392,24 @@ export function initCustomerDetailPage(services, navigateFn, customerId) {
           city: document.getElementById('edit-city').value.trim(),
           province: document.getElementById('edit-province').value.trim(),
           wifiPort: document.getElementById('edit-wifiPort').value.trim(),
-          wifiType: document.getElementById('edit-wifiType').value,
+          nutbox: document.getElementById('edit-nutbox').value,
         };
-
-        const selectedCollectorId = document.getElementById('edit-collector').value || '';
 
         try {
           await services.customer.update(id, updatedData);
-          const customerName = `${updatedData.firstName} ${updatedData.lastName}`.trim();
           
-          // Also handle subscription/collector updating
+          // Update subscription plan (no collector assignment)
           if (customerSub) {
-            const oldCollectorId = customerSub.collectorId;
             await services.subscription.update(customerSub.$id, {
               planId: updatedData.planId,
-              collectorId: selectedCollectorId
             });
-            
-            if (selectedCollectorId && oldCollectorId !== selectedCollectorId) {
-              await services.mobileNotification.send(
-                selectedCollectorId,
-                'New Customer Assigned',
-                `You have been assigned to collect from ${customerName}.`,
-                'assignment'
-              );
-            } else if (selectedCollectorId) {
-              await services.mobileNotification.send(
-                selectedCollectorId,
-                'Customer Info Updated',
-                `Information for ${customerName} was updated by admin.`,
-                'update'
-              );
-            }
           } else {
             await services.subscription.create({
               customerId: customer.userId,
               planId: updatedData.planId,
-              collectorId: selectedCollectorId,
+              collectorId: '',
               status: 'active'
             });
-            
-            if (selectedCollectorId) {
-               await services.mobileNotification.send(
-                 selectedCollectorId,
-                 'New Customer Assigned',
-                 `You have been assigned to collect from ${customerName}.`,
-                 'assignment'
-               );
-            }
           }
 
           showToast('Customer updated successfully!', 'success');

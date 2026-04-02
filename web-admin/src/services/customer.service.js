@@ -46,16 +46,40 @@ export const CustomerService = {
    */
   async create(data) {
     try {
+      // Only send fields known to the Appwrite users_profile schema
+      const knownFields = [
+        'userId', 'firstName', 'middleName', 'lastName', 'phone', 'email',
+        'planId', 'wifiPort', 'wifiType', 'nutbox', 'profileImage',
+        'address', 'barangay', 'city', 'province',
+        'latitude', 'longitude', 'role'
+      ];
+      const cleanData = { role: 'customer' };
+      for (const key of knownFields) {
+        if (data[key] !== undefined && data[key] !== null && data[key] !== '') {
+          cleanData[key] = data[key];
+        }
+      }
+      // Always include these even if empty
+      cleanData.userId = data.userId || '';
+      cleanData.firstName = data.firstName || '';
+      cleanData.lastName = data.lastName || '';
+
       return await databases.createDocument(
         DATABASE_ID,
         COLLECTIONS.USERS_PROFILE,
         ID.unique(),
-        {
-          ...data,
-          role: 'customer',
-        }
+        cleanData
       );
     } catch (error) {
+      // If a field is unknown to Appwrite (e.g. nutbox not yet created), retry without it
+      if (error.message && error.message.includes('Unknown attribute')) {
+        const unknownField = error.message.match(/"(\w+)"/)?.[1];
+        if (unknownField && data[unknownField] !== undefined) {
+          console.warn(`Removing unknown field "${unknownField}" and retrying...`);
+          delete data[unknownField];
+          return await this.create(data);
+        }
+      }
       throw error;
     }
   },
@@ -65,13 +89,35 @@ export const CustomerService = {
    */
   async update(documentId, data) {
     try {
+      // Only send fields known to the Appwrite users_profile schema
+      const knownFields = [
+        'firstName', 'middleName', 'lastName', 'phone', 'email',
+        'planId', 'wifiPort', 'wifiType', 'nutbox', 'profileImage',
+        'address', 'barangay', 'city', 'province',
+        'latitude', 'longitude'
+      ];
+      const cleanData = {};
+      for (const key of knownFields) {
+        if (data[key] !== undefined) {
+          cleanData[key] = data[key];
+        }
+      }
       return await databases.updateDocument(
         DATABASE_ID,
         COLLECTIONS.USERS_PROFILE,
         documentId,
-        data
+        cleanData
       );
     } catch (error) {
+      // If a field is unknown, retry without it
+      if (error.message && error.message.includes('Unknown attribute')) {
+        const unknownField = error.message.match(/"(\w+)"/)?.[1];
+        if (unknownField && cleanData && cleanData[unknownField] !== undefined) {
+          console.warn(`Removing unknown field "${unknownField}" and retrying...`);
+          delete data[unknownField];
+          return await this.update(documentId, data);
+        }
+      }
       throw error;
     }
   },

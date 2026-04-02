@@ -61,4 +61,45 @@ class NotificationService {
       return 0;
     }
   }
+
+  // Mark all as read
+  Future<bool> markAllAsRead(String collectorId) async {
+    try {
+      final notifications = await getNotifications(collectorId);
+      for (var n in notifications) {
+        if (!n.isRead) await markAsRead(n.id);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Delete specific notifications
+  Future<bool> deleteNotifications(List<String> ids) async {
+    bool allSuccess = true;
+    for (var id in ids) {
+      try {
+        await _databases.deleteDocument(
+          databaseId: appwriteDatabaseId,
+          collectionId: AppCollections.mobileNotifications,
+          documentId: id,
+        );
+      } catch (e) {
+        allSuccess = false;
+        print('Error deleting notification: $e');
+      }
+    }
+    return allSuccess;
+  }
+
+  // Clear all notifications
+  Future<bool> clearAllNotifications(String collectorId) async {
+    try {
+      final notifications = await getNotifications(collectorId);
+      return await deleteNotifications(notifications.map((n) => n.id).toList());
+    } catch (_) {
+      return false;
+    }
+  }
 }

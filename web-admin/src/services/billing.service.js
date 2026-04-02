@@ -51,16 +51,34 @@ export const BillingService = {
    */
   async create(data) {
     try {
+      // Only send known billing fields
+      const knownFields = [
+        'customerId', 'customerName', 'subscriptionId', 'billingMonth',
+        'amount', 'dueDate', 'paymentStatus', 'paidDate', 'collectedBy',
+        'notes', 'amountPaid', 'createdAt'
+      ];
+      const cleanData = { createdAt: new Date().toISOString() };
+      for (const key of knownFields) {
+        if (data[key] !== undefined) {
+          cleanData[key] = data[key];
+        }
+      }
       return await databases.createDocument(
         DATABASE_ID,
         COLLECTIONS.BILLINGS,
         ID.unique(),
-        {
-          ...data,
-          createdAt: new Date().toISOString(),
-        }
+        cleanData
       );
     } catch (error) {
+      // If unknown attribute, retry without that field
+      if (error.message && error.message.includes('Unknown attribute')) {
+        const unknownField = error.message.match(/"(\w+)"/)?.[1];
+        if (unknownField && data[unknownField] !== undefined) {
+          console.warn(`Removing unknown billing field "${unknownField}" and retrying...`);
+          delete data[unknownField];
+          return await this.create(data);
+        }
+      }
       throw error;
     }
   },
@@ -133,23 +151,44 @@ export const BillingService = {
    */
   async generateMonthlyBilling(billingMonth) {
     try {
-      // Get all subscriptions locally and filter to avoid missing index errors
+      // Get all active subscriptions
       const subsResponse = await databases.listDocuments(
         DATABASE_ID,
         COLLECTIONS.SUBSCRIPTIONS,
-        [Query.limit(100)]
+        [Query.limit(200)]
       );
       const activeSubs = subsResponse.documents.filter(s => s.status === 'active');
 
+      // Get existing billings to avoid duplicates
       const billingsResponse = await databases.listDocuments(
         DATABASE_ID,
         COLLECTIONS.BILLINGS,
-        [Query.limit(100)]
+        [Query.limit(200)]
       );
+
+      // Get all REAL customer profiles (must have role=customer and a valid name)
+      const customersResponse = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.USERS_PROFILE,
+        [Query.equal('role', 'customer'), Query.limit(200)]
+      );
+      const customerMap = {};
+      (customersResponse.documents || []).forEach(c => {
+        const name = `${c.firstName || ''} ${c.lastName || ''}`.trim();
+        if (name) {
+          customerMap[c.userId] = name;
+        }
+      });
 
       const results = [];
       for (const sub of activeSubs) {
-        // Fallback or skip if plan missing
+        // SKIP subscriptions that don't have a matching customer profile
+        if (!customerMap[sub.customerId]) {
+          console.warn('Skipping orphaned subscription — no customer profile found for:', sub.customerId);
+          continue;
+        }
+
+        // Get plan rate
         let planRate = 0;
         try {
           const plan = await databases.getDocument(DATABASE_ID, COLLECTIONS.WIFI_PLANS, sub.planId);
@@ -158,16 +197,25 @@ export const BillingService = {
           console.warn("Could not find plan for sub", sub);
         }
 
-        const hasThisMonth = billingsResponse.documents.some(b => b.customerId === sub.customerId && b.billingMonth === billingMonth);
+        // Check if billing already exists for this customer+month
+        const hasThisMonth = billingsResponse.documents.some(
+          b => b.customerId === sub.customerId && b.billingMonth === billingMonth
+        );
 
         if (!hasThisMonth) {
+          const customerName = customerMap[sub.customerId];
+          
+          const dueDate = new Date();
+          dueDate.setMonth(dueDate.getMonth() + 1);
+          
           const billing = await this.create({
             customerId: sub.customerId,
+            customerName: customerName,
             subscriptionId: sub.$id,
             billingMonth: billingMonth,
             amount: planRate,
-            dueDate: new Date(billingMonth + '-15').toISOString(),
-            paymentStatus: 'unpaid',
+            dueDate: dueDate.toISOString(),
+            paymentStatus: 'not_yet_paid',
             paidDate: null,
             collectedBy: null,
             notes: '',

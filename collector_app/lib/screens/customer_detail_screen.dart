@@ -7,6 +7,8 @@ import '../services/billing_service.dart';
 import '../models/billing.dart';
 import '../models/user_profile.dart';
 import '../theme/app_theme.dart';
+import '../config/appwrite_config.dart';
+import 'package:appwrite/appwrite.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
   const CustomerDetailScreen({super.key});
@@ -49,7 +51,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   }
 
   Future<void> _updateBillingStatus(
-      Billing billing, String newStatus) async {
+      Billing billing, String newStatus, {double? amountPaid}) async {
     final auth = context.read<AuthService>();
     setState(() => _isUpdating = true);
 
@@ -58,7 +60,35 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         billing.id,
         newStatus,
         collectedBy: auth.collectorId,
+        amountPaid: amountPaid,
       );
+
+      // Notify admin
+      try {
+        final amt = amountPaid ?? billing.amount;
+        final statusWord = newStatus == 'already_paid' ? 'Paid' : 'Payment Confirmation';
+        final message = '${_customer!.fullName} submitted ₱${amt.toStringAsFixed(0)} ($statusWord)';
+
+        await AppwriteService().databases.createDocument(
+          databaseId: appwriteDatabaseId,
+          collectionId: AppCollections.notifications,
+          documentId: ID.unique(),
+          data: {
+            'title': 'Payment Update',
+            'message': message,
+            'type': 'status_update',
+            'technicianId': 'admin',
+            'isRead': false,
+          },
+          permissions: [
+            Permission.read(Role.any()),
+            Permission.update(Role.any()),
+            Permission.delete(Role.any()),
+          ],
+        );
+      } catch (e) {
+        print('Could not send admin notification: $e');
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,117 +126,166 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   }
 
   void _showStatusSheet(Billing billing) {
+    final amountController = TextEditingController(text: billing.amount.toStringAsFixed(0));
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: AppTheme.bgCard,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: const Border(
-            top: BorderSide(color: AppTheme.border),
-            left: BorderSide(color: AppTheme.border),
-            right: BorderSide(color: AppTheme.border),
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppTheme.bgCard,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: const Border(
+              top: BorderSide(color: AppTheme.border),
+              left: BorderSide(color: AppTheme.border),
+              right: BorderSide(color: AppTheme.border),
+            ),
           ),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppTheme.textMuted.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Update Payment Status',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${billing.billingMonth} · ₱${NumberFormat('#,##0').format(billing.amount)}',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: AppTheme.textMuted,
-              ),
-            ),
-            const SizedBox(height: 28),
-
-            // Mark as Paid button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: Container(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.accentEmerald, Color(0xFF10B981)],
-                  ),
+                  color: AppTheme.textMuted.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Update Payment Status',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${billing.billingMonth} · ₱${NumberFormat('#,##0').format(billing.amount)}',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: AppTheme.textMuted,
+                ),
+              ),
+              const SizedBox(height: 22),
+
+              // Amount input field
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.bgDark.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accentEmerald.withValues(alpha: 0.2),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                  border: Border.all(color: AppTheme.border),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Row(
+                  children: [
+                    Text('₱', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.accentEmerald)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: amountController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Enter amount',
+                          hintStyle: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 18),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () { amountController.text = billing.amount.toStringAsFixed(0); },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentBlue.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text('Default', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.accentBlue)),
+                      ),
                     ),
                   ],
                 ),
-                child: ElevatedButton.icon(
+              ),
+              const SizedBox(height: 8),
+              Text('Default plan rate: ₱${NumberFormat('#,##0').format(billing.amount)}', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+              const SizedBox(height: 22),
+
+              // Mark as Paid button
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppTheme.accentEmerald, Color(0xFF10B981)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.accentEmerald.withValues(alpha: 0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: _isUpdating
+                        ? null
+                        : () {
+                            final enteredAmount = double.tryParse(amountController.text) ?? billing.amount;
+                            Navigator.pop(ctx);
+                            _updateBillingStatus(billing, 'already_paid', amountPaid: enteredAmount);
+                          },
+                    icon: const Icon(Icons.check_circle_outlined, size: 20),
+                    label: Text('Mark as Paid',
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600, fontSize: 15)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Payment Confirmation button
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton.icon(
                   onPressed: _isUpdating
                       ? null
                       : () {
+                          final enteredAmount = double.tryParse(amountController.text) ?? billing.amount;
                           Navigator.pop(ctx);
-                          _updateBillingStatus(billing, 'already_paid');
+                          _updateBillingStatus(billing, 'payment_confirmation', amountPaid: enteredAmount);
                         },
-                  icon: const Icon(Icons.check_circle_outlined, size: 20),
-                  label: Text('Mark as Paid',
+                  icon: const Icon(Icons.pending_outlined, size: 20),
+                  label: Text('Payment Confirmation',
                       style: GoogleFonts.inter(
                           fontWeight: FontWeight.w600, fontSize: 15)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    foregroundColor: Colors.white,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.accentPurple,
+                    side: const BorderSide(color: AppTheme.accentPurple),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-
-            // Payment Confirmation button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton.icon(
-                onPressed: _isUpdating
-                    ? null
-                    : () {
-                        Navigator.pop(ctx);
-                        _updateBillingStatus(
-                            billing, 'payment_confirmation');
-                      },
-                icon: const Icon(Icons.pending_outlined, size: 20),
-                label: Text('Payment Confirmation',
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600, fontSize: 15)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.accentPurple,
-                  side: const BorderSide(color: AppTheme.accentPurple),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

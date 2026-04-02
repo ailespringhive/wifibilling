@@ -7,7 +7,7 @@ import './styles/components.css';
 import './styles/pages.css';
 
 // Services
-import { databases, DATABASE_ID, Query } from './config/appwrite.js';
+import client, { databases, DATABASE_ID, Query } from './config/appwrite.js';
 import { AuthService } from './services/auth.service.js';
 import { CustomerService } from './services/customer.service.js';
 import { BillingService } from './services/billing.service.js';
@@ -296,8 +296,20 @@ function navigateTo(page) {
         renderNotifications();
       }
     } catch (e) {
-      console.warn('Could not fetch repair notifications', e);
+      console.warn('Could not fetch appwrite notifications', e);
     }
+  }
+
+  // Set up realtime sync for new notifications
+  try {
+    client.subscribe(`databases.${DATABASE_ID}.collections.notifications.documents`, response => {
+      // Any new document triggers a re-fetch
+      if (response.events.includes('databases.*.collections.*.documents.*.create')) {
+        fetchRepairNotifs();
+      }
+    });
+  } catch (e) {
+    console.warn('Could not subscribe to realtime', e);
   }
 
   function renderNotifications() {
