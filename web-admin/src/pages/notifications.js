@@ -250,21 +250,57 @@ async function fetchRepairNotifications() {
     ]);
     const documents = res.documents || [];
     
+    // Batch fetch sender profiles
+    const senderIds = [...new Set(documents.map(d => d.technicianId || d.senderId || d.collectorId).filter(Boolean))];
+    const profileMap = {};
+    await Promise.allSettled(senderIds.map(async id => {
+      try {
+        const pRes = await databases.getDocument(DATABASE_ID, 'users_profile', id);
+        profileMap[id] = {
+          image: pRes.profileImage || null,
+          firstName: pRes.firstName || '',
+          lastName: pRes.lastName || '',
+        };
+      } catch (_) {}
+    }));
+
     // We get local copy so we don't regress read status while background updates run
     const localCopy = loadNotifications();
     
     return documents.map(doc => {
       const localMatch = localCopy.find(n => n.id === doc.$id);
       const isRead = (localMatch && localMatch.read) || (doc.isRead === true);
+      
+      const senderId = doc.technicianId || doc.senderId || doc.collectorId;
+      const senderProfile = senderId ? (profileMap[senderId] || null) : null;
+      let initials = null;
+      if (senderProfile && (senderProfile.firstName || senderProfile.lastName)) {
+        initials = ((senderProfile.firstName?.[0] || '') + (senderProfile.lastName?.[0] || '')).toUpperCase();
+      } else if (doc.message) {
+        const words = doc.message.replace(/[^a-zA-Z ]/g, "").split(' ').filter(Boolean);
+        if (words.length >= 2) initials = (words[0][0] + words[1][0]).toUpperCase();
+      }
+
+      let icon = 'engineering';
+      let color = 'var(--accent-blue)';
+      if (doc.title?.includes('Payment Received') || doc.title?.includes('Payment')) {
+        icon = 'payments';
+        color = 'var(--accent-emerald)';
+      } else if (doc.title?.includes('Resolved')) {
+        icon = 'check_circle';
+        color = 'var(--accent-emerald)';
+      }
 
       return {
         id: doc.$id,
-        icon: doc.title?.includes('Resolved') ? 'check_circle' : 'engineering',
-        color: doc.title?.includes('Resolved') ? 'var(--accent-emerald)' : 'var(--accent-blue)',
+        icon,
+        color,
         text: `<strong>${doc.title}</strong> — ${doc.message}`,
         time: _timeAgo(doc.$createdAt),
         read: isRead,
         fromAppwrite: true,
+        senderImage: senderProfile?.image || null,
+        initials: initials,
       };
     });
   } catch (e) {
@@ -362,12 +398,20 @@ export async function initNotificationsPage() {
       if (viewMoreContainer) viewMoreContainer.style.display = 'none';
     }
 
-    container.innerHTML = itemsToShow.map(n => `
+    container.innerHTML = itemsToShow.map(n => {
+      let avatarHtml;
+      if (n.senderImage) {
+        avatarHtml = `<img src="${n.senderImage}" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid ${n.color || 'var(--bg-secondary)'}; background: var(--bg-secondary);" />`;
+      } else if (n.initials) {
+        avatarHtml = `<div style="width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg, ${n.color || 'var(--accent-blue)'}, var(--bg-secondary)); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; border:2px solid rgba(255,255,255,0.1); text-shadow: 0 1px 3px rgba(0,0,0,0.5);">${n.initials}</div>`;
+      } else {
+        avatarHtml = `<div class="full-notif-icon"><span class="material-icons-outlined" style="color:${n.color || 'var(--text-muted)'}; font-size:20px;">${n.icon || 'notifications'}</span></div>`;
+      }
+
+      return `
       <div class="full-notif-item ${n.read ? '' : 'unread'}" data-notif-id="${n.id}">
         <input type="checkbox" class="notif-checkbox" data-checkbox-id="${n.id}" ${selectedIds.has(String(n.id)) ? 'checked' : ''} tabindex="-1">
-        <div class="full-notif-icon">
-          <span class="material-icons-outlined" style="color:${n.color}; font-size:20px;">${n.icon}</span>
-        </div>
+        <div style="flex-shrink:0; margin-right:14px; background:transparent;">${avatarHtml}</div>
         <div class="full-notif-content">
           <div class="full-notif-text">${n.text}</div>
           <div class="full-notif-meta">
@@ -380,7 +424,8 @@ export async function initNotificationsPage() {
           <span class="material-icons-outlined" style="font-size:16px;">close</span>
         </button>
       </div>
-    `).join('');
+      `;
+    }).join('');
 
     // Item Interaction
     container.querySelectorAll('.full-notif-item').forEach(item => {
