@@ -323,7 +323,11 @@ function navigateTo(page) {
       await Promise.allSettled(senderIds.map(async id => {
         try {
           const pRes = await databases.getDocument(DATABASE_ID, 'users_profile', id);
-          profileMap[id] = pRes.profileImage || null;
+          profileMap[id] = {
+            image: pRes.profileImage || null,
+            firstName: pRes.firstName || '',
+            lastName: pRes.lastName || '',
+          };
         } catch (_) {}
       }));
 
@@ -338,7 +342,16 @@ function navigateTo(page) {
         const localMatch = notifications.find(n => n.id === doc.$id);
         const isRead = (localMatch && localMatch.read) || (doc.isRead === true);
         const senderId = doc.senderId || doc.collectorId || doc.technicianId;
-        const senderImage = senderId ? (profileMap[senderId] || null) : null;
+        const senderProfile = senderId ? (profileMap[senderId] || null) : null;
+        
+        let initials = null;
+        if (senderProfile && (senderProfile.firstName || senderProfile.lastName)) {
+          initials = ((senderProfile.firstName?.[0] || '') + (senderProfile.lastName?.[0] || '')).toUpperCase();
+        } else if (doc.message) {
+          // Fallback parsing from natural language message e.g. "Jany Calida collected..."
+          const words = doc.message.replace(/[^a-zA-Z ]/g, "").split(' ').filter(Boolean);
+          if (words.length >= 2) initials = (words[0][0] + words[1][0]).toUpperCase();
+        }
 
         // Determine icon and color based on notification title
         let icon = 'engineering';
@@ -359,7 +372,8 @@ function navigateTo(page) {
           time: timeStr,
           read: isRead,
           fromAppwrite: true,
-          senderImage,
+          senderImage: senderProfile?.image || null,
+          initials: initials,
         };
       });
       if (repairNotifs.length > 0) {
@@ -398,9 +412,15 @@ function navigateTo(page) {
     }
 
     notifList.innerHTML = notifications.map(n => {
-      const avatarHtml = n.senderImage
-        ? `<img src="${n.senderImage}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid var(--accent-blue);" />`
-        : `<div class="notif-item-icon" style="color:${n.color};"><span class="material-icons-outlined">${n.icon}</span></div>`;
+      let avatarHtml;
+      if (n.senderImage) {
+        avatarHtml = `<img src="${n.senderImage}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid ${n.color}; background: var(--bg-secondary);" />`;
+      } else if (n.initials) {
+        avatarHtml = `<div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, ${n.color}, var(--bg-secondary)); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px; flex-shrink:0; border:2px solid rgba(255,255,255,0.1); text-shadow: 0 1px 3px rgba(0,0,0,0.5);">${n.initials}</div>`;
+      } else {
+        avatarHtml = `<div class="notif-item-icon" style="color:${n.color};"><span class="material-icons-outlined">${n.icon}</span></div>`;
+      }
+
       return `
       <div class="notif-item ${n.read ? '' : 'unread'}" data-notif-id="${n.id}">
         ${avatarHtml}
