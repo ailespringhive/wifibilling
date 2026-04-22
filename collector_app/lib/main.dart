@@ -265,115 +265,104 @@ class _MainShellState extends State<MainShell> {
         duration: const Duration(milliseconds: 200),
         child: _screens[_currentIndex],
       ),
-      bottomNavigationBar: LayoutBuilder(
-        builder: (context, constraints) {
-          final totalWidth = constraints.maxWidth;
-          final itemWidth = totalWidth / 5;
-          const bubbleWidth = 64.0;
-          final leftPos = (itemWidth * _currentIndex) + (itemWidth - bubbleWidth) / 2;
-          final bottomPadding = MediaQuery.of(context).padding.bottom;
-
-          return Container(
-            height: 70 + bottomPadding,
-            color: AppTheme.bgDark, // matches body background so gap looks transparent
-            child: Stack(
-              clipBehavior: Clip.none,
+      bottomNavigationBar: Container(
+        height: 70 + MediaQuery.of(context).padding.bottom,
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Dynamic sliding magic indicator bubble
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeOutBack,
+              top: -15, // Pops up over the edge
+              left: (MediaQuery.of(context).size.width / 5) * _currentIndex + ((MediaQuery.of(context).size.width / 5) - 56) / 2,
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF27272A),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF27272A).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // The row of icons over the sliding indicator
+            Row(
               children: [
-                // 1. The White Bar Background
-                Positioned(
-                  left: 0, right: 0, bottom: 0,
-                  height: 70 + bottomPadding,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppTheme.bgCard,
-                      border: const Border(top: BorderSide(color: AppTheme.border, width: 1)),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))
-                      ],
-                    ),
-                  ),
-                ),
-                
-                // 2. The Sliding Magic Indicator Bubble
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutBack,
-                  bottom: 30 + bottomPadding, // Lowered slightly so it cuts into the bar deeper
-                  left: leftPos,
-                  child: Container(
-                    width: bubbleWidth,
-                    height: bubbleWidth,
-                    decoration: BoxDecoration(
-                      color: AppTheme.bgCard, // WHITE! Same as the nav bar
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.bgDark, // LIGHT GREY body background to create the U-shaped cutout illusion!
-                        width: 8, // Thicker gap
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 3. The Interactive Icons Row
-                Positioned(
-                  left: 0, right: 0, bottom: 0,
-                  height: 70 + bottomPadding,
-                  child: SafeArea(
-                    bottom: true,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildNavItem(0, AppIcons.homeSvg),
-                        _buildNavItem(1, AppIcons.customerSvg),
-                        _buildNavItem(2, AppIcons.billSvg),
-                        _buildNavItem(3, AppIcons.receiptSvg),
-                        _buildNavItem(4, AppIcons.profileSvg),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildNavItem(0, AppIcons.homeSvg),
+                _buildNavItem(1, AppIcons.customerSvg),
+                _buildNavItem(2, AppIcons.billSvg, size: 28),
+                _buildNavItem(3, AppIcons.receiptSvg),
+                _buildNavItem(4, AppIcons.profileSvg),
               ],
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
 
 
-  Widget _buildNavItem(int index, String svgStr) {
+  Widget _buildNavItem(int index, String svgStr, {double size = 26}) {
     final isActive = _currentIndex == index;
-    // The inactive icons sit in the White nav bar, so they are grey.
-    // The active icon sits in the White bubble, so it becomes blue!
     final color = isActive ? Colors.white : Colors.grey.shade400;
     
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _currentIndex = index),
         behavior: HitTestBehavior.opaque,
-        child: SizedBox(
+        child: Container(
           height: 70,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutBack,
-            transform: Matrix4.identity()..translate(0.0, isActive ? -30.0 : 0.0), // Slides up directly into the U-shaped cutout!
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: EdgeInsets.all(isActive ? 8 : 0),
-                  decoration: BoxDecoration(
-                    color: isActive ? AppTheme.accentBlue : Colors.transparent, // Solid blue background when active
-                    shape: BoxShape.circle,
-                    boxShadow: isActive
-                        ? [BoxShadow(color: AppTheme.accentBlue.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 4))]
-                        : [],
+          color: Colors.transparent,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              // Icon translates up when active
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOutBack,
+                top: isActive ? 2 : 22, 
+                child: AppIcons.icon(svgStr, color: color, size: size),
+              ),
+              // Label slides up when active
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOutBack,
+                bottom: isActive ? 10 : -20,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isActive ? 1.0 : 0.0,
+                  child: Text(
+                    _titles[index],
+                    style: const TextStyle(
+                      color: Color(0xFF27272A),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                    ),
                   ),
-                  child: AppIcons.icon(svgStr, color: color, size: 24),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
