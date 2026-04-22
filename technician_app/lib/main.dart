@@ -420,8 +420,8 @@ class _MainShellState extends State<MainShell> {
         color: Colors.white,
         buttonBackgroundColor: Colors.white,
         backgroundColor: Colors.transparent,
-        animationCurve: Curves.easeOutBack,
-        animationDuration: const Duration(milliseconds: 350),
+        animationCurve: Curves.easeInOutCubic,
+        animationDuration: const Duration(milliseconds: 400),
         onTap: (index) {
           if (index == 2) {
             // They tapped the Add Customer icon
