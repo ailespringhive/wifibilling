@@ -203,6 +203,7 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: AppTheme.bgDark,
       appBar: (_currentIndex == 0 || _currentIndex == 4) ? null : AppBar(
         automaticallyImplyLeading: false,
@@ -278,7 +279,7 @@ class _MainShellState extends State<MainShell> {
         ],
         color: Colors.white,
         buttonBackgroundColor: Colors.white,
-        backgroundColor: AppTheme.bgDark,
+        backgroundColor: Colors.transparent,
         animationCurve: Curves.easeOutBack,
         animationDuration: const Duration(milliseconds: 350),
         onTap: (index) {
