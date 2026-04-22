@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>5 Pop-up Animation Concepts</title>
+  <style>
+    body {
+      margin: 0; padding: 20px; font-family: 'Inter', sans-serif;
+      background: #0f172a; color: white;
+      display: flex; flex-direction: column; gap: 40px; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+    h2 { font-size: 1.5rem; text-align: center; }
+    .grid { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
+    
+    /* Container for each demo */
+    .demo-box {
+      width: 250px; height: 350px; background: #1e293b; border-radius: 20px;
+      position: relative; overflow: hidden; border: 1px solid #334155;
+      display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px;
+    }
+
+    .title { position: absolute; top: 10px; width: 100%; text-align: center; font-size: 14px; font-weight: bold; color: #94a3b8; }
+
+    /* FAB Button */
+    .fab {
+      width: 56px; height: 56px; border-radius: 50%; background: #3b82f6; 
+      display: flex; align-items: center; justify-content: center; color: white;
+      font-size: 24px; font-weight: bold; cursor: pointer; z-index: 10;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fab.active { transform: rotate(45deg); background: #f43f5e; }
+
+    /* Base Menu Item */
+    .menu-item {
+      width: 44px; height: 44px; border-radius: 50%; background: #475569;
+      position: absolute; display: flex; align-items: center; justify-content: center;
+      bottom: 26px; /* behind FAB */
+      opacity: 0; pointer-events: none; transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-size: 14px;
+    }
+
+    /* 1. Linear Vertical Staggered */
+    .demo-1 .fab.active ~ .m1 { transform: translateY(-70px); opacity: 1; transition-delay: 0.05s; }
+    .demo-1 .fab.active ~ .m2 { transform: translateY(-130px); opacity: 1; transition-delay: 0.1s; }
+    .demo-1 .fab.active ~ .m3 { transform: translateY(-190px); opacity: 1; transition-delay: 0.15s; }
+
+    /* 2. Radial / Arch */
+    .demo-2 .fab.active ~ .m1 { transform: translate(-70px, -20px); opacity: 1; transition-delay: 0.05s; }
+    .demo-2 .fab.active ~ .m2 { transform: translate(-50px, -70px); opacity: 1; transition-delay: 0.1s; }
+    .demo-2 .fab.active ~ .m3 { transform: translate(0, -95px); opacity: 1; transition-delay: 0.15s; }
+    .demo-2 .fab.active ~ .m4 { transform: translate(50px, -70px); opacity: 1; transition-delay: 0.2s; }
+    .demo-2 .fab.active ~ .m5 { transform: translate(70px, -20px); opacity: 1; transition-delay: 0.25s; }
+
+    /* 3. Bouncy Elastic Vertical */
+    .demo-3 .menu-item { transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); } /* Elastic bounce curve */
+    .demo-3 .fab.active ~ .m1 { transform: translateY(-70px); opacity: 1; transition-delay: 0s; }
+    .demo-3 .fab.active ~ .m2 { transform: translateY(-130px); opacity: 1; transition-delay: 0.05s; }
+    .demo-3 .fab.active ~ .m3 { transform: translateY(-190px); opacity: 1; transition-delay: 0.1s; }
+
+    /* 4. Horizontal Spread */
+    .demo-4 .fab.active ~ .m1 { transform: translateX(-60px); opacity: 1; }
+    .demo-4 .fab.active ~ .m2 { transform: translateX(-120px); opacity: 1; }
+    .demo-4 .fab.active ~ .m3 { transform: translateX(60px); opacity: 1; }
+    .demo-4 .fab.active ~ .m4 { transform: translateX(120px); opacity: 1; }
+
+    /* 5. Fade & Scale (In-place bloop) */
+    .demo-5 .menu-item { bottom: 90px; transform: scale(0.5); }
+    .demo-5 .fab.active ~ .m1 { transform: scale(1) translateX(-60px); opacity: 1; transition-delay: 0.1s; }
+    .demo-5 .fab.active ~ .m2 { transform: scale(1) translateX(0); opacity: 1; transition-delay: 0.2s; }
+    .demo-5 .fab.active ~ .m3 { transform: scale(1) translateX(60px); opacity: 1; transition-delay: 0.3s; }
+
+  </style>
+</head>
+<body>
+  <h2>Which Pop-up Animation Style Do You Prefer?</h2>
+  <div class="grid">
+    
+    <!-- Demo 1 -->
+    <div class="demo-box demo-1">
+      <div class="title">1. Linear Smooth Pop-up</div>
+      <div class="fab" onclick="this.classList.toggle('active')">+</div>
+      <div class="menu-item m1">👤</div>
+      <div class="menu-item m2">📄</div>
+      <div class="menu-item m3">⚙️</div>
+    </div>
+
+    <!-- Demo 2 -->
+    <div class="demo-box demo-2">
+      <div class="title">2. Arch / Radial Expansion</div>
+      <div class="fab" onclick="this.classList.toggle('active')">+</div>
+      <div class="menu-item m1">1</div>
+      <div class="menu-item m2">2</div>
+      <div class="menu-item m3">3</div>
+      <div class="menu-item m4">4</div>
+      <div class="menu-item m5">5</div>
+    </div>
+
+    <!-- Demo 3 -->
+    <div class="demo-box demo-3">
+      <div class="title">3. Bouncy Elastic Vertical</div>
+      <div class="fab" onclick="this.classList.toggle('active')">+</div>
+      <div class="menu-item m1">A</div>
+      <div class="menu-item m2">B</div>
+      <div class="menu-item m3">C</div>
+    </div>
+
+    <!-- Demo 4 -->
+    <div class="demo-box demo-4">
+      <div class="title">4. Horizontal Spread</div>
+      <div class="fab" onclick="this.classList.toggle('active')">+</div>
+      <div class="menu-item m1">⬅️</div>
+      <div class="menu-item m2">⬅️</div>
+      <div class="menu-item m3">➡️</div>
+      <div class="menu-item m4">➡️</div>
+    </div>
+
+    <!-- Demo 5 -->
+    <div class="demo-box demo-5">
+      <div class="title">5. Scaled Bloop Appear</div>
+      <div class="fab" onclick="this.classList.toggle('active')">+</div>
+      <div class="menu-item m1">🌟</div>
+      <div class="menu-item m2">🔥</div>
+      <div class="menu-item m3">💎</div>
+    </div>
+
+  </div>
+
+  <script>
+    // Set an interval to animate them automatically for the video recording!
+    let active = false;
+    setInterval(() => {
+      active = !active;
+      document.querySelectorAll('.fab').forEach(fab => {
+        if(active) fab.classList.add('active');
+        else fab.classList.remove('active');
+      });
+    }, 2000); // Toggle every 2 seconds
+  </script>
+</body>
+</html>

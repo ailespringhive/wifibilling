@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -203,7 +202,6 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
       backgroundColor: AppTheme.bgDark,
       appBar: (_currentIndex == 0 || _currentIndex == 4) ? null : AppBar(
         automaticallyImplyLeading: false,
@@ -267,30 +265,65 @@ class _MainShellState extends State<MainShell> {
         duration: const Duration(milliseconds: 200),
         child: _screens[_currentIndex],
       ),
-      bottomNavigationBar: Theme(
-        data: Theme.of(context).copyWith(
-          shadowColor: Colors.transparent,
-        ),
-        child: CurvedNavigationBar(
-          index: _currentIndex,
-          height: 65.0,
-          items: <Widget>[
-            AppIcons.icon(AppIcons.homeSvg, color: _currentIndex == 0 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-            AppIcons.icon(AppIcons.customerSvg, color: _currentIndex == 1 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-            AppIcons.icon(AppIcons.billSvg, color: _currentIndex == 2 ? AppTheme.accentBlue : Colors.grey.shade500, size: 34),
-            AppIcons.icon(AppIcons.receiptSvg, color: _currentIndex == 3 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-            AppIcons.icon(AppIcons.profileSvg, color: _currentIndex == 4 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          border: const Border(
+            top: BorderSide(color: AppTheme.border, width: 1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
           ],
-          color: Colors.white,
-          buttonBackgroundColor: Colors.white,
-          backgroundColor: Colors.transparent,
-          animationCurve: Curves.easeInOutCubic,
-          animationDuration: const Duration(milliseconds: 400),
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildNavItem(0, AppIcons.homeSvg, 'Dashboard'),
+                _buildNavItem(1, AppIcons.customerSvg, 'Customers'),
+                _buildNavItem(2, AppIcons.billSvg, 'Bills', size: 34),
+                _buildNavItem(3, AppIcons.receiptSvg, 'History'),
+                _buildNavItem(4, AppIcons.profileSvg, 'Profile'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildNavItem(int index, String svgStr, String label, {double size = 26}) {
+    final isActive = _currentIndex == index;
+    final color = isActive ? const Color(0xFF27272A) : Colors.grey.shade400;
+    
+    return GestureDetector(
+      onTap: () => setState(() => _currentIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppIcons.icon(svgStr, color: color, size: size),
+            const SizedBox(height: 4),
+            // Active dot indicator
+            Container(
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isActive ? const Color(0xFF27272A) : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ),
       ),
     );

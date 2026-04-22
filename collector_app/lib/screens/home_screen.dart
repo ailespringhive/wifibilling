@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // Chart fills remaining space inside card
         final double statsHeight = tiny ? 80 : 90;
         final double chartHeaderHeight = 40;
-        final double cardPadding = tiny ? 100 : 114;
+        final double cardPadding = tiny ? 44 : 56;
         // Subtract extra height added by the Overview header (~36px)
         final double overviewHeight = 36;
         double chartHeight = cardMinHeight - statsHeight - chartHeaderHeight - cardPadding - overviewHeight;
@@ -298,7 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(20, tiny ? 20 : 24, 20, tiny ? 80 : 90),
+                        padding: EdgeInsets.fromLTRB(20, tiny ? 20 : 24, 20, tiny ? 12 : 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
