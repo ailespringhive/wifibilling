@@ -296,17 +296,20 @@ class _MainShellState extends State<MainShell> {
                 
                 // 2. The Sliding Magic Indicator Bubble
                 AnimatedPositioned(
-                  duration: const Duration(milliseconds: 400),
+                  duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOutBack,
-                  bottom: 35 + bottomPadding, // Stick out halfway
+                  bottom: 30 + bottomPadding, // Lowered slightly so it cuts into the bar deeper
                   left: leftPos,
                   child: Container(
                     width: bubbleWidth,
                     height: bubbleWidth,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF27272A), // The dark active color
+                      color: AppTheme.bgCard, // WHITE! Same as the nav bar
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.bgDark, width: 6), // Seamless gap illusion
+                      border: Border.all(
+                        color: AppTheme.bgDark, // LIGHT GREY body background to create the U-shaped cutout illusion!
+                        width: 8, // Thicker gap
+                      ),
                     ),
                   ),
                 ),
@@ -340,6 +343,8 @@ class _MainShellState extends State<MainShell> {
 
   Widget _buildNavItem(int index, String svgStr) {
     final isActive = _currentIndex == index;
+    // The inactive icons sit in the White nav bar, so they are grey.
+    // The active icon sits in the White bubble, so it becomes blue!
     final color = isActive ? Colors.white : Colors.grey.shade400;
     
     return Expanded(
@@ -349,13 +354,24 @@ class _MainShellState extends State<MainShell> {
         child: SizedBox(
           height: 70,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 400),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutBack,
-            transform: Matrix4.identity()..translate(0.0, isActive ? -35.0 : 0.0), // slides perfectly into the bubble!
+            transform: Matrix4.identity()..translate(0.0, isActive ? -30.0 : 0.0), // Slides up directly into the U-shaped cutout!
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AppIcons.icon(svgStr, color: color, size: 26),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  padding: EdgeInsets.all(isActive ? 8 : 0),
+                  decoration: BoxDecoration(
+                    color: isActive ? AppTheme.accentBlue : Colors.transparent, // Solid blue background when active
+                    shape: BoxShape.circle,
+                    boxShadow: isActive
+                        ? [BoxShadow(color: AppTheme.accentBlue.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 4))]
+                        : [],
+                  ),
+                  child: AppIcons.icon(svgStr, color: color, size: 24),
+                ),
               ],
             ),
           ),
