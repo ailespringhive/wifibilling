@@ -312,35 +312,15 @@ class _MainShellState extends State<MainShell> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Beautiful bouncing "pop-up" animation
-            AnimatedSlide(
-              offset: isActive ? const Offset(0, -0.15) : Offset.zero,
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeOutBack,
-              child: AnimatedScale(
-                scale: isActive ? 1.15 : 1.0,
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeOutBack,
-                child: AppIcons.icon(svgStr, color: color, size: size),
-              ),
-            ),
+            AppIcons.icon(svgStr, color: color, size: size),
             const SizedBox(height: 4),
-            // Active dot indicator (fades and pops in)
-            AnimatedOpacity(
-              opacity: isActive ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 200),
-              child: AnimatedScale(
-                scale: isActive ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutBack,
-                child: Container(
-                  width: 4,
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF27272A),
-                    shape: BoxShape.circle,
-                  ),
-                ),
+            // Active dot indicator
+            Container(
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isActive ? const Color(0xFF27272A) : Colors.transparent,
+                shape: BoxShape.circle,
               ),
             ),
           ],
