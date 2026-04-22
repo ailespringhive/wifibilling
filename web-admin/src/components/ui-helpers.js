@@ -108,12 +108,50 @@ export function skeletonRows(columns = 5, rows = 5) {
 
 /**
  * Custom Alert Dialog — replaces native alert()
+ * Supports 5 animation types: 'success', 'error', 'warning', 'info', 'loading'
  */
-export function showAlert(message, { title = 'Alert', buttonText = 'OK', type = 'error' } = {}) {
+export function showAlert(message, { title, buttonText = 'OK', type = 'info' } = {}) {
   return new Promise((resolve) => {
-    const accentColor = type === 'error' ? 'var(--accent-rose)' : 'var(--accent-blue)';
-    const iconName = type === 'error' ? 'close' : 'info_outline';
-    const bgOpacity = type === 'error' ? 'rgba(244, 63, 94, 0.12)' : 'rgba(56, 189, 248, 0.12)';
+    // 1. Setup the 5 icon types and animations
+    let accentColor, iconName, bgOpacity, animationClass;
+
+    if (type === 'error') {
+      accentColor = 'var(--accent-rose)'; iconName = 'close'; bgOpacity = 'rgba(244, 63, 94, 0.12)'; animationClass = 'anim-shake';
+      if (!title) title = 'Error';
+    } else if (type === 'success') {
+      accentColor = 'var(--accent-emerald)'; iconName = 'check'; bgOpacity = 'rgba(16, 185, 129, 0.12)'; animationClass = 'anim-bounce-in';
+      if (!title) title = 'Success';
+    } else if (type === 'warning') {
+      accentColor = 'var(--accent-amber)'; iconName = 'priority_high'; bgOpacity = 'rgba(245, 158, 11, 0.12)'; animationClass = 'anim-pulse';
+      if (!title) title = 'Warning';
+    } else if (type === 'loading') {
+      accentColor = 'var(--accent-blue)'; iconName = 'sync'; bgOpacity = 'rgba(56, 189, 248, 0.12)'; animationClass = 'anim-spin'; buttonText = 'Please Wait...';
+      if (!title) title = 'Processing';
+    } else {
+      // default info
+      accentColor = 'var(--accent-indigo)'; iconName = 'info_outline'; bgOpacity = 'rgba(99, 102, 241, 0.12)'; animationClass = 'anim-float';
+      if (!title) title = 'Information';
+    }
+
+    // 2. Inject CSS animations globally (once)
+    const styleId = 'modal-5-animations-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `
+        @keyframes anim-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+        @keyframes anim-bounce-in { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.3); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes anim-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); opacity: 0.8; } }
+        @keyframes anim-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        @keyframes anim-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .anim-shake { animation: anim-shake 0.4s ease-in-out; }
+        .anim-bounce-in { animation: anim-bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        .anim-pulse { animation: anim-pulse 1.5s infinite ease-in-out; }
+        .anim-float { animation: anim-float 2s infinite ease-in-out; }
+        .anim-spin { animation: anim-spin 1.2s linear infinite; }
+      `;
+      document.head.appendChild(style);
+    }
 
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
@@ -133,20 +171,21 @@ export function showAlert(message, { title = 'Alert', buttonText = 'OK', type = 
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       " id="alert-dialog-box">
         <div style="
-          width: 56px; height: 56px; border-radius: 50%;
+          width: 64px; height: 64px; border-radius: 50%;
           background: ${bgOpacity};
           display: flex; align-items: center; justify-content: center;
           margin: 0 auto 20px auto;
         ">
-          <span class="material-icons-outlined" style="font-size: 28px; color: ${accentColor};">${iconName}</span>
+          <span class="material-icons-outlined ${animationClass}" style="font-size: 32px; color: ${accentColor};">${iconName}</span>
         </div>
         <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">${title}</h3>
         <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 28px; line-height: 1.5;">${message}</p>
         <button id="alert-ok-btn" style="
           padding: 10px 32px; border-radius: 12px; font-weight: 600; font-size: 0.88rem;
           background: ${accentColor}; border: none; color: #fff; width: 100%;
-          cursor: pointer; font-family: inherit; transition: all 0.2s ease;
-        ">${buttonText}</button>
+          cursor: ${type === 'loading' ? 'not-allowed' : 'pointer'}; font-family: inherit; transition: all 0.2s ease;
+          opacity: ${type === 'loading' ? '0.7' : '1'};
+        " ${type === 'loading' ? 'disabled' : ''}>${buttonText}</button>
       </div>
     `;
 
@@ -162,6 +201,7 @@ export function showAlert(message, { title = 'Alert', buttonText = 'OK', type = 
     });
 
     const close = () => {
+      if (type === 'loading') return; // Cannot manually close loading
       const box = document.getElementById('alert-dialog-box');
       if (box) {
         box.style.transform = 'scale(0.9)';

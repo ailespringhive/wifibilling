@@ -456,7 +456,43 @@ class _MainShellState extends State<MainShell> {
         behavior: HitTestBehavior.opaque,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          child: AppIcons.icon(svgStr, color: color, size: 26),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Beautiful bouncing "pop-up" animation
+              AnimatedSlide(
+                offset: isActive ? const Offset(0, -0.15) : Offset.zero,
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOutBack,
+                child: AnimatedScale(
+                  scale: isActive ? 1.15 : 1.0,
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOutBack,
+                  child: AppIcons.icon(svgStr, color: color, size: 26),
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Active dot indicator (fades and pops in)
+              AnimatedOpacity(
+                opacity: isActive ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: AnimatedScale(
+                  scale: isActive ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutBack,
+                  child: Container(
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF5B9E99),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
