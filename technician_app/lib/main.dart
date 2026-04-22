@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -286,6 +287,7 @@ class _MainShellState extends State<MainShell> {
   final _screens = const [
     HomeScreen(),
     CustomersScreen(),
+    SizedBox(), // Dummy for index 2 (Add Customer)
     TicketsScreen(),
     ProfileScreen(),
   ];
@@ -401,63 +403,39 @@ class _MainShellState extends State<MainShell> {
         duration: const Duration(milliseconds: 200),
         child: _screens[_currentIndex],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: AppTheme.border.withValues(alpha: 0.5), width: 1),
+      bottomNavigationBar: CurvedNavigationBar(
+        index: _currentIndex,
+        height: 65.0,
+        items: <Widget>[
+          AppIcons.icon(AppIcons.homeSvg, color: _currentIndex == 0 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+          AppIcons.icon(AppIcons.customerSvg, color: _currentIndex == 1 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: AppIcons.icon(AppIcons.addCustomerSvg, color: _currentIndex == 2 ? AppTheme.accentBlue : Colors.grey.shade600, size: 36),
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildNavItem(0, AppIcons.homeSvg),
-                _buildNavItem(1, AppIcons.customerSvg),
-                
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const AddCustomerScreen()),
-                      );
-                    },
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: AppIcons.icon(
-                        AppIcons.addCustomerSvg,
-                        color: const Color(0xFF27272A),
-                        size: 40,
-                      ),
-                    ),
-                  ),
-                ),
-
-                _buildNavItem(2, AppIcons.ticketSvg),
-                _buildNavItem(3, AppIcons.profileSvg),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, String svgStr) {
-    final isActive = _currentIndex == index;
-    final color = isActive ? const Color(0xFF5B9E99) : const Color(0xFFB0B8C1);
-    
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _currentIndex = index),
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: AppIcons.icon(svgStr, color: color, size: 26),
-        ),
+          AppIcons.icon(AppIcons.ticketSvg, color: _currentIndex == 3 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+          AppIcons.icon(AppIcons.profileSvg, color: _currentIndex == 4 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+        ],
+        color: Colors.white,
+        buttonBackgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF3F4F6), // Match app background
+        animationCurve: Curves.easeOutBack,
+        animationDuration: const Duration(milliseconds: 350),
+        onTap: (index) {
+          if (index == 2) {
+            // They tapped the Add Customer icon
+            final prevIndex = _currentIndex;
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AddCustomerScreen()),
+            ).then((_) {
+               // When they return from AddCustomer, gracefully slide back to the previous tab
+               setState(() => _currentIndex = prevIndex);
+            });
+          }
+          setState(() {
+            _currentIndex = index;
+          });
+        },
       ),
     );
   }
