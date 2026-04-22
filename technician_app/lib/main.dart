@@ -404,39 +404,44 @@ class _MainShellState extends State<MainShell> {
         duration: const Duration(milliseconds: 200),
         child: _screens[_currentIndex],
       ),
-      bottomNavigationBar: CurvedNavigationBar(
-        index: _currentIndex,
-        height: 65.0,
-        items: <Widget>[
-          AppIcons.icon(AppIcons.homeSvg, color: _currentIndex == 0 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-          AppIcons.icon(AppIcons.customerSvg, color: _currentIndex == 1 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: AppIcons.icon(AppIcons.addCustomerSvg, color: _currentIndex == 2 ? AppTheme.accentBlue : Colors.grey.shade600, size: 36),
-          ),
-          AppIcons.icon(AppIcons.ticketSvg, color: _currentIndex == 3 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-          AppIcons.icon(AppIcons.profileSvg, color: _currentIndex == 4 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-        ],
-        color: Colors.white,
-        buttonBackgroundColor: Colors.white,
-        backgroundColor: Colors.transparent,
-        animationCurve: Curves.easeInOutCubic,
-        animationDuration: const Duration(milliseconds: 400),
-        onTap: (index) {
-          if (index == 2) {
-            // They tapped the Add Customer icon
-            final prevIndex = _currentIndex;
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AddCustomerScreen()),
-            ).then((_) {
-               // When they return from AddCustomer, gracefully slide back to the previous tab
-               setState(() => _currentIndex = prevIndex);
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(
+          shadowColor: Colors.transparent,
+        ),
+        child: CurvedNavigationBar(
+          index: _currentIndex,
+          height: 65.0,
+          items: <Widget>[
+            AppIcons.icon(AppIcons.homeSvg, color: _currentIndex == 0 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+            AppIcons.icon(AppIcons.customerSvg, color: _currentIndex == 1 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: AppIcons.icon(AppIcons.addCustomerSvg, color: _currentIndex == 2 ? AppTheme.accentBlue : Colors.grey.shade600, size: 36),
+            ),
+            AppIcons.icon(AppIcons.ticketSvg, color: _currentIndex == 3 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+            AppIcons.icon(AppIcons.profileSvg, color: _currentIndex == 4 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+          ],
+          color: Colors.white,
+          buttonBackgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
+          animationCurve: Curves.easeInOutCubic,
+          animationDuration: const Duration(milliseconds: 400),
+          onTap: (index) {
+            if (index == 2) {
+              // They tapped the Add Customer icon
+              final prevIndex = _currentIndex;
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AddCustomerScreen()),
+              ).then((_) {
+                 // When they return from AddCustomer, gracefully slide back to the previous tab
+                 setState(() => _currentIndex = prevIndex);
+              });
+            }
+            setState(() {
+              _currentIndex = index;
             });
-          }
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+          },
+        ),
       ),
     );
   }

@@ -267,26 +267,31 @@ class _MainShellState extends State<MainShell> {
         duration: const Duration(milliseconds: 200),
         child: _screens[_currentIndex],
       ),
-      bottomNavigationBar: CurvedNavigationBar(
-        index: _currentIndex,
-        height: 65.0,
-        items: <Widget>[
-          AppIcons.icon(AppIcons.homeSvg, color: _currentIndex == 0 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-          AppIcons.icon(AppIcons.customerSvg, color: _currentIndex == 1 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-          AppIcons.icon(AppIcons.billSvg, color: _currentIndex == 2 ? AppTheme.accentBlue : Colors.grey.shade500, size: 34),
-          AppIcons.icon(AppIcons.receiptSvg, color: _currentIndex == 3 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-          AppIcons.icon(AppIcons.profileSvg, color: _currentIndex == 4 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
-        ],
-        color: Colors.white,
-        buttonBackgroundColor: Colors.white,
-        backgroundColor: Colors.transparent,
-        animationCurve: Curves.easeInOutCubic,
-        animationDuration: const Duration(milliseconds: 400),
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(
+          shadowColor: Colors.transparent,
+        ),
+        child: CurvedNavigationBar(
+          index: _currentIndex,
+          height: 65.0,
+          items: <Widget>[
+            AppIcons.icon(AppIcons.homeSvg, color: _currentIndex == 0 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+            AppIcons.icon(AppIcons.customerSvg, color: _currentIndex == 1 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+            AppIcons.icon(AppIcons.billSvg, color: _currentIndex == 2 ? AppTheme.accentBlue : Colors.grey.shade500, size: 34),
+            AppIcons.icon(AppIcons.receiptSvg, color: _currentIndex == 3 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+            AppIcons.icon(AppIcons.profileSvg, color: _currentIndex == 4 ? AppTheme.accentBlue : Colors.grey.shade500, size: 26),
+          ],
+          color: Colors.white,
+          buttonBackgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
+          animationCurve: Curves.easeInOutCubic,
+          animationDuration: const Duration(milliseconds: 400),
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+        ),
       ),
     );
   }
