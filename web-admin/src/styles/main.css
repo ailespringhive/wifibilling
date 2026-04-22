@@ -1,0 +1,398 @@
+/* ============================================================
+   WiFi Billing Admin — Design System v2.0
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Colors — Modern Corporate Theme */
+  --bg-primary: #F4F7FC;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8FAFC;
+  --bg-input: #F5F7FA;
+  --bg-input-focus: #FFFFFF;
+  --bg-sidebar: #0a192f;
+  --bg-header: #FFFFFF;
+
+  /* Premium Glassmorphism / Shadows */
+  --glass-bg: rgba(255, 255, 255, 0.96);
+  --glass-border: rgba(0, 0, 0, 0.04);
+  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  --glass-blur: blur(8px);
+  --glass-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  /* Vibrant Accents */
+  --accent-blue: #2563eb;
+  --accent-blue-gradient: linear-gradient(135deg, #3b82f6, #2563eb);
+  --accent-emerald: #059669;
+  --accent-emerald-gradient: linear-gradient(135deg, #10b981, #059669);
+  --accent-amber: #d97706;
+  --accent-amber-gradient: linear-gradient(135deg, #f59e0b, #d97706);
+  --accent-rose: #e11d48;
+  --accent-rose-gradient: linear-gradient(135deg, #f43f5e, #e11d48);
+  --accent-purple: #7c3aed;
+  --accent-purple-gradient: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  --accent-cyan: #0891b2;
+  --accent-cyan-gradient: linear-gradient(135deg, #06b6d4, #0891b2);
+
+  /* Text Styling */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-on-accent: #ffffff;
+
+  /* Refined Borders */
+  --border-color: #E2E8F0;
+  --border-color-hover: #CBD5E1;
+
+  /* Chart & Status Variables */
+  --chart-line-1: #0f172a;
+  --chart-line-2: #14b8a6;
+  --chart-grid: #f1f5f9;
+  --chart-node-fill: #ffffff;
+  
+  --status-paid-bg: #d1fae5;
+  --status-paid-text: #059669;
+  --status-pending-bg: #fef3c7;
+  --status-pending-text: #d97706;
+  --status-overdue-bg: #fee2e2;
+  --status-overdue-text: #dc2626;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Performance-tuned Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Sidebar Settings */
+  --sidebar-width: 260px;
+  --header-height: 70px;
+
+  /* Nav Active */
+  --nav-active-bg: rgba(255, 255, 255, 0.1);
+  --nav-active-color: #FFFFFF;
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Display font for headings */
+.display-font,
+.dash-greeting h1,
+.wavy-text,
+.login-3d-text,
+.card-title,
+.pricing-plan-name,
+.detail-customer-name {
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+a {
+  color: var(--accent-blue);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  color: var(--accent-blue-hover);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-full);
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================================
+   Typography Utilities
+   ============================================================ */
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* ============================================================
+   Selection
+   ============================================================ */
+::selection {
+  background: var(--accent-blue);
+  color: white;
+}
+
+/* ============================================================
+   Focus Visible — Accessibility
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Shimmer / Skeleton Loading
+   ============================================================ */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--bg-card-hover) 25%,
+    rgba(59, 130, 246, 0.05) 50%,
+    var(--bg-card-hover) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-text {
+  height: 14px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+/* ============================================================
+   Toast Notifications — Enhanced with Progress Bar
+   ============================================================ */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+  animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@keyframes toastSlideIn {
+  from { transform: translateX(100px) scale(0.9); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+.toast::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.4);
+  animation: toastProgress 3.5s linear forwards;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.toast-success {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #dc2626, #f43f5e);
+  color: white;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.toast-warning {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: white;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.toast-info {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* ============================================================
+   Spinner
+   ============================================================ */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Dark Theme Overrides
+   ============================================================ */
+:root[data-theme="dark"], 
+html[data-theme="dark"], 
+body[data-theme="dark"], 
+.dark-theme, 
+[data-theme="dark"] {
+  /* Deep Premium Dark Backgrounds */
+  --bg-primary: #0B0D14;
+  --bg-secondary: #13151F;
+  --bg-card: #1A1C2A;
+  --bg-card-hover: #22243A;
+  --bg-input: #161824;
+  --bg-input-focus: #1E2032;
+  --bg-sidebar: #10121C;
+  --bg-header: rgba(16, 18, 28, 0.92);
+
+  /* Deep Glassmorphism shadows */
+  --glass-bg: rgba(20, 22, 34, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.3);
+  --glass-shadow-hover: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+
+  /* Text Styling */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #7c8ca3;
+  --text-on-accent: #ffffff;
+
+  /* Borders */
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-color-hover: rgba(255, 255, 255, 0.12);
+
+  /* Sidebar Active Custom (White pill with dark text per image) */
+  --nav-active-bg: #FFFFFF;
+  --nav-active-color: #12131C;
+
+  /* Chart & Status Variables (Dark Mode) */
+  --chart-line-1: #38bdf8;
+  --chart-line-2: #2dd4bf;
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  --chart-node-fill: #1A1C2A;
+  
+  --status-paid-bg: rgba(20, 184, 166, 0.15);
+  --status-paid-text: #2dd4bf;
+  --status-pending-bg: rgba(245, 158, 11, 0.15);
+  --status-pending-text: #fbbf24;
+  --status-overdue-bg: rgba(225, 29, 72, 0.15);
+  --status-overdue-text: #fb7185;
+}
+
+/* Dark mode skeleton styling */
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* Dark mode scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================================
+   Instant Theme Switching Bypassing Transitions
+   ============================================================ */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *:before,
+.theme-transitioning *:after {
+  transition: none !important;
+}

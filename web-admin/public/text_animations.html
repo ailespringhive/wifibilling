@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Entrance Animations</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 40px;
+            background-color: #0F1219;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .demo-card {
+            background-color: #1A1D24;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .demo-title {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: #FF4D4D;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3);
+        }
+
+        .mock-dashboard h2 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800;}
+        .mock-dashboard p { margin: 0 0 20px 0; color: #94A3B8; font-size: 14px;}
+        .mock-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .mock-card h4 { margin: 0 0 5px 0; color: #94A3B8; font-size: 11px; text-transform: uppercase;}
+        .mock-card h1 { margin: 0; font-size: 32px;}
+
+        /* Replay Button */
+        button {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: transparent;
+            border: 1px solid #00D9FF;
+            color: #00D9FF;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+        }
+        button:hover { background: rgba(0, 217, 255, 0.1); }
+
+        /* ----------------------------------------------------
+           OPTION 1: Smooth Staggered Slide-Up
+        ----------------------------------------------------- */
+        .opt1-container * { opacity: 0; }
+        .opt1-active h2 { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.1s; }
+        .opt1-active p { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.2s; }
+        .opt1-active .mock-card:nth-child(3) { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.3s; }
+        .opt1-active .mock-card:nth-child(4) { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.4s; }
+
+        @keyframes slideUp {
+            0% { transform: translateY(30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        /* ----------------------------------------------------
+           OPTION 2: The Wave / Scale Bounce
+        ----------------------------------------------------- */
+        .opt2-container * { opacity: 0; }
+        .opt2-active h2 { animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.1s; }
+        .opt2-active p { animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.2s; }
+        .opt2-active .mock-card:nth-child(3) { animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.3s; }
+        .opt2-active .mock-card:nth-child(4) { animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.4s; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ----------------------------------------------------
+           OPTION 3: Neon Reveal (Block Sweep)
+        ----------------------------------------------------- */
+        .opt3-container { position: relative;}
+        .opt3-active .mock-target {
+            position: relative;
+            color: transparent;
+            animation: textShow 0.1s forwards;
+            animation-delay: 0.5s;
+        }
+        .opt3-active .mock-target::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 0%; height: 100%;
+            background: #00D9FF;
+            animation: sweep 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        .opt3-active .delay-1::before { animation-delay: 0.0s; }
+        .opt3-active .delay-1 { animation-delay: 0.4s; }
+        .opt3-active .delay-2::before { animation-delay: 0.2s; }
+        .opt3-active .delay-2 { animation-delay: 0.6s; }
+
+        @keyframes sweep {
+            0% { left: 0; width: 0%; }
+            50% { left: 0; width: 100%; }
+            100% { left: 100%; width: 0%; }
+        }
+        @keyframes textShow { 100% { color: inherit; } }
+
+        /* ----------------------------------------------------
+           OPTION 4: 3D Flip Down
+        ----------------------------------------------------- */
+        .opt4-container { perspective: 800px; }
+        .opt4-container * { opacity: 0; transform-origin: top center; }
+        .opt4-active h2 { animation: flipDown 0.6s ease-out forwards; animation-delay: 0.1s; }
+        .opt4-active p { animation: flipDown 0.6s ease-out forwards; animation-delay: 0.2s; }
+        .opt4-active .mock-card:nth-child(3) { animation: flipDown 0.6s ease-out forwards; animation-delay: 0.3s; }
+        .opt4-active .mock-card:nth-child(4) { animation: flipDown 0.6s ease-out forwards; animation-delay: 0.4s; }
+
+        @keyframes flipDown {
+            0% { transform: rotateX(-90deg); opacity: 0; }
+            100% { transform: rotateX(0deg); opacity: 1; }
+        }
+
+        /* ----------------------------------------------------
+           OPTION 5: Cyberpunk Terminal Glitch
+        ----------------------------------------------------- */
+        .opt5-container * { opacity: 0; font-family: 'Space Mono', monospace; }
+        .opt5-active * { opacity: 1; }
+        .opt5-active h2 { animation: glitchType 0.5s steps(20, end); white-space: nowrap; overflow: hidden; }
+        .opt5-active p { animation: glitchType 0.8s steps(30, end); white-space: nowrap; overflow: hidden; animation-delay: 0.3s; animation-fill-mode: backwards; }
+        .opt5-active .mock-card h1 { animation: flashText 1s; animation-delay: 0.5s; animation-fill-mode: backwards; color: #00E676; }
+
+        @keyframes glitchType {
+            from { width: 0; border-right: 2px solid #00E676; }
+            to { width: 100%; border-right: 2px solid transparent; }
+        }
+        @keyframes flashText {
+            0% { opacity: 0; text-shadow: none; }
+            10% { opacity: 1; }
+            20% { opacity: 0; }
+            30% { opacity: 1; text-shadow: 0 0 10px #00E676; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Option 1 -->
+    <div class="demo-card">
+        <div class="demo-title">1. Smooth Slide-Up</div>
+        <div class="mock-dashboard opt1-container opt1-active" id="box1">
+            <h2>Hello Admin</h2>
+            <p>Here's what's happening with your WiFi business today.</p>
+            <div class="mock-card"><h4>Total Customers</h4><h1>142</h1></div>
+        </div>
+        <button onclick="replay('box1', 'opt1-container opt1-active')">Replay</button>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="demo-card">
+        <div class="demo-title">2. Scale & Bounce</div>
+        <div class="mock-dashboard opt2-container opt2-active" id="box2">
+            <h2>Hello Admin</h2>
+            <p>Here's what's happening with your WiFi business today.</p>
+            <div class="mock-card"><h4>Active Subs</h4><h1>89</h1></div>
+        </div>
+        <button onclick="replay('box2', 'opt2-container opt2-active')">Replay</button>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="demo-card">
+        <div class="demo-title">3. Neon Reveal Sweep</div>
+        <div class="mock-dashboard opt3-container opt3-active" id="box3">
+            <h2 class="mock-target delay-1">Hello Admin</h2>
+            <p class="mock-target delay-2">Here's what's happening with your WiFi business today.</p>
+            <div class="mock-card mock-target delay-2"><h4>Revenue</h4><h1>₱1,998.00</h1></div>
+        </div>
+        <button onclick="replay('box3', 'opt3-container opt3-active')">Replay</button>
+    </div>
+
+    <!-- Option 4 -->
+    <div class="demo-card">
+        <div class="demo-title">4. 3D Card Flip</div>
+        <div class="mock-dashboard opt4-container opt4-active" id="box4">
+            <h2>Hello Admin</h2>
+            <p>Here's what's happening with your WiFi business today.</p>
+            <div class="mock-card"><h4>Overdue Bills</h4><h1>3</h1></div>
+        </div>
+        <button onclick="replay('box4', 'opt4-container opt4-active')">Replay</button>
+    </div>
+
+    <!-- Option 5 -->
+    <div class="demo-card">
+        <div class="demo-title">5. Cyberpunk Terminal</div>
+        <div class="mock-dashboard opt5-container opt5-active" id="box5">
+            <h2>> Hello_Admin</h2>
+            <p>Initializing system diagnostics...</p>
+            <div class="mock-card"><h4>System Status</h4><h1>ONLINE_</h1></div>
+        </div>
+        <button onclick="replay('box5', 'opt5-container opt5-active')">Replay</button>
+    </div>
+
+    <script>
+        function replay(id, activeClass) {
+            const el = document.getElementById(id);
+            // Remove the active class to reset
+            el.className = activeClass.replace(/-active/g, '');
+            // Trigger reflow
+            void el.offsetWidth;
+            // Add the active class back to play the animation
+            el.className = activeClass;
+        }
+    </script>
+</body>
+</html>

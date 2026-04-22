@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Animation Demos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 40px;
+            background-color: #0F1219; /* Dashboard dark bg */
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .demo-card {
+            background-color: #1A1D24;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 250px;
+        }
+
+        .demo-title {
+            position: absolute;
+            bottom: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #94A3B8;
+            letter-spacing: 1px;
+        }
+
+        /* ----------------------------------------------------
+           OPTION 1: The WiFi Pulse
+        ----------------------------------------------------- */
+        .wifi-loader {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .wifi-loader div {
+            position: absolute;
+            border: 3px solid transparent;
+            border-top-color: #00D9FF;
+            border-radius: 50%;
+            animation: wifiPulse 1.5s linear infinite;
+        }
+        .wifi-loader div:nth-child(1) { width: 60px; height: 60px; animation-delay: 0.0s; }
+        .wifi-loader div:nth-child(2) { width: 40px; height: 40px; animation-delay: 0.15s; border-top-color: #00A3FF; }
+        .wifi-loader div:nth-child(3) { width: 20px; height: 20px; animation-delay: 0.3s; border-top-color: #0077FF; border: 3px solid #0077FF; }
+        
+        @keyframes wifiPulse {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* ----------------------------------------------------
+           OPTION 2: Neon Orbit Rings
+        ----------------------------------------------------- */
+        .neon-orbit {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+        .neon-orbit div {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+        .neon-orbit div:nth-child(1) { border-top-color: #00D9FF; animation-delay: -0.45s; }
+        .neon-orbit div:nth-child(2) { border-right-color: #FF4D4D; animation-delay: -0.3s; width: 80%; height: 80%; top: 10%; left: 10%; }
+        .neon-orbit div:nth-child(3) { border-bottom-color: #00E676; animation-delay: -0.15s; width: 60%; height: 60%; top: 20%; left: 20%; }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ----------------------------------------------------
+           OPTION 3: Data Wave Equalizer
+        ----------------------------------------------------- */
+        .data-wave {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .data-wave div {
+            width: 6px;
+            height: 40px;
+            background: linear-gradient(180deg, #00D9FF 0%, #0077FF 100%);
+            border-radius: 10px;
+            animation: wave 1s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.4);
+        }
+        .data-wave div:nth-child(1) { animation-delay: -0.4s; }
+        .data-wave div:nth-child(2) { animation-delay: -0.3s; }
+        .data-wave div:nth-child(3) { animation-delay: -0.2s; }
+        .data-wave div:nth-child(4) { animation-delay: -0.1s; }
+        .data-wave div:nth-child(5) { animation-delay: 0s; }
+
+        @keyframes wave {
+            0%, 100% { height: 15px; }
+            50% { height: 50px; }
+        }
+
+        /* ----------------------------------------------------
+           OPTION 4: Infinity Trace
+        ----------------------------------------------------- */
+        .infinity-trace {
+            position: relative;
+            width: 80px;
+            height: 40px;
+        }
+        .infinity-trace::before, .infinity-trace::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #1A1D24;
+            border-radius: 50%;
+            box-sizing: border-box;
+            box-shadow: inset 0 0 0 2px rgba(0, 217, 255, 0.1);
+        }
+        .infinity-trace::before { left: 0; border-right-color: transparent; border-top-color: #00D9FF; animation: traceL 1s linear infinite; }
+        .infinity-trace::after { right: 0; border-left-color: transparent; border-bottom-color: #00D9FF; animation: traceR 1s linear infinite; }
+
+        @keyframes traceL {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes traceR {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+
+        /* ----------------------------------------------------
+           OPTION 5: Glassmorphic Core Breathing
+        ----------------------------------------------------- */
+        .glass-core {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .glass-core .glass {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            animation: breatheBox 2s ease-in-out infinite alt;
+        }
+        .glass-core .core {
+            width: 30px;
+            height: 30px;
+            background: #FF4D4D;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #FF4D4D, 0 0 40px #FF4D4D;
+            animation: breatheCore 2s ease-in-out infinite;
+        }
+
+        @keyframes breatheCore {
+            0%, 100% { transform: scale(0.8); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        @keyframes breatheBox {
+            0%, 100% { transform: rotate(0deg); border-radius: 20px;}
+            50% { transform: rotate(45deg); border-radius: 50%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="demo-card">
+        <div class="wifi-loader">
+            <div></div><div></div><div></div>
+        </div>
+        <div class="demo-title">Option 1: The WiFi Pulse</div>
+    </div>
+
+    <div class="demo-card">
+        <div class="neon-orbit">
+            <div></div><div></div><div></div>
+        </div>
+        <div class="demo-title">Option 2: Neon Orbit Rings</div>
+    </div>
+
+    <div class="demo-card">
+        <div class="data-wave">
+            <div></div><div></div><div></div><div></div><div></div>
+        </div>
+        <div class="demo-title">Option 3: Data Wave Equalizer</div>
+    </div>
+
+    <div class="demo-card">
+        <div class="infinity-trace"></div>
+        <div class="demo-title">Option 4: Infinity Trace</div>
+    </div>
+
+    <div class="demo-card">
+        <div class="glass-core">
+            <div class="glass"></div>
+            <div class="core"></div>
+        </div>
+        <div class="demo-title">Option 5: Glowing Core</div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/admin/", "permanent": false },
+    { "source": "/admin", "destination": "/admin/", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/collector/(.*)", "destination": "/collector/index.html" },
+    { "source": "/admin/(.*)", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

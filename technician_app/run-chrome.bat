@@ -1,0 +1,6 @@
+@echo off
+echo Temporarily injecting local flutter tools into PATH...
+set "PATH=%PATH%;D:\Antigravity\wifibilling\flutter\bin"
+echo Launching Flutter Web in Chrome...
+flutter run -d chrome
+pause

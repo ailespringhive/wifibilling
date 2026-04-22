@@ -1,0 +1,8 @@
+analyzer:
+  exclude:
+    - "flutter/**"
+    - "FlutterTemp/**"
+    - "pub_cache/**"
+    - "PubCache/**"
+    - "flutter_cache/**"
+    - "**/.symlinks/**"

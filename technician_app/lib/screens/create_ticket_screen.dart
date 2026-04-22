@@ -1,0 +1,395 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'package:latlong2/latlong.dart';
+import 'dart:io';
+
+import '../theme/app_theme.dart';
+import '../services/auth_service.dart';
+import '../services/customer_service.dart';
+import '../services/repair_ticket_service.dart';
+import '../models/user_profile.dart';
+import '../widgets/location_picker.dart';
+
+class CreateTicketScreen extends StatefulWidget {
+  const CreateTicketScreen({super.key});
+
+  @override
+  State<CreateTicketScreen> createState() => _CreateTicketScreenState();
+}
+
+class _CreateTicketScreenState extends State<CreateTicketScreen> {
+  final _issueCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  
+  List<UserProfile> _customers = [];
+  bool _isLoadingCustomers = true;
+  bool _isSubmitting = false;
+  
+  UserProfile? _selectedCustomer;
+  String _selectedPriority = 'medium';
+  final List<XFile> _selectedImages = [];
+  LatLng? _selectedLocation;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomers();
+  }
+  
+  @override
+  void dispose() {
+    _issueCtrl.dispose();
+    _notesCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCustomers() async {
+    try {
+      final customers = await CustomerService().getAllCustomers(limit: 100);
+      setState(() {
+        _customers = customers;
+        _isLoadingCustomers = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingCustomers = false);
+        _showSnackBar('Failed to load customers', AppTheme.accentRose);
+      }
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    if (_selectedImages.length >= 3) {
+      _showSnackBar('Maximum of 3 images allowed', AppTheme.accentAmber);
+      return;
+    }
+    
+    try {
+      final XFile? image = await _picker.pickImage(source: source, imageQuality: 70);
+      if (image != null) {
+        setState(() => _selectedImages.add(image));
+      }
+    } catch (e) {
+      _showSnackBar('Error picking image', AppTheme.accentRose);
+    }
+  }
+
+  Future<void> _pickLocation() async {
+    final result = await Navigator.push<LatLng>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LocationPicker(
+          initialLocation: _selectedLocation ?? const LatLng(14.5995, 120.9842),
+        ),
+      ),
+    );
+    if (result != null) {
+      setState(() => _selectedLocation = result);
+    }
+  }
+
+  void _showSnackBar(String msg, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _submitTicket() async {
+    if (_selectedCustomer == null) {
+      _showSnackBar('Please select a customer', AppTheme.accentAmber);
+      return;
+    }
+    if (_issueCtrl.text.trim().isEmpty) {
+      _showSnackBar('Please describe the issue', AppTheme.accentAmber);
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      final auth = context.read<AuthService>();
+      final techId = auth.collectorId; 
+
+      final ticketService = RepairTicketService();
+      
+      // Upload images first
+      List<String> uploadedUrls = [];
+      for (var img in _selectedImages) {
+        final url = await ticketService.uploadTicketImage(img.path, img.name);
+        if (url != null) uploadedUrls.add(url);
+      }
+
+      final data = {
+        'customerId': _selectedCustomer!.id,
+        'customerName': _selectedCustomer!.fullName,
+        'customerAddress': _selectedCustomer!.address,
+        'technicianId': techId,
+        'status': 'pending',
+        'priority': _selectedPriority,
+        'issue': _issueCtrl.text.trim(),
+        'notes': _notesCtrl.text.trim(),
+        'latitude': _selectedLocation?.latitude,
+        'longitude': _selectedLocation?.longitude,
+        'imageUrls': uploadedUrls,
+      };
+
+      final ticket = await ticketService.createTicket(data);
+      if (ticket != null) {
+        // Send notification to admin
+        await ticketService.sendAdminNotification(auth.currentProfile?.fullName ?? 'Technician', _selectedCustomer!.fullName, 'pending');
+        if (mounted) {
+          _showSnackBar('Ticket created successfully', AppTheme.accentEmerald);
+          Navigator.pop(context, true);
+        }
+      } else {
+        throw Exception('Failed to create ticket');
+      }
+    } catch (e) {
+      _showSnackBar('Failed to submit ticket', AppTheme.accentRose);
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.bgDark,
+      appBar: AppBar(
+        title: Text('Create Repair Ticket', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16)),
+        backgroundColor: Colors.white,
+        foregroundColor: AppTheme.textPrimary,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      body: _isLoadingCustomers 
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildLabel('Customer'),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<UserProfile>(
+                        isExpanded: true,
+                        hint: Text('Select Customer', style: GoogleFonts.inter(color: AppTheme.textMuted)),
+                        value: _selectedCustomer,
+                        items: _customers.map((c) => DropdownMenuItem(
+                          value: c,
+                          child: Text(c.fullName, style: GoogleFonts.inter()),
+                        )).toList(),
+                        onChanged: (val) => setState(() => _selectedCustomer = val),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  _buildLabel('Priority'),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _buildPriorityChip('Low', 'low', Colors.green),
+                      const SizedBox(width: 8),
+                      _buildPriorityChip('Medium', 'medium', Colors.orange),
+                      const SizedBox(width: 8),
+                      _buildPriorityChip('High', 'high', Colors.red),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+                  _buildLabel('Issue Description'),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _issueCtrl,
+                    maxLines: 3,
+                    decoration: _inputDecoration('Briefly describe the issue (e.g. LOS Red Light)'),
+                    style: GoogleFonts.inter(fontSize: 14),
+                  ),
+
+                  const SizedBox(height: 20),
+                  _buildLabel('Attachments (Max 3)'),
+                  const SizedBox(height: 8),
+                  if (_selectedImages.isNotEmpty)
+                    SizedBox(
+                      height: 100,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _selectedImages.length,
+                        itemBuilder: (ctx, i) {
+                          return Stack(
+                            children: [
+                              Container(
+                                width: 100,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: DecorationImage(
+                                    image: FileImage(File(_selectedImages[i].path)),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 4, right: 16,
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _selectedImages.removeAt(i)),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                    child: const Icon(Icons.close, size: 14, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  if (_selectedImages.length < 3)
+                    Padding(
+                      padding: EdgeInsets.only(top: _selectedImages.isEmpty ? 0 : 12.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _pickImage(ImageSource.camera),
+                              icon: const HugeIcon(icon: HugeIcons.strokeRoundedCamera01, color: Colors.white, size: 18),
+                              label: Text('Camera', style: GoogleFonts.inter(color: Colors.white)),
+                              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentBlue, elevation: 0),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _pickImage(ImageSource.gallery),
+                              icon: const HugeIcon(icon: HugeIcons.strokeRoundedImage01, color: Colors.white, size: 18),
+                              label: Text('Gallery', style: GoogleFonts.inter(color: Colors.white)),
+                              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentBlue, elevation: 0),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  const SizedBox(height: 20),
+                  _buildLabel('Location (Optional)'),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    onTap: _pickLocation,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    tileColor: Colors.white,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: AppTheme.accentBlue.withValues(alpha: 0.1), shape: BoxShape.circle),
+                      child: HugeIcon(icon: HugeIcons.strokeRoundedLocation01, color: AppTheme.accentBlue, size: 20),
+                    ),
+                    title: Text(_selectedLocation != null ? 'Location Selected' : 'Tap to pin location', style: GoogleFonts.inter(fontSize: 14)),
+                    subtitle: _selectedLocation != null ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}', style: GoogleFonts.inter(fontSize: 12)) : null,
+                    trailing: const HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, color: AppTheme.textMuted, size: 16),
+                  ),
+
+                  const SizedBox(height: 20),
+                  _buildLabel('Additional Notes (Optional)'),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _notesCtrl,
+                    maxLines: 2,
+                    decoration: _inputDecoration('Any extra context?'),
+                    style: GoogleFonts.inter(fontSize: 14),
+                  ),
+
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submitTicket,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentBlue,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: _isSubmitting 
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text('Submit Ticket', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+    );
+  }
+
+  Widget _buildPriorityChip(String label, String value, Color color) {
+    final isSelected = _selectedPriority == value;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedPriority = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.1) : Colors.white,
+          border: Border.all(color: isSelected ? color : Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? color : AppTheme.textMuted,
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 13),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppTheme.accentBlue),
+      ),
+    );
+  }
+}

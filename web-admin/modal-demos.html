@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smooth Modal Animations - Batch 3</title>
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: #0f172a; 
+      color: #f8fafc; 
+      display: flex; 
+      flex-direction: row; 
+      align-items: center; 
+      justify-content: center; 
+      height: 100vh; 
+      margin: 0; 
+      gap: 40px; 
+    }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+    
+    button.opt-btn { 
+      padding: 12px 24px; 
+      font-size: 15px; 
+      font-weight: 500;
+      cursor: pointer; 
+      border: none; 
+      border-radius: 8px; 
+      background: #3b82f6; 
+      color: white; 
+      transition: background 0.2s, transform 0.1s; 
+      width: 250px;
+    }
+    button.opt-btn:hover { background: #2563eb; transform: scale(1.02); }
+    button.opt-btn:active { transform: scale(0.98); }
+    
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; 
+      transition: opacity 0.4s ease-in-out, visibility 0.4s;
+      z-index: 1000;
+      perspective: 1000px;
+    }
+    
+    .modal-overlay.active { 
+      opacity: 1; visibility: visible; 
+    }
+    
+    .modal {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 12px;
+      width: 400px;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* THE 10 SMOOTH ANIMATIONS */
+    /* All base classes hold the "closing" state. The .active adds the "opened" state */
+
+    /* 1. Material Scale */
+    .opt1 { transform: scale(0.9); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .active .opt1 { transform: scale(1); opacity: 1; }
+
+    /* 2. Soft Float Up */
+    .opt2 { transform: translateY(20px); opacity: 0; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .active .opt2 { transform: translateY(0); opacity: 1; }
+
+    /* 3. Soft Drop Down */
+    .opt3 { transform: translateY(-20px); opacity: 0; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .active .opt3 { transform: translateY(0); opacity: 1; }
+
+    /* 4. Cinematic Zoom Out */
+    .opt4 { transform: scale(1.08); opacity: 0; transition: all 0.5s cubic-bezier(0.2, 0, 0, 1); }
+    .active .opt4 { transform: scale(1); opacity: 1; }
+
+    /* 5. Smooth Slide Right */
+    .opt5 { transform: translateX(-30px); opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .active .opt5 { transform: translateX(0); opacity: 1; }
+
+    /* 6. Smooth Slide Left */
+    .opt6 { transform: translateX(30px); opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .active .opt6 { transform: translateX(0); opacity: 1; }
+
+    /* 7. Apple Sheet Slide */
+    .opt7 { transform: translateY(100%); opacity: 1; transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); }
+    .active .opt7 { transform: translateY(0); }
+
+    /* 8. Pure Elegant Fade (No Movement) */
+    .opt8 { transform: scale(1); opacity: 0; transition: opacity 0.5s ease; }
+    .active .opt8 { opacity: 1; }
+
+    /* 9. Gentle Tilt */
+    .opt9 { transform: perspective(600px) rotateX(10deg) translateY(10px); opacity: 0; transition: all 0.4s ease-out; }
+    .active .opt9 { transform: perspective(600px) rotateX(0deg) translateY(0); opacity: 1; }
+
+    /* 10. Diagonal Glide */
+    .opt10 { transform: translate(15px, 15px); opacity: 0; transition: all 0.4s cubic-bezier(0.33, 1, 0.68, 1); }
+    .active .opt10 { transform: translate(0, 0); opacity: 1; }
+
+  </style>
+</head>
+<body>
+  
+  <div class="col">
+    <h2 style="margin-bottom: 5px;">Smooth Entrances</h2>
+    <p style="color:#94a3b8; font-size:14px; margin-bottom: 20px; text-align:center;">Zero bouncing. Elegant fade outs.</p>
+    <button class="opt-btn" onclick="openModal('opt1')">1. Material Scale</button>
+    <button class="opt-btn" onclick="openModal('opt2')">2. Soft Float Up</button>
+    <button class="opt-btn" onclick="openModal('opt3')">3. Soft Drop Down</button>
+    <button class="opt-btn" onclick="openModal('opt4')">4. Cinematic Zoom Out</button>
+    <button class="opt-btn" onclick="openModal('opt5')">5. Smooth Slide Right</button>
+  </div>
+
+  <div class="col" style="margin-top: 60px;">
+    <button class="opt-btn" onclick="openModal('opt6')">6. Smooth Slide Left</button>
+    <button class="opt-btn" onclick="openModal('opt7')">7. Apple iOS Sheet</button>
+    <button class="opt-btn" onclick="openModal('opt8')">8. Pure Elegant Fade</button>
+    <button class="opt-btn" onclick="openModal('opt9')">9. Gentle Upward Tilt</button>
+    <button class="opt-btn" onclick="openModal('opt10')">10. Diagonal Glide</button>
+  </div>
+
+  <div class="modal-overlay" id="overlay" onclick="closeModal()">
+    <div class="modal" id="modalBox" onclick="event.stopPropagation()">
+      <div style="font-size: 3rem; margin-bottom: 10px;">☁️</div>
+      <h3 style="margin-top:0; color: white;">Smooth Operator</h3>
+      <p style="color:#94a3b8; line-height: 1.5; font-size:14px;">Notice how gracefully it enters and leaves. There is no aggressive bouncing—just pure, polished easing curves.</p>
+      <button onclick="closeModal()" style="margin-top:20px; padding:10px 24px; border-radius:8px; border:none; background:#0ea5e9; color:white; font-weight:bold; cursor:pointer; font-family:'Inter',sans-serif;">Gracefully Close</button>
+    </div>
+  </div>
+
+  <script>
+    function openModal(opt) {
+      const modal = document.getElementById('modalBox');
+      const overlay = document.getElementById('overlay');
+      modal.className = 'modal ' + opt;
+      // Small delay to ensure CSS applies before adding active class
+      setTimeout(() => overlay.classList.add('active'), 10);
+    }
+    
+    function closeModal() {
+      document.getElementById('overlay').classList.remove('active');
+    }
+  </script>
+</body>
+</html>
