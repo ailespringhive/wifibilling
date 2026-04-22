@@ -265,65 +265,100 @@ class _MainShellState extends State<MainShell> {
         duration: const Duration(milliseconds: 200),
         child: _screens[_currentIndex],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.bgCard,
-          border: const Border(
-            top: BorderSide(color: AppTheme.border, width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      bottomNavigationBar: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalWidth = constraints.maxWidth;
+          final itemWidth = totalWidth / 5;
+          const bubbleWidth = 64.0;
+          final leftPos = (itemWidth * _currentIndex) + (itemWidth - bubbleWidth) / 2;
+          final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+          return Container(
+            height: 70 + bottomPadding,
+            color: AppTheme.bgDark, // matches body background so gap looks transparent
+            child: Stack(
+              clipBehavior: Clip.none,
               children: [
-                _buildNavItem(0, AppIcons.homeSvg, 'Dashboard'),
-                _buildNavItem(1, AppIcons.customerSvg, 'Customers'),
-                _buildNavItem(2, AppIcons.billSvg, 'Bills', size: 34),
-                _buildNavItem(3, AppIcons.receiptSvg, 'History'),
-                _buildNavItem(4, AppIcons.profileSvg, 'Profile'),
+                // 1. The White Bar Background
+                Positioned(
+                  left: 0, right: 0, bottom: 0,
+                  height: 70 + bottomPadding,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.bgCard,
+                      border: const Border(top: BorderSide(color: AppTheme.border, width: 1)),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // 2. The Sliding Magic Indicator Bubble
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutBack,
+                  bottom: 35 + bottomPadding, // Stick out halfway
+                  left: leftPos,
+                  child: Container(
+                    width: bubbleWidth,
+                    height: bubbleWidth,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF27272A), // The dark active color
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.bgDark, width: 6), // Seamless gap illusion
+                    ),
+                  ),
+                ),
+
+                // 3. The Interactive Icons Row
+                Positioned(
+                  left: 0, right: 0, bottom: 0,
+                  height: 70 + bottomPadding,
+                  child: SafeArea(
+                    bottom: true,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildNavItem(0, AppIcons.homeSvg),
+                        _buildNavItem(1, AppIcons.customerSvg),
+                        _buildNavItem(2, AppIcons.billSvg),
+                        _buildNavItem(3, AppIcons.receiptSvg),
+                        _buildNavItem(4, AppIcons.profileSvg),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
 
-  Widget _buildNavItem(int index, String svgStr, String label, {double size = 26}) {
+  Widget _buildNavItem(int index, String svgStr) {
     final isActive = _currentIndex == index;
-    final color = isActive ? const Color(0xFF27272A) : Colors.grey.shade400;
+    final color = isActive ? Colors.white : Colors.grey.shade400;
     
-    return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppIcons.icon(svgStr, color: color, size: size),
-            const SizedBox(height: 4),
-            // Active dot indicator
-            Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF27272A) : Colors.transparent,
-                shape: BoxShape.circle,
-              ),
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _currentIndex = index),
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: 70,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutBack,
+            transform: Matrix4.identity()..translate(0.0, isActive ? -35.0 : 0.0), // slides perfectly into the bubble!
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AppIcons.icon(svgStr, color: color, size: 26),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
