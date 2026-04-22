@@ -221,6 +221,16 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         notes: updatedNotes,
       );
 
+      // 2. Notify admin dashboard (fire-and-forget — never blocks the receipt flow)
+      _billingService.sendAdminPaymentNotification(
+        collectorId: auth.collectorId,
+        collectorName: collectorName,
+        customerName: _customer?.fullName ?? billing.customerName ?? 'Customer',
+        amountPaid: amountPaid,
+        billingMonth: billing.billingMonth,
+        isFullyPaid: isFullyPaid,
+      ).catchError((e) => debugPrint('[CustomerDetail] Admin notif error: $e'));
+
       // 2. Handle advance payment (overpayment beyond plan rate)
       int advanceMonths = 0;
       double remaining = 0;

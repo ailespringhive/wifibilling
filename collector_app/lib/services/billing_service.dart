@@ -28,6 +28,55 @@ class BillingService {
     }
   }
 
+  /// Send a payment notification to the Admin dashboard.
+  /// Writes to the shared `notifications` collection so the web-admin
+  /// picks it up via realtime subscription and renders the collector's photo.
+  Future<void> sendAdminPaymentNotification({
+    required String collectorId,
+    required String collectorName,
+    required String customerName,
+    required double amountPaid,
+    required String billingMonth,
+    required bool isFullyPaid,
+  }) async {
+    try {
+      final url = Uri.parse(
+        '$appwriteEndpoint/databases/$appwriteDatabaseId/collections/${AppCollections.notifications}/documents',
+      );
+      final body = jsonEncode({
+        'documentId': 'unique()',
+        'data': {
+          'title': 'Payment Received',
+          'message':
+              '$collectorName collected ₱${amountPaid.toStringAsFixed(0)} from $customerName'
+              ' (${isFullyPaid ? 'Fully Paid' : 'Partial'}) — $billingMonth',
+          'type': 'status_update',
+          'collectorId': collectorId,
+          'senderId': collectorId,
+          'isRead': false,
+          'createdAt': DateTime.now().toIso8601String(),
+        },
+        'permissions': ['read("any")', 'update("any")', 'delete("any")'],
+      });
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Appwrite-Project': appwriteProjectId,
+          'X-Appwrite-Key': appwriteApiKey,
+        },
+        body: body,
+      );
+      if (response.statusCode != 201 && response.statusCode != 200) {
+        debugPrint('[BillingService] Admin notification failed: ${response.statusCode} ${response.body}');
+      } else {
+        debugPrint('[BillingService] Admin payment notification sent ✓');
+      }
+    } catch (e) {
+      debugPrint('[BillingService] Could not send admin payment notification: $e');
+    }
+  }
+
   Future<List<Billing>> getAssignedBillings(String collectorId) async {
     final cacheService = LocalCacheService();
     final isOnline = await cacheService.isOnline;

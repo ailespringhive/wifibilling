@@ -340,11 +340,22 @@ function navigateTo(page) {
         const senderId = doc.senderId || doc.collectorId || doc.technicianId;
         const senderImage = senderId ? (profileMap[senderId] || null) : null;
 
+        // Determine icon and color based on notification title
+        let icon = 'engineering';
+        let color = 'var(--accent-blue)';
+        if (doc.title?.includes('Payment Received') || doc.title?.includes('Payment')) {
+          icon = 'payments';
+          color = 'var(--accent-emerald)';
+        } else if (doc.title?.includes('Resolved')) {
+          icon = 'check_circle';
+          color = 'var(--accent-emerald)';
+        }
+
         return {
           id: doc.$id,
-          icon: doc.title?.includes('Resolved') ? 'check_circle' : 'engineering',
-          color: doc.title?.includes('Resolved') ? 'var(--accent-emerald)' : 'var(--accent-blue)',
-          text: `<strong>${doc.title || 'Repair Update'}</strong> — ${doc.message || ''}`,
+          icon,
+          color,
+          text: `<strong>${doc.title || 'Update'}</strong> — ${doc.message || ''}`,
           time: timeStr,
           read: isRead,
           fromAppwrite: true,
