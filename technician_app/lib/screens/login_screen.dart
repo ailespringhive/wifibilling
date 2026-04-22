@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen>
           return Offset(4.0 + (16.0 * t), 4.0 + (16.0 * t));
         }
 
-        final textStyle = GoogleFonts.inter(
+        final textStyle = GoogleFonts.poppins(
           fontSize: 50,
           fontWeight: FontWeight.w900,
           letterSpacing: -1.5,
@@ -117,8 +117,9 @@ class _LoginScreenState extends State<LoginScreen>
           alignment: Alignment.center,
           transform: Matrix4.identity()
             ..rotateZ(-10 * math.pi / 180)
-            ..multiply(Matrix4.identity()
-              ..setEntry(0, 1, math.tan(-10 * math.pi / 180))),
+            ..multiply(
+              Matrix4.identity()..setEntry(0, 1, math.tan(-10 * math.pi / 180)),
+            ),
           child: SizedBox(
             width: 280,
             height: 70,
@@ -128,37 +129,42 @@ class _LoginScreenState extends State<LoginScreen>
                 Positioned(
                   left: getDepthOffset(0.15).dx,
                   top: getDepthOffset(0.15).dy,
-                  child: Text(text,
-                      style: textStyle.copyWith(
-                          color: const Color(0xFFFF4D4D))),
+                  child: Text(
+                    text,
+                    style: textStyle.copyWith(color: const Color(0xFFFF4D4D)),
+                  ),
                 ),
                 Positioned(
                   left: getDepthOffset(0.10).dx,
                   top: getDepthOffset(0.10).dy,
-                  child: Text(text,
-                      style: textStyle.copyWith(
-                          color: const Color(0xFFFF4D4D))),
+                  child: Text(
+                    text,
+                    style: textStyle.copyWith(color: const Color(0xFFFF4D4D)),
+                  ),
                 ),
                 Positioned(
                   left: getDepthOffset(0.05).dx,
                   top: getDepthOffset(0.05).dy,
-                  child: Text(text,
-                      style: textStyle.copyWith(
-                          color: const Color(0xFFFF4D4D))),
+                  child: Text(
+                    text,
+                    style: textStyle.copyWith(color: const Color(0xFFFF4D4D)),
+                  ),
                 ),
                 Positioned(
                   left: getDepthOffset(0.0).dx,
                   top: getDepthOffset(0.0).dy,
-                  child: Text(text,
-                      style: textStyle.copyWith(
-                          color: const Color(0xFFFF4D4D))),
+                  child: Text(
+                    text,
+                    style: textStyle.copyWith(color: const Color(0xFFFF4D4D)),
+                  ),
                 ),
                 Positioned(
                   left: getWave(0.0) * 18.0,
                   top: getWave(0.0) * -6.0,
-                  child: Text(text,
-                      style: textStyle.copyWith(
-                          color: const Color(0xFF00D9FF))),
+                  child: Text(
+                    text,
+                    style: textStyle.copyWith(color: const Color(0xFF00D9FF)),
+                  ),
                 ),
               ],
             ),
@@ -181,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen>
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1A1A1A),
@@ -204,9 +210,10 @@ class _LoginScreenState extends State<LoginScreen>
             boxShadow: focusNode.hasFocus
                 ? [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4))
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
                   ]
                 : [],
           ),
@@ -214,9 +221,10 @@ class _LoginScreenState extends State<LoginScreen>
             controller: controller,
             focusNode: focusNode,
             obscureText: isPassword ? _obscurePassword : false,
-            keyboardType:
-                isPassword ? TextInputType.text : TextInputType.emailAddress,
-            style: GoogleFonts.inter(color: Colors.black87, fontSize: 15),
+            keyboardType: isPassword
+                ? TextInputType.text
+                : TextInputType.emailAddress,
+            style: GoogleFonts.poppins(color: Colors.black87, fontSize: 15),
             decoration: InputDecoration(
               prefixIcon: Padding(
                 padding: const EdgeInsets.only(left: 12.0, right: 8.0),
@@ -237,15 +245,19 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
               hintText: hint,
-              hintStyle:
-                  GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 15),
+              hintStyle: GoogleFonts.poppins(
+                color: Colors.grey.shade400,
+                fontSize: 15,
+              ),
               border: InputBorder.none,
               filled: true,
               fillColor: Colors.transparent,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
               suffixIcon: isPassword
                   ? IconButton(
                       icon: HugeIcon(
@@ -287,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen>
                 const SizedBox(height: 32),
                 Text(
                   'Sign in to continue to WiFi Technician',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 15,
                     color: Colors.grey.shade600,
                   ),
@@ -320,12 +332,13 @@ class _LoginScreenState extends State<LoginScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     InkWell(
-                      onTap: () =>
-                          setState(() => _rememberMe = !_rememberMe),
+                      onTap: () => setState(() => _rememberMe = !_rememberMe),
                       borderRadius: BorderRadius.circular(6),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 2),
+                          vertical: 4,
+                          horizontal: 2,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -338,14 +351,15 @@ class _LoginScreenState extends State<LoginScreen>
                                     setState(() => _rememberMe = val ?? false),
                                 activeColor: const Color(0xFF1A1A1A),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4)),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
                                 side: BorderSide(color: Colors.grey.shade400),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Remember me',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: Colors.grey.shade700,
                                 fontWeight: FontWeight.w500,
@@ -360,18 +374,25 @@ class _LoginScreenState extends State<LoginScreen>
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: Text('Reset Password',
-                                style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold)),
+                            title: Text(
+                              'Reset Password',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             content: Text(
-                                'Please contact the Administrator to reset your password.',
-                                style: GoogleFonts.inter()),
+                              'Please contact the Administrator to reset your password.',
+                              style: GoogleFonts.poppins(),
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: Text('OK',
-                                    style: GoogleFonts.inter(
-                                        color: Colors.blue)),
+                                child: Text(
+                                  'OK',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.blue,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -379,13 +400,15 @@ class _LoginScreenState extends State<LoginScreen>
                       },
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
                         'Forgot Password?',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1A1A1A),
@@ -406,22 +429,26 @@ class _LoginScreenState extends State<LoginScreen>
                         if (auth.error != null) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.red.shade50,
                               borderRadius: BorderRadius.circular(16),
-                              border:
-                                  Border.all(color: Colors.red.shade200),
+                              border: Border.all(color: Colors.red.shade200),
                             ),
                             child: Row(
                               children: [
-                                HugeIcon(icon: HugeIcons.strokeRoundedAlertCircle,
-                                    color: Colors.red, size: 20.0),
+                                HugeIcon(
+                                  icon: HugeIcons.strokeRoundedAlertCircle,
+                                  color: Colors.red,
+                                  size: 20.0,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     auth.error!,
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 13,
                                       color: Colors.red.shade800,
                                       fontWeight: FontWeight.w500,
@@ -437,8 +464,9 @@ class _LoginScreenState extends State<LoginScreen>
                         // Log In button with press animation
                         GestureDetector(
                           onTapDown: (_) {
-                            if (!auth.isLoading)
+                            if (!auth.isLoading) {
                               setState(() => _isButtonPressed = true);
+                            }
                           },
                           onTapUp: (_) {
                             setState(() => _isButtonPressed = false);
@@ -461,11 +489,12 @@ class _LoginScreenState extends State<LoginScreen>
                                   ? []
                                   : [
                                       BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.15),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.15,
+                                        ),
                                         blurRadius: 10,
                                         offset: const Offset(0, 4),
-                                      )
+                                      ),
                                     ],
                             ),
                             child: Center(
@@ -480,7 +509,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     )
                                   : Text(
                                       'Log In',
-                                      style: GoogleFonts.inter(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,

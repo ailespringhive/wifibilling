@@ -107,6 +107,76 @@ export function skeletonRows(columns = 5, rows = 5) {
 }
 
 /**
+ * Custom Alert Dialog — replaces native alert()
+ */
+export function showAlert(message, { title = 'Alert', buttonText = 'OK', type = 'error' } = {}) {
+  return new Promise((resolve) => {
+    const accentColor = type === 'error' ? 'var(--accent-rose)' : 'var(--accent-blue)';
+    const iconName = type === 'error' ? 'close' : 'info_outline';
+    const bgOpacity = type === 'error' ? 'rgba(244, 63, 94, 0.12)' : 'rgba(56, 189, 248, 0.12)';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.cssText = 'z-index:9000; display:flex; align-items:center; justify-content:center;';
+    overlay.innerHTML = `
+      <div style="
+        background: var(--bg-secondary);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 32px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      " id="alert-dialog-box">
+        <div style="
+          width: 56px; height: 56px; border-radius: 50%;
+          background: ${bgOpacity};
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 20px auto;
+        ">
+          <span class="material-icons-outlined" style="font-size: 28px; color: ${accentColor};">${iconName}</span>
+        </div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">${title}</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 28px; line-height: 1.5;">${message}</p>
+        <button id="alert-ok-btn" style="
+          padding: 10px 32px; border-radius: 12px; font-weight: 600; font-size: 0.88rem;
+          background: ${accentColor}; border: none; color: #fff; width: 100%;
+          cursor: pointer; font-family: inherit; transition: all 0.2s ease;
+        ">${buttonText}</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    requestAnimationFrame(() => {
+      overlay.classList.add('active');
+      const box = document.getElementById('alert-dialog-box');
+      if (box) {
+        box.style.transform = 'scale(1)';
+        box.style.opacity = '1';
+      }
+    });
+
+    const close = () => {
+      const box = document.getElementById('alert-dialog-box');
+      if (box) {
+        box.style.transform = 'scale(0.9)';
+        box.style.opacity = '0';
+      }
+      overlay.classList.remove('active');
+      setTimeout(() => overlay.remove(), 300);
+      resolve();
+    };
+
+    document.getElementById('alert-ok-btn').addEventListener('click', close);
+  });
+}
+
+/**
  * Custom confirmation dialog — replaces native confirm()
  * Returns a Promise<boolean>
  */

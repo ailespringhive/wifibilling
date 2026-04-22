@@ -48,9 +48,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   final _provinceCtrl = TextEditingController();
 
   // Image editing state
-  List<String> _existingImages = [];
-  List<Uint8List> _newImageBytesList = [];
-  List<String> _newImageNamesList = [];
+  final List<String> _existingImages = [];
+  final List<Uint8List> _newImageBytesList = [];
+  final List<String> _newImageNamesList = [];
 
   // Location editing state
   LatLng? _editingLocation;
@@ -921,7 +921,7 @@ class _PhotoCarouselWidgetState extends State<_PhotoCarouselWidget> {
             Image.network(
               widget.imageUrls[index],
               fit: BoxFit.cover,
-              errorBuilder: (ctx, _, __) => const Center(
+              errorBuilder: (ctx, _, _) => const Center(
                 child: HugeIcon(icon: HugeIcons.strokeRoundedImage01, color: AppTheme.textMuted, size: 32.0),
               ),
             ),

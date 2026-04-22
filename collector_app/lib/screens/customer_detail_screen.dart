@@ -494,7 +494,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                         ],
                                       ),
                                     ),
-                                    const Icon(Icons.chevron_right, color: Colors.white70, size: 24),
                                   ],
                                 ),
                               ),

@@ -84,19 +84,19 @@ class Billing {
     String? paymentStatus,
   }) {
     return Billing(
-      id: this.id,
-      customerId: this.customerId,
-      subscriptionId: this.subscriptionId,
-      billingMonth: this.billingMonth,
-      amount: this.amount,
+      id: id,
+      customerId: customerId,
+      subscriptionId: subscriptionId,
+      billingMonth: billingMonth,
+      amount: amount,
       paymentStatus: paymentStatus ?? this.paymentStatus,
-      dueDate: this.dueDate,
-      paidDate: this.paidDate,
-      collectedBy: this.collectedBy,
-      notes: this.notes,
-      customerName: this.customerName,
-      createdAt: this.createdAt,
-      amountPaid: this.amountPaid,
+      dueDate: dueDate,
+      paidDate: paidDate,
+      collectedBy: collectedBy,
+      notes: notes,
+      customerName: customerName,
+      createdAt: createdAt,
+      amountPaid: amountPaid,
     );
   }
 }

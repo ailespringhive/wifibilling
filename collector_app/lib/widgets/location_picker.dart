@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 class LocationPicker extends StatefulWidget {
   final LatLng initialLocation;
   
-  const LocationPicker({Key? key, required this.initialLocation}) : super(key: key);
+  const LocationPicker({super.key, required this.initialLocation});
 
   @override
   _LocationPickerState createState() => _LocationPickerState();

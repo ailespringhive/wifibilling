@@ -78,7 +78,7 @@ class _OfflineSyncScreenState extends State<OfflineSyncScreen> {
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     itemCount: _queue.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final item = _queue[index];
                       final dateStr = item['timestamp'] ?? '';

@@ -435,8 +435,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_weeklyCollected[d]! > maxY) maxY = _weeklyCollected[d]!;
     }
     
-    if (maxY == 0) maxY = 10;
-    else maxY = maxY * 1.5;
+    if (maxY == 0) {
+      maxY = 10;
+    } else {
+      maxY = maxY * 1.5;
+    }
 
     return PopInBounce(
       delay: const Duration(milliseconds: 300),

@@ -51,10 +51,8 @@ class BillingService {
               '$collectorName collected ₱${amountPaid.toStringAsFixed(0)} from $customerName'
               ' (${isFullyPaid ? 'Fully Paid' : 'Partial'}) — $billingMonth',
           'type': 'status_update',
-          'collectorId': collectorId,
-          'senderId': collectorId,
+          'technicianId': collectorId, // Appwrite schema only has technicianId right now
           'isRead': false,
-          'createdAt': DateTime.now().toIso8601String(),
         },
         'permissions': ['read("any")', 'update("any")', 'delete("any")'],
       });

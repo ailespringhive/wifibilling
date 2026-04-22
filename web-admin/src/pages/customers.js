@@ -1,4 +1,4 @@
-import { statusBadge, formatCurrency, formatDate, getInitials, showToast, openModal, closeModal, skeletonRows } from '../components/ui-helpers.js';
+import { statusBadge, formatCurrency, formatDate, getInitials, showToast, openModal, closeModal, skeletonRows, showAlert } from '../components/ui-helpers.js';
 import { MobileNotificationService } from '../services/notification.service.js';
 import { ENDPOINT, PROJECT_ID, API_KEY, DATABASE_ID } from '../config/appwrite.js';
 
@@ -515,7 +515,7 @@ export function initCustomersPage(services, navigateFn) {
     for (const field of requiredFields) {
       const el = document.getElementById(field.id);
       if (!el || !el.value.trim()) {
-        alert(`❌ Please fill in the required field: ${field.name}`);
+        showAlert(`❌ Please fill in the required field: ${field.name}`);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
@@ -670,7 +670,7 @@ export function initCustomersPage(services, navigateFn) {
         if (typeof error === 'string') msg = error;
         else if (error && error.message) msg = error.message;
         else if (error && typeof error === 'object') msg = JSON.stringify(error);
-        alert('Save Error: ' + String(msg)); // Fallback alert
+        showAlert('Save Error: ' + String(msg)); // Fallback alert
         if (typeof showToast !== 'undefined') showToast(msg, 'error');
       }
     } finally {
@@ -989,7 +989,7 @@ export function initCustomersPage(services, navigateFn) {
       closeModal('repair-modal');
     } catch (e) {
       console.error('Submit Repair Error:', e);
-      alert('FAILED to create Repair Ticket! Appwrite Error: ' + e.message);
+      showAlert('FAILED to create Repair Ticket! Appwrite Error: ' + e.message);
       showToast('Error: ' + e.message, 'danger');
     } finally {
       btn.disabled = false;

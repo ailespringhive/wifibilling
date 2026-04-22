@@ -633,7 +633,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: _pairedDevices.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, color: AppTheme.border),
+                separatorBuilder: (_, _) => const Divider(height: 1, color: AppTheme.border),
                 itemBuilder: (_, i) {
                   final device = _pairedDevices[i];
                   final isSelected = _selectedMac == device.macAdress;
