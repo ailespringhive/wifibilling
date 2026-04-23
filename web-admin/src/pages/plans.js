@@ -265,7 +265,7 @@ export function initPlansPage(services) {
     const sortedByRate = [...activePlans].sort((a, b) => a.monthlyRate - b.monthlyRate);
     const recommendedId = sortedByRate.length >= 2 ? (sortedByRate[Math.floor(sortedByRate.length / 2)].$id || sortedByRate[Math.floor(sortedByRate.length / 2)].id) : null;
 
-    grid.innerHTML = plans.map(p => {
+    grid.innerHTML = visiblePlans.map(p => {
       const isActive = p.isActive !== false;
       const speedNum = parseInt(p.speed) || 50;
       const isRecommended = (p.$id || p.id) === recommendedId;
