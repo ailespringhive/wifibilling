@@ -250,19 +250,17 @@ async function fetchRepairNotifications() {
     ]);
     const documents = res.documents || [];
     
-    // Batch fetch sender profiles
-    const senderIds = [...new Set(documents.map(d => d.technicianId || d.senderId || d.collectorId).filter(Boolean))];
+    // Fetch a global snapshot of all profiles to build ID and Name dictionaries
+    const profilesRes = await databases.listDocuments(DATABASE_ID, 'users_profile', [Query.limit(200)]);
     const profileMap = {};
-    await Promise.allSettled(senderIds.map(async id => {
-      try {
-        const pRes = await databases.getDocument(DATABASE_ID, 'users_profile', id);
-        profileMap[id] = {
-          image: pRes.profileImage || null,
-          firstName: pRes.firstName || '',
-          lastName: pRes.lastName || '',
-        };
-      } catch (_) {}
-    }));
+    const nameMap = {};
+    profilesRes.documents.forEach(p => {
+      profileMap[p.userId] = p;
+      profileMap[p.$id] = p;
+      const fullName = `${(p.firstName || '').toLowerCase()} ${(p.lastName || '')}`.trim().toLowerCase();
+      nameMap[fullName] = p;
+      nameMap[`${(p.firstName || '').toLowerCase()}`.trim()] = p;
+    });
 
     // We get local copy so we don't regress read status while background updates run
     const localCopy = loadNotifications();
@@ -272,7 +270,16 @@ async function fetchRepairNotifications() {
       const isRead = (localMatch && localMatch.read) || (doc.isRead === true);
       
       const senderId = doc.technicianId || doc.senderId || doc.collectorId;
-      const senderProfile = senderId ? (profileMap[senderId] || null) : null;
+      let senderProfile = senderId ? (profileMap[senderId] || null) : null;
+      
+      if (!senderProfile && doc.message) {
+        const match = doc.message.match(/^(.+?) (updated|resolved|^collected)/i);
+        if (match) {
+          const extractedName = match[1].trim().toLowerCase();
+          senderProfile = nameMap[extractedName] || null;
+        }
+      }
+
       let initials = null;
       if (senderProfile && (senderProfile.firstName || senderProfile.lastName)) {
         initials = ((senderProfile.firstName?.[0] || '') + (senderProfile.lastName?.[0] || '')).toUpperCase();
@@ -299,7 +306,7 @@ async function fetchRepairNotifications() {
         time: _timeAgo(doc.$createdAt),
         read: isRead,
         fromAppwrite: true,
-        senderImage: senderProfile?.image || null,
+        senderImage: senderProfile?.profileImage || senderProfile?.image || null,
         initials: initials,
       };
     });
