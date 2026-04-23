@@ -40,15 +40,17 @@ Future<void> main() async {
   );
 
   runZonedGuarded(() {
-    runApp(const TechnicianApp());
+    runZoned(() {
+      runApp(const TechnicianApp());
+    }, zoneSpecification: ZoneSpecification(
+      print: (self, parent, zone, line) {
+        if (line.contains('Appwrite is using localStorage for session management')) return;
+        parent.print(zone, line);
+      },
+    ));
   }, (error, stack) {
     debugPrint('Uncaught app error: $error');
-  }, zoneSpecification: ZoneSpecification(
-    print: (self, parent, zone, line) {
-      if (line.contains('Appwrite is using localStorage for session management')) return;
-      parent.print(zone, line);
-    },
-  ));
+  });
 }
 
 class TechnicianApp extends StatelessWidget {
