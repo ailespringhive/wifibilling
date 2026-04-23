@@ -284,6 +284,44 @@
       margin-top: auto;
     }
 
+    /* ── Action buttons ── */
+    .act-btn {
+      width: 30px; height: 30px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .18s;
+    }
+    .act-btn .material-icons-outlined { font-size: 15px; }
+    .act-btn.notes  { color: #a78bfa; border-color: rgba(167,139,250,.25); }
+    .act-btn.notes:hover  { background: rgba(167,139,250,.15); border-color: rgba(167,139,250,.5); }
+    .act-btn.edit   { color: #94a3b8; }
+    .act-btn.edit:hover   { background: rgba(255,255,255,.08); color: #f1f5f9; }
+    .act-btn.del    { color: #fb7185; border-color: rgba(244,63,94,.2); }
+    .act-btn.del:hover    { background: rgba(244,63,94,.12); border-color: rgba(244,63,94,.45); }
+
+    /* ── Confirm dialog ── */
+    .confirm-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(6px);
+      z-index: 300;
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-box {
+      background: #0f1428; border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px; padding: 28px 28px 24px;
+      max-width: 400px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.6);
+      animation: modalIn .28s cubic-bezier(.22,1,.36,1) both;
+    }
+    .confirm-icon { font-size: 2rem; margin-bottom: 12px; }
+    .confirm-title { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; color: #f1f5f9; margin-bottom: 8px; }
+    .confirm-msg   { font-size: .86rem; color: #94a3b8; line-height: 1.5; margin-bottom: 22px; }
+    .confirm-btns  { display: flex; gap: 10px; justify-content: flex-end; }
+
     /* ── Spinner ── */
     .spinner {
       width: 32px; height: 32px;
@@ -559,6 +597,92 @@
     </form>
   </div>
 </div>
+<!-- ── Edit Ticket Modal ── -->
+<div class="modal-overlay" id="edit-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:38px;height:38px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-outlined" style="font-size:20px;color:#94a3b8;">edit</span>
+        </div>
+        <div>
+          <div class="modal-title">Edit Ticket</div>
+          <div style="font-size:.78rem;color:#64748b;margin-top:1px;">Update issue, priority or status</div>
+        </div>
+      </div>
+      <button class="modal-close" id="close-edit-btn" aria-label="Close">✕</button>
+    </div>
+    <form id="edit-form" novalidate>
+      <input type="hidden" id="edit-id">
+      <div class="form-group">
+        <label class="form-label" for="edit-issue">Issue Description <span class="required">*</span></label>
+        <textarea class="form-textarea" id="edit-issue" placeholder="Describe the issue…" required></textarea>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label" for="edit-priority">Priority</label>
+          <select class="filter-select" id="edit-priority" style="width:100%;">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label" for="edit-status">Status</label>
+          <select class="filter-select" id="edit-status" style="width:100%;">
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="cancel-edit-btn">Cancel</button>
+        <button type="submit" class="btn btn-submit" id="save-edit-btn">
+          <span class="material-icons-outlined" style="font-size:16px;">save</span>
+          <span id="save-edit-label">Save Changes</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Notes Modal (read-only view of technician notes) ── -->
+<div class="modal-overlay" id="notes-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:38px;height:38px;border-radius:8px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-outlined" style="font-size:20px;color:#a78bfa;">chat_bubble_outline</span>
+        </div>
+        <div>
+          <div class="modal-title">Technician Notes</div>
+          <div style="font-size:.78rem;color:#64748b;margin-top:1px;" id="notes-subtitle">Progress updates from your technician</div>
+        </div>
+      </div>
+      <button class="modal-close" id="close-notes-btn" aria-label="Close">✕</button>
+    </div>
+    <div id="notes-body" style="min-height:100px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:16px;font-size:.88rem;color:#94a3b8;line-height:1.7;white-space:pre-wrap;">No notes yet.</div>
+    <div class="modal-footer" style="border-top:1px solid rgba(255,255,255,.07);padding-top:16px;margin-top:16px;justify-content:flex-end;display:flex;">
+      <button class="btn btn-ghost" id="cancel-notes-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Confirm ── -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">Delete Ticket?</div>
+    <div class="confirm-msg">This action cannot be undone. The ticket will be permanently removed from the system.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost btn-sm" id="confirm-cancel-btn">Cancel</button>
+      <button class="btn btn-sm" id="confirm-delete-btn" style="background:rgba(244,63,94,.15);border:1px solid rgba(244,63,94,.4);color:#fb7185;">Delete</button>
+    </div>
+  </div>
+</div>
 
 <script>
   /* ── Config ── */
@@ -647,6 +771,7 @@
       if (!res.ok) throw new Error('Fetch failed');
       const data = await res.json();
       const docs = data.documents || [];
+      cachedDocs = docs;   // keep reference for action modals
 
       currentPage = page;
       hasMore     = docs.length === PER_PAGE;
@@ -696,14 +821,25 @@
                   ? `<a class="proof-link" href="${t.imageUrls[t.imageUrls.length-1]}" target="_blank" rel="noopener"><span class="material-icons-outlined">image</span>View</a>`
                   : '<span style="color:#475569;">—</span>'}</td>
               <td>
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <button title="View details" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:6px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;cursor:default;color:#60a5fa;">
-                    <span class="material-icons-outlined" style="font-size:15px;">visibility</span>
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <button class="act-btn notes" data-notes="${t.$id}" title="Technician Notes">
+                    <span class="material-icons-outlined">chat_bubble_outline</span>
+                  </button>
+                  <button class="act-btn edit" data-edit="${t.$id}" title="Edit Ticket">
+                    <span class="material-icons-outlined">edit</span>
+                  </button>
+                  <button class="act-btn del" data-del="${t.$id}" title="Delete Ticket">
+                    <span class="material-icons-outlined">delete</span>
                   </button>
                 </div>
               </td>
             </tr>`;
         }).join('');
+
+        // Re-attach action listeners after every render
+        tbody.querySelectorAll('[data-notes]').forEach(b => b.addEventListener('click', () => openNotesModal(b.dataset.notes)));
+        tbody.querySelectorAll('[data-edit]').forEach(b  => b.addEventListener('click', () => openEditModal(b.dataset.edit)));
+        tbody.querySelectorAll('[data-del]').forEach(b   => b.addEventListener('click', () => confirmDelete(b.dataset.del)));
       }
 
       // notify about new arrivals (silent poll only)
@@ -854,6 +990,88 @@
       icon.textContent  = 'send';
       label.textContent = 'Submit Ticket';
     }
+  });
+
+  /* ── Edit Modal ── */
+  let cachedDocs = [];  // populated after each loadTickets call
+
+  function openEditModal(ticketId) {
+    const t = cachedDocs.find(d => d.$id === ticketId);
+    if (!t) return;
+    document.getElementById('edit-id').value     = t.$id;
+    document.getElementById('edit-issue').value   = t.issueDescription || t.issue || '';
+    document.getElementById('edit-priority').value = t.priority || 'medium';
+    document.getElementById('edit-status').value   = t.status || 'pending';
+    document.getElementById('edit-overlay').classList.add('open');
+    stopPolling();
+  }
+
+  document.getElementById('close-edit-btn').addEventListener('click',  () => { document.getElementById('edit-overlay').classList.remove('open'); startPolling(); });
+  document.getElementById('cancel-edit-btn').addEventListener('click', () => { document.getElementById('edit-overlay').classList.remove('open'); startPolling(); });
+  document.getElementById('edit-overlay').addEventListener('click', e => { if (e.target === document.getElementById('edit-overlay')) { document.getElementById('edit-overlay').classList.remove('open'); startPolling(); } });
+
+  document.getElementById('edit-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const id    = document.getElementById('edit-id').value;
+    const issue = document.getElementById('edit-issue').value.trim();
+    if (!issue) return;
+    const saveBtn = document.getElementById('save-edit-btn');
+    const saveLabel = document.getElementById('save-edit-label');
+    saveBtn.disabled = true; saveLabel.textContent = 'Saving…';
+    try {
+      await fetch(`${ENDPOINT}/databases/${DATABASE_ID}/collections/${COLLECTION}/documents/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': API_KEY },
+        body: JSON.stringify({ data: { issueDescription: issue, issue, priority: document.getElementById('edit-priority').value, status: document.getElementById('edit-status').value } })
+      });
+      document.getElementById('edit-overlay').classList.remove('open');
+      toast('Ticket updated!');
+      await loadTickets(currentPage);
+      startPolling();
+    } catch(err) { toast('Failed to update: ' + err.message, 'error'); }
+    finally { saveBtn.disabled = false; saveLabel.textContent = 'Save Changes'; }
+  });
+
+  /* ── Notes Modal ── */
+  function openNotesModal(ticketId) {
+    const t = cachedDocs.find(d => d.$id === ticketId);
+    if (!t) return;
+    const notes = (t.notes && t.notes !== 'null' && t.notes.trim()) ? t.notes.trim() : 'No notes from technician yet.';
+    document.getElementById('notes-body').textContent = notes;
+    document.getElementById('notes-subtitle').textContent = t.technicianName ? `${t.technicianName}'s progress updates` : 'Progress updates from your technician';
+    document.getElementById('notes-overlay').classList.add('open');
+    stopPolling();
+  }
+
+  document.getElementById('close-notes-btn').addEventListener('click',  () => { document.getElementById('notes-overlay').classList.remove('open'); startPolling(); });
+  document.getElementById('cancel-notes-btn').addEventListener('click', () => { document.getElementById('notes-overlay').classList.remove('open'); startPolling(); });
+  document.getElementById('notes-overlay').addEventListener('click', e => { if (e.target === document.getElementById('notes-overlay')) { document.getElementById('notes-overlay').classList.remove('open'); startPolling(); } });
+
+  /* ── Delete with confirmation ── */
+  let _pendingDeleteId = null;
+
+  function confirmDelete(ticketId) {
+    _pendingDeleteId = ticketId;
+    document.getElementById('confirm-overlay').classList.add('open');
+    stopPolling();
+  }
+
+  document.getElementById('confirm-cancel-btn').addEventListener('click', () => { document.getElementById('confirm-overlay').classList.remove('open'); _pendingDeleteId = null; startPolling(); });
+
+  document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+    if (!_pendingDeleteId) return;
+    const id = _pendingDeleteId;
+    _pendingDeleteId = null;
+    document.getElementById('confirm-overlay').classList.remove('open');
+    try {
+      await fetch(`${ENDPOINT}/databases/${DATABASE_ID}/collections/${COLLECTION}/documents/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': API_KEY }
+      });
+      toast('Ticket deleted.');
+      await loadTickets(currentPage === 1 ? 1 : currentPage);
+      startPolling();
+    } catch(err) { toast('Failed to delete: ' + err.message, 'error'); startPolling(); }
   });
 
   /* ── Admin Login button — smart redirect ── */
