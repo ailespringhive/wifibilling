@@ -735,7 +735,7 @@ export function initCustomersPage(services, navigateFn) {
           </div>
         </td>
         <td>${c.phone || '—'}</td>
-        <td>${(() => { const p = allPlans.find(x => (x.$id || x.id) === c.planId); return p ? (p.name || '(Unnamed)') + ' — ₱' + (p.monthlyRate || 0).toLocaleString() : '—'; })()}</td>
+        <td>${(() => { const p = allPlans.find(x => (x.$id || x.id) === c.planId); return p ? (p.name || '(Unnamed)') + ' — ₱' + (p.monthlyRate || 0).toLocaleString() : (c.planId ? '<span style="color:var(--accent-amber); font-size:0.8rem;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">warning</span> Legacy Plan</span>' : '—'); })()}</td>
         <td>
           <select class="form-input btn-sm table-status-select" data-customer-id="${c.$id || c.id}" style="width: auto; padding: 4px 24px 4px 8px; font-size: 0.75rem; border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);" onclick="event.stopPropagation();">
             <option value="active" ${c.status === 'active' || !c.status ? 'selected' : ''}>Active</option>
