@@ -912,7 +912,7 @@ select.form-input-inline {
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--space-lg);
-  align-items: start;
+  align-items: stretch;
 }
 
 .pricing-card {
