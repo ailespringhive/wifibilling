@@ -254,7 +254,7 @@ export function initTicketsPage(services, navigateFn) {
               <div class="table-actions" style="display:flex; align-items:center; gap:4px;">
                 <button class="btn btn-ghost btn-sm btn-icon" title="Notes" data-notes="${ticket.$id}" style="color:var(--accent-purple); position:relative;">
                   <span class="material-icons-outlined" style="font-size:18px;">chat_bubble_outline</span>
-                  ${(ticket.notes && ticket.notes.trim().length > 0) ? '<div style="position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--accent-rose); border-radius:50%; box-shadow:0 0 0 2px var(--bg-card);"></div>' : ''}
+                  ${(typeof ticket.notes === 'string' && ticket.notes !== 'null' && ticket.notes.trim().length > 0) ? '<div style="position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--accent-rose); border-radius:50%; box-shadow:0 0 0 2px var(--bg-card);"></div>' : ''}
                 </button>
                 <button class="btn btn-ghost btn-sm btn-icon" title="Edit" data-edit="${ticket.$id}">
                   <span class="material-icons-outlined" style="font-size:18px;">edit</span>
