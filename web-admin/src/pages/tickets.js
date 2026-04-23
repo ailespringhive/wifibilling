@@ -228,12 +228,12 @@ export function initTicketsPage(services, navigateFn) {
             <td>${ticket.technicianName || '<span style="color:var(--text-muted); font-style:italic;">Unassigned</span>'}</td>
             <td>${proofHtml}</td>
             <td>
-              <div class="row-actions">
-                <button class="action-btn" title="Edit/Assign" data-edit="${ticket.$id}">
-                  <span class="material-icons-outlined">edit</span>
+              <div class="table-actions">
+                <button class="btn btn-ghost btn-sm btn-icon" title="Edit" data-edit="${ticket.$id}">
+                  <span class="material-icons-outlined" style="font-size:18px;">edit</span>
                 </button>
-                <button class="action-btn danger" title="Delete" data-delete="${ticket.$id}">
-                  <span class="material-icons-outlined">delete</span>
+                <button class="btn btn-ghost btn-sm btn-icon" title="Delete" data-delete="${ticket.$id}" style="color:var(--accent-rose);">
+                  <span class="material-icons-outlined" style="font-size:18px;">delete</span>
                 </button>
               </div>
             </td>
