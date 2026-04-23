@@ -764,11 +764,11 @@
 
     const offset = (page - 1) * PER_PAGE;
     const queries = [
-      JSON.stringify({ method: 'orderDesc', values: ['$createdAt'] }),
-      JSON.stringify({ method: 'limit',     values: [PER_PAGE] }),
-      JSON.stringify({ method: 'offset',    values: [offset] }),
+      'orderDesc("$createdAt")',
+      `limit(${PER_PAGE})`,
+      `offset(${offset})`
     ];
-    if (currentFilter) queries.push(JSON.stringify({ method: 'equal', values: ['status', [currentFilter]] }));
+    if (currentFilter) queries.push(`equal("status", ["${currentFilter}"])`);
 
     const params = new URLSearchParams();
     queries.forEach(q => params.append('queries[]', q));
