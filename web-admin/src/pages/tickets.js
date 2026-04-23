@@ -44,7 +44,7 @@ export function renderTicketsPage() {
         </table>
         
         <div id="tickets-empty" class="empty-state" style="display: none; padding: 40px 20px;">
-          <div class="empty-icon">build</div>
+          <div class="empty-icon"><span class="material-icons-outlined" style="font-size:3rem;">build</span></div>
           <div class="empty-title">No repair tickets found.</div>
         </div>
         
