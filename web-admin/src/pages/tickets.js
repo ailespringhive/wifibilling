@@ -107,12 +107,6 @@ export function renderTicketsPage() {
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Assign Technician</label>
-            <select class="form-select" id="ticket-technician">
-              <option value="">-- Unassigned --</option>
-            </select>
-          </div>
         </form>
         <div class="modal-footer">
           <button class="btn btn-ghost" id="cancel-ticket-btn">Cancel</button>
@@ -126,7 +120,6 @@ export function renderTicketsPage() {
 export function initTicketsPage(services, navigateFn) {
   let allTickets = [];
   let allCustomers = [];
-  let allTechnicians = [];
   
   let currentPage = 1;
   const itemsPerPage = 10;
@@ -152,11 +145,9 @@ export function initTicketsPage(services, navigateFn) {
   const issueInput = document.getElementById('ticket-issue');
   const prioritySelect = document.getElementById('ticket-priority');
   const statusSelect = document.getElementById('ticket-status');
-  const technicianSelect = document.getElementById('ticket-technician');
 
   // Load prerequisites asynchronously concurrently
   Promise.all([
-    loadTechnicians(),
     loadCustomers()
   ]).then(() => {
     loadTickets();
@@ -170,29 +161,6 @@ export function initTicketsPage(services, navigateFn) {
         allCustomers.map(c => `<option value="${c.userId || c.$id}">${c.firstName || ''} ${c.lastName || ''} - ${c.userId || c.$id}</option>`).join('');
     } catch (e) {
       console.error('Failed to load customers for ticket assignment', e);
-    }
-  }
-
-  async function loadTechnicians() {
-    try {
-      const resp = await services.auth.getAll(); // Or a custom technician fetch
-      // Admin dashboard usually has some way to fetch technicians. If not we use the auth profiles where role = technician
-      // We will parse users_profile for role = technician manually or from a dedicated function if it exists.
-      // Wait, there's no auth.getAll() in standard Appwrite for client facing except listing users if we use a specific table.
-      // Let's assume `technicians.js` behavior
-      allTechnicians = resp.documents?.filter(u => u.role === 'technician') || [];
-      technicianSelect.innerHTML = `<option value="">-- Unassigned --</option>` + 
-        allTechnicians.map(t => `<option value="${t.userId || t.$id}">${t.firstName || ''} ${t.lastName || ''}</option>`).join('');
-    } catch (e) {
-      // Manual fallback if auth.getAll() isn't standard
-      try {
-        const fallback = await services.customer.getAll(200, 0); // Assuming users_profile manages roles
-        allTechnicians = (fallback.documents || []).filter(u => u.role === 'technician');
-        technicianSelect.innerHTML = `<option value="">-- Unassigned --</option>` + 
-          allTechnicians.map(t => `<option value="${t.userId || t.$id}">${t.firstName || ''} ${t.lastName || ''}</option>`).join('');
-      } catch(err) {
-        console.error('Failed to load technicians', err);
-      }
     }
   }
 
@@ -318,7 +286,6 @@ export function initTicketsPage(services, navigateFn) {
       issueInput.value = ticket.issueDescription || ticket.issue || '';
       prioritySelect.value = ticket.priority || 'medium';
       statusSelect.value = ticket.status || 'pending';
-      technicianSelect.value = ticket.technicianId || '';
     } else {
       // Creating new
       form.reset();
@@ -361,15 +328,9 @@ export function initTicketsPage(services, navigateFn) {
       customerName = cObj ? `${cObj.firstName || ''} ${cObj.lastName || ''}`.trim() : customerId;
     }
 
-    const techId = technicianSelect.value;
-    const techObj = allTechnicians.find(t => (t.userId || t.$id) === techId);
-    const techName = techObj ? `${techObj.firstName || ''} ${techObj.lastName || ''}`.trim() : '';
-
     const payload = {
       priority: prioritySelect.value,
       status: statusSelect.value,
-      technicianId: techId,
-      technicianName: techName,
     };
     
     // For Issue payload on new/edit
