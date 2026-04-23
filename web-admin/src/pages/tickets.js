@@ -4,7 +4,7 @@ import { ticketService } from '../services/ticket.service.js';
 export function renderTicketsPage() {
   return `
     <div class="card glass-card" style="margin-bottom: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 24px 24px 0 24px;">
         <h2 class="card-title" style="margin:0;">Repair Tickets</h2>
         <div style="display: flex; gap: 12px; align-items: center;">
           <select id="filter-ticket-status" class="form-select" style="width: auto; min-width: 150px; background: rgba(0,0,0,0.2) !important;">
@@ -49,7 +49,7 @@ export function renderTicketsPage() {
         </div>
         
         <!-- Pagination -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding: 16px 24px 24px 24px; border-top: 1px solid var(--border-color);">
           <div style="font-size: 0.85rem; color: var(--text-muted);" id="tickets-pagination-info">Showing 0 tickets</div>
           <div style="display: flex; gap: 8px;">
             <button class="btn btn-ghost btn-sm" id="tickets-prev-btn" disabled>Previous</button>
