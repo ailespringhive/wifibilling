@@ -273,7 +273,7 @@ async function fetchRepairNotifications() {
       let senderProfile = senderId ? (profileMap[senderId] || null) : null;
       
       if (!senderProfile && doc.message) {
-        const match = doc.message.match(/^(.+?) (updated|resolved|^collected)/i);
+        const match = doc.message.match(/^(.+?) (updated|resolved|collected)/i);
         if (match) {
           const extractedName = match[1].trim().toLowerCase();
           senderProfile = nameMap[extractedName] || null;

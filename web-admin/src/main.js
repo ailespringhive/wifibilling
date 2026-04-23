@@ -362,7 +362,7 @@ function navigateTo(page) {
         // Fallback: If mobile app posted a hardcoded ID, extract name from message and cross-reference our nameMap!
         // Example: "Jerald niii updated repair for..."
         if (!senderProfile && doc.message) {
-          const match = doc.message.match(/^(.+?) (updated|resolved|^collected)/i);
+          const match = doc.message.match(/^(.+?) (updated|resolved|collected)/i);
           if (match) {
             const extractedName = match[1].trim().toLowerCase();
             senderProfile = nameMap[extractedName] || null;
