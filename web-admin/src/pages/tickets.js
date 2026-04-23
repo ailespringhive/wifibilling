@@ -212,7 +212,7 @@ export function initTicketsPage(services, navigateFn) {
 
   function renderTicketsTable() {
     if (allTickets.length === 0) {
-      emptyStr.style.display = 'flex';
+      emptyStr.style.display = 'block';
       tableStr.style.display = 'none';
     } else {
       emptyStr.style.display = 'none';
