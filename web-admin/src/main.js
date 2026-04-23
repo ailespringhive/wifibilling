@@ -100,6 +100,18 @@ async function init() {
 
   const isAdminPath = window.location.pathname.startsWith('/admin');
 
+  // ── Force-login: clear ALL session state so login screen always shows ──
+  // Triggered when navigating from the public /report/ page via ?force_login=1
+  if (new URLSearchParams(window.location.search).get('force_login') === '1') {
+    localStorage.removeItem('wifi_admin_session');
+    // Also destroy Appwrite cookie session (fire-and-forget)
+    services.auth.logout().catch(() => {});
+    // Clean the URL so a page refresh won't re-trigger this
+    window.history.replaceState({}, '', window.location.pathname);
+    showLogin();
+    return;
+  }
+
   // FAST PATH: Check localStorage first for instant UI (no network call)
   const savedSession = localStorage.getItem('wifi_admin_session');
   if (savedSession) {
