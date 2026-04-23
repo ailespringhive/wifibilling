@@ -91,13 +91,12 @@ class TicketService {
         MobileNotificationService.sendToTechnician(ticketData.technicianId, title, message).catch(() => {});
         this.dispatchFcmAlert(ticketData.technicianId, title, message).catch(() => {});
       } else {
-        // Broadcast to all technicians
-        const response = await databases.listDocuments(
-          import.meta.env.VITE_APPWRITE_DATABASE_ID,
-          COLLECTIONS.USERS_PROFILE,
-          [Query.equal('role', 'technician'), Query.limit(100)]
-        );
-        for (const tech of response.documents) {
+        // Broadcast to all technicians using CollectorService to handle API bypasses safely
+        const { CollectorService } = await import('./collector.service.js');
+        const response = await CollectorService.getAll(100, 0);
+        const technicians = (response.documents || []).filter(c => c.role === 'technician');
+        
+        for (const tech of technicians) {
           MobileNotificationService.sendToTechnician(tech.$id, title, message).catch(() => {});
           this.dispatchFcmAlert(tech.$id, title, message).catch(() => {});
         }
