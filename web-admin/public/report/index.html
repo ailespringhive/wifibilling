@@ -28,7 +28,7 @@
       --emerald: #10b981;
       --amber:   #f59e0b;
       --rose:    #f43f5e;
-      --r-md: 12px; --r-lg: 18px; --r-xl: 24px;
+      --r-md: 6px; --r-lg: 8px; --r-xl: 10px;
     }
 
     html, body {
@@ -475,6 +475,7 @@
                 <th style="width:128px;">Status</th>
                 <th>Repaired By</th>
                 <th style="width:80px;">Proof</th>
+                <th style="width:90px;">Actions</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -672,7 +673,7 @@
           const accent   = pAccent[t.priority] || '#f59e0b';
           const isNew    = arrivals.includes(t.$id);
           return `
-            <tr style="border-left:3px solid ${accent};" class="${isNew ? 'row-new' : ''}">
+            <tr class="${isNew ? 'row-new' : ''}">
               <td style="color:#64748b;font-size:.78rem;white-space:nowrap;">${formatDate(t.$createdAt)}</td>
               <td>
                 <div style="display:flex;align-items:center;gap:10px;">
@@ -694,6 +695,13 @@
               <td>${(t.imageUrls && t.imageUrls.length > 0)
                   ? `<a class="proof-link" href="${t.imageUrls[t.imageUrls.length-1]}" target="_blank" rel="noopener"><span class="material-icons-outlined">image</span>View</a>`
                   : '<span style="color:#475569;">—</span>'}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <button title="View details" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:6px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;cursor:default;color:#60a5fa;">
+                    <span class="material-icons-outlined" style="font-size:15px;">visibility</span>
+                  </button>
+                </div>
+              </td>
             </tr>`;
         }).join('');
       }
