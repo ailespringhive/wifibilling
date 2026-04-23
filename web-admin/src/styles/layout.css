@@ -38,18 +38,21 @@
 }
 
 .sidebar-toggle-row {
+  position: relative;
   display: flex;
   justify-content: flex-end;
-  padding: 0 16px;
+  padding: 0;
   margin-bottom: 8px;
-  transition: all 0.3s ease;
+  height: 24px;
 }
 
 .sidebar.collapsed .sidebar-toggle-row {
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .sidebar-collapse-btn {
+  position: absolute;
+  right: -12px;
   width: 24px;
   height: 24px;
   background: var(--bg-card); /* Match sidebar background */
