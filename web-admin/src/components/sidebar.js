@@ -9,10 +9,17 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
   return `
     <aside class="sidebar sidebar-floating" id="sidebar">
       <div class="sidebar-brand">
-        <div class="brand-icon" style="background:#111; color:#fff; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.1); flex-shrink:0;">
-          <span style="font-weight:900; font-size:1.2rem; font-family:'Outfit', sans-serif;">F</span>
+        <div class="brand-icon">
+          <div class="wifi-animated">
+            <div class="wifi-arc wifi-arc1"></div>
+            <div class="wifi-arc wifi-arc2"></div>
+            <div class="wifi-arc wifi-arc3"></div>
+            <div class="wifi-dot"></div>
+          </div>
         </div>
-        <div class="brand-text">WiFi Admin</div>
+        <div style="margin-left:8px;">
+          <div class="brand-text" style="font-size: 1.1rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 2px;">WIFI BILLING</div>
+        </div>
         <!-- Collapse Toggle Arrow -->
         <button class="sidebar-collapse-btn" id="sidebar-collapse-btn">
           <span class="material-icons-outlined">chevron_left</span>
@@ -33,7 +40,7 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
         <!-- Billing -->
         <div class="nav-item ${isBillingActive ? 'active' : ''}" id="billing-toggle">
           <div class="nav-icon-wrapper"><span class="material-icons-outlined nav-icon">receipt_long</span></div>
-          <span class="nav-text">Transactions</span>
+          <span class="nav-text">Billing</span>
         </div>
         <div class="nav-submenu ${isBillingActive ? 'open' : ''}" id="billing-submenu">
           <div class="nav-sub-item ${activePage === 'billing' ? 'active' : ''}" data-page="billing">
@@ -52,7 +59,7 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
 
         <div class="nav-item ${activePage === 'collectors' ? 'active' : ''}" data-page="collectors">
           <div class="nav-icon-wrapper"><span class="material-icons-outlined nav-icon">account_balance_wallet</span></div>
-          <span class="nav-text">Wallet (Col)</span>
+          <span class="nav-text">Collectors</span>
         </div>
 
         <div class="nav-item ${activePage === 'technicians' ? 'active' : ''}" data-page="technicians">
@@ -76,22 +83,32 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
         </div>
       </nav>
 
-      <div class="sidebar-bottom">
-        <div class="nav-item" data-page="help" style="margin-bottom:8px;">
-          <div class="nav-icon-wrapper"><span class="material-icons-outlined nav-icon">help_outline</span></div>
-          <span class="nav-text">Help</span>
-        </div>
-        
-        <div class="nav-item" data-page="logout" style="margin-bottom:16px;">
-          <div class="nav-icon-wrapper"><span class="material-icons-outlined nav-icon" style="transform:scaleX(-1);">logout</span></div>
-          <span class="nav-text">Log out</span>
-        </div>
-
-        <!-- Sidebar Theme Toggle matches image -->
-        <div class="sidebar-theme-switch-container">
-          <div class="sidebar-theme-toggle" id="sidebar-theme-toggle-btn">
-            <span class="material-icons-outlined theme-icon-sun" style="font-size:16px;">wb_sunny</span>
-            <span class="material-icons-outlined theme-icon-moon" style="font-size:16px;">dark_mode</span>
+      <div class="sidebar-bottom" style="padding: 16px;">
+        <div class="sidebar-profile-pill" style="background: rgba(0,0,0,0.03); border: 1px solid var(--border-color); border-radius: 14px; padding: 10px 14px; display:flex; align-items:center; gap:12px; transition: all 0.2s ease;">
+          <div id="sidebar-bottom-profile-btn" style="display:flex; align-items:center; gap:12px; flex-grow:1; cursor:pointer;" title="View Admin Profile">
+            <div id="sidebar-bottom-avatar" style="width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; font-weight:bold; font-size:15px; background:linear-gradient(135deg, var(--accent-emerald, #10b981), var(--accent-teal, #14b8a6)); color:#fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+              ${(() => {
+                const name = currentUser?.profile 
+                  ? `${currentUser.profile.firstName || ''} ${currentUser.profile.lastName || ''}`.trim()
+                  : currentUser?.user?.name || 'Admin';
+                const avatarUrl = currentUser?.profile?.profileImage;
+                if (avatarUrl) {
+                  return `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; background:white; display:block;" />`;
+                }
+                return (name || 'A').charAt(0).toUpperCase();
+              })()}
+            </div>
+            <div class="nav-text" style="display:flex; flex-direction:column; line-height:1.25; overflow:hidden; flex-grow:1;">
+              <span id="sidebar-bottom-name" style="font-size:0.85rem; font-weight:600; color:var(--text-primary); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">
+                ${currentUser?.profile ? `${currentUser.profile.firstName || ''} ${currentUser.profile.lastName || ''}`.trim() : (currentUser?.user?.name || 'Admin')}
+              </span>
+              <span style="font-size:0.7rem; font-weight: 500; color:var(--text-muted); margin-top:2px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">
+                ${currentUser?.profile?.role === 'collector' ? 'Collector' : 'Admin'}
+              </span>
+            </div>
+          </div>
+          <div class="logout-action" title="Logout" style="color:var(--accent-rose); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px; border-radius:6px; flex-shrink:0;" onmouseover="this.style.background='rgba(244,63,94,0.1)'" onmouseout="this.style.background='transparent'">
+            <span class="material-icons-outlined" style="font-size:20px;">logout</span>
           </div>
         </div>
       </div>
