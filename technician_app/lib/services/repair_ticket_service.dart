@@ -325,8 +325,35 @@ class RepairTicketService {
       );
       return '$appwriteEndpoint/storage/buckets/customer_images/files/${file.$id}/view?project=$appwriteProjectId';
     } catch (e) {
-      debugPrint('Error uploading ticket image bytes: $e');
-      return null;
+      debugPrint('Appwrite SDK upload failed. Attempting HTTP Bypass: $e');
+      try {
+        final uri = Uri.parse('$appwriteEndpoint/storage/buckets/customer_images/files');
+        final request = http.MultipartRequest('POST', uri);
+        request.headers['X-Appwrite-Project'] = appwriteProjectId;
+        request.headers['X-Appwrite-Key'] = appwriteApiKey;
+        request.fields['fileId'] = ID.unique();
+        
+        request.files.add(http.MultipartFile.fromBytes(
+          'file',
+          bytes,
+          filename: fileName,
+        ));
+        
+        final response = await request.send();
+        if (response.statusCode == 201) {
+          final body = await response.stream.bytesToString();
+          final jsonResp = jsonDecode(body);
+          final fileId = jsonResp[r'$id'];
+          return '$appwriteEndpoint/storage/buckets/customer_images/files/$fileId/view?project=$appwriteProjectId';
+        } else {
+          final body = await response.stream.bytesToString();
+          debugPrint('HTTP Bypass failed: ${response.statusCode} - $body');
+          return null;
+        }
+      } catch (httpError) {
+        debugPrint('HTTP Bypass threw error: $httpError');
+        return null;
+      }
     }
   }
 }

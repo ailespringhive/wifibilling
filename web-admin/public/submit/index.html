@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit a Repair Ticket — WiFi Billing</title>
+  <meta name="description" content="Report your connection issue and submit a repair ticket.">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-page:        #080c18;
+      --bg-card:        #0f1428;
+      --bg-input:       rgba(255,255,255,0.05);
+      --bg-input-focus: rgba(59,130,246,0.08);
+      --border:         rgba(255,255,255,0.09);
+      --border-focus:   rgba(59,130,246,0.6);
+      --text-primary:   #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted:     #64748b;
+      --blue:    #3b82f6;
+      --amber:   #f59e0b;
+      --r-md: 6px; --r-lg: 8px; --r-xl: 10px;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg-page);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Topbar (simplified) ── */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; height: 62px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,12,24,.78);
+      backdrop-filter: blur(20px);
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    
+    .brand-icon {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; flex-shrink: 0;
+    }
+    .wifi-animated { position: absolute; width: 100%; height: 100%; }
+    .wifi-arc {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      border: 3px solid transparent;
+      border-top-color: #ffffff;
+      border-radius: 50%;
+    }
+    .wifi-arc1 { width: 36px; height: 36px; top: 6px; }
+    .wifi-arc2 { width: 24px; height: 24px; top: 12px; }
+    .wifi-arc3 { width: 12px; height: 12px; top: 18px; }
+    .wifi-dot  {
+      position: absolute; width: 6px; height: 6px;
+      background: #fff; border-radius: 50%;
+      left: 50%; transform: translateX(-50%); top: 25px;
+    }
+
+    .brand-name {
+      font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800;
+      letter-spacing: .07em; color: #f1f5f9;
+    }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--r-md);
+      color: var(--text-secondary); text-decoration: none;
+      font-size: .85rem; font-weight: 600; transition: all .2s; border: none; background: transparent; cursor: pointer;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+    /* ── Form Container ── */
+    .container {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .submit-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      width: 100%; max-width: 500px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .card-header {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .header-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(59,130,246,0.1); color: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-title h2 { font-size: 1.15rem; font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 2px; }
+    .header-title p { font-size: 0.8rem; color: var(--text-secondary); }
+
+    .card-body { padding: 28px; }
+
+    /* Forms */
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block; font-size: .7rem; font-weight: 700; color: var(--text-secondary);
+      margin-bottom: 8px; letter-spacing: .05em; text-transform: uppercase;
+    }
+    .form-label span.req { color: var(--rose); margin-left: 2px; font-weight: 800; }
+    
+    .form-input, .form-textarea {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+      color: #fff; border-radius: var(--r-md); padding: 12px 14px;
+      font-family: inherit; font-size: .875rem; transition: all .2s;
+    }
+    .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--border-focus); background: var(--bg-input-focus); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .form-textarea { resize: vertical; min-height: 90px; }
+
+    /* Priority segments */
+    .segment-group { display: flex; gap: 8px; }
+    .segment-btn {
+      flex: 1; padding: 10px; border-radius: var(--r-md); border: 1px solid var(--border);
+      background: var(--bg-input); color: var(--text-secondary);
+      font-weight: 600; font-size: .8rem; font-family: inherit;
+      cursor: pointer; transition: all .2s;
+    }
+    .segment-btn[data-val="low"].active    { background: rgba(255,255,255,0.1); border-color: #94a3b8; color: #fff; }
+    .segment-btn[data-val="medium"].active { background: rgba(245,158,11,0.15); border-color: var(--amber); color: var(--amber); }
+    .segment-btn[data-val="high"].active   { background: rgba(244,63,94,0.15);  border-color: var(--rose); color: var(--rose); }
+
+    .error-msg {
+      background: rgba(244,63,94,.1); border: 1px solid rgba(244,63,94,.3);
+      color: #fb7185; padding: 12px 14px; border-radius: var(--r-md);
+      font-size: .8rem; font-weight: 500; margin-top: 15px; display: none;
+      align-items: center; gap: 8px;
+    }
+
+    .card-footer {
+      padding: 20px 28px; border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+      background: rgba(0,0,0,0.15);
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px; border-radius: var(--r-md); border: none;
+      background: var(--blue); color: #fff; font-weight: 600; font-size: .85rem; font-family: inherit;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-primary:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,.3); }
+    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* Toasts */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+    .toast {
+      background: var(--bg-card); border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,.5);
+      color: #fff; padding: 14px 18px; border-radius: var(--r-md); font-size: .85rem; font-weight: 500;
+      display: flex; align-items: center; gap: 10px; animation: slideIn .3s cubic-bezier(0.2,0,0,1);
+    }
+    .toast-success { border-color: rgba(16,185,129,.4); color: #34d399; }
+    .toast .material-icons-outlined { font-size: 17px; }
+    @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <div class="wifi-animated">
+          <div class="wifi-arc wifi-arc1"></div>
+          <div class="wifi-arc wifi-arc2"></div>
+          <div class="wifi-arc wifi-arc3"></div>
+          <div class="wifi-dot"></div>
+        </div>
+      </div>
+      <span class="brand-name">WIFI BILLING</span>
+    </div>
+    <a href="/report/" class="btn-ghost">
+      Ticket Status Tracker <span class="material-icons-outlined" style="font-size:16px">arrow_forward</span>
+    </a>
+  </header>
+
+  <div class="container">
+    <div class="submit-card">
+      <div class="card-header">
+        <div class="header-icon"><span class="material-icons-outlined">support_agent</span></div>
+        <div class="header-title">
+          <h2>Create Ticket</h2>
+          <p>Report your connection issue</p>
+        </div>
+      </div>
+      
+      <form id="create-form">
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Full Name <span class="req">*</span></label>
+            <input type="text" id="cust-name" class="form-input" required autocomplete="off" placeholder="e.g. John Doe">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address or Account ID</label>
+            <input type="text" id="cust-addr" class="form-input" autocomplete="off" placeholder="Optional">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Issue Description <span class="req">*</span></label>
+            <textarea id="cust-issue" class="form-textarea" required placeholder="Describe what's wrong (e.g., No internet since morning)"></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Priority <span class="req">*</span></label>
+            <div class="segment-group" id="priority-options">
+              <button type="button" class="segment-btn" data-val="low">Low</button>
+              <button type="button" class="segment-btn active" data-val="medium">Medium</button>
+              <button type="button" class="segment-btn" data-val="high">High</button>
+            </div>
+          </div>
+          <div class="error-msg" id="form-error">
+            <span class="material-icons-outlined">error_outline</span> <span id="error-text">Failed</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <a href="/report/" class="btn-ghost" style="padding: 10px;">Cancel</a>
+          <button type="submit" class="btn-primary" id="submit-btn" style="min-width: 140px; justify-content:center;">
+            <span class="material-icons-outlined" id="submit-icon" style="font-size:16px;">send</span> 
+            <span id="submit-label">Submit Ticket</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    const ENDPOINT    = 'https://appwrite.springhive.co/v1';
+    const PROJECT_ID  = '69c4840a0022d6824d83';
+    const API_KEY     = 'standard_b650468f4a776eac08a7d0f31aea79b5de528e970e85714564a8d0480a9cffc6d0c947aaeaecc2a2011b98c97f90515cbf5f9e16d3cd6230d259d1e91d885a1de14d5c1cb20da10930d49bcc3f3cb7d3f4a5011619cba4e42d533abefbc60435de9ab782c82e59704a44ea08b88f9babd5a6edb83fb50e2bc6f4cb33e1069b6c';
+    const DATABASE_ID = 'wifi_billing_db';
+    const COLLECTION  = 'repair_tickets';
+
+    let selectedPriority = 'medium';
+
+    // Priority selector
+    document.querySelectorAll('.segment-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedPriority = btn.getAttribute('data-val');
+      });
+    });
+
+    // Toast function
+    function toast(msg, type = 'success') {
+      const tc = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.innerHTML = `<span class="material-icons-outlined">${type==='success'?'check_circle':'error_outline'}</span>${msg}`;
+      tc.appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(10px)'; el.style.transition = 'all .3s'; setTimeout(() => el.remove(), 300); }, 3000);
+    }
+
+    // Submission logic
+    document.getElementById('create-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('cust-name').value.trim();
+      const addr = document.getElementById('cust-addr').value.trim();
+      const issue= document.getElementById('cust-issue').value.trim();
+      
+      const errBox = document.getElementById('form-error');
+      if (!name || !issue) return;
+      
+      errBox.style.display = 'none';
+
+      const btn   = document.getElementById('submit-btn');
+      const icon  = document.getElementById('submit-icon');
+      const label = document.getElementById('submit-label');
+
+      btn.disabled      = true;
+      icon.textContent  = 'hourglass_top';
+      label.textContent = 'Submitting…';
+
+      const payload = {
+        documentId: 'unique()',
+        data: {
+          customerName:    name,
+          customerId:      addr || 'Walk-in',
+          customerAddress: addr || '',
+          issue:           issue,
+          priority:        selectedPriority,
+          status:          'pending',
+          technicianId:    '',
+          technicianName:  '',
+          notes:           '',
+        },
+        permissions: ['read("any")', 'update("any")', 'delete("any")']
+      };
+
+      try {
+        const res = await fetch(
+          `${ENDPOINT}/databases/${DATABASE_ID}/collections/${COLLECTION}/documents`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': API_KEY },
+            body: JSON.stringify(payload)
+          }
+        );
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Error ${res.status}`);
+        }
+
+        toast('Ticket submitted successfully!');
+        
+        // Let them see the toast, then redirect to report status
+        setTimeout(() => {
+          window.location.href = '/report/';
+        }, 1500);
+
+      } catch (err) {
+        errBox.style.display = 'flex';
+        document.getElementById('error-text').textContent = 'Failed: ' + err.message;
+        btn.disabled      = false;
+        icon.textContent  = 'send';
+        label.textContent = 'Submit Ticket';
+      }
+    });
+
+  </script>
+</body>
+</html>

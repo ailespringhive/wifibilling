@@ -776,9 +776,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             final techName = profile?.fullName ?? 'Technician';
                             final techId = profile?.userId ?? '';
                             
+                            String? uploadedUrl;
                             if (selectedStatus == 'resolved' && proofImageFile != null) {
                                final bytes = await proofImageFile!.readAsBytes();
-                               final uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                               uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}.jpg');
                                if (uploadedUrl != null) {
                                  success = await _ticketService.resolveTicketWithProof(ticket.id, ticket.imageUrls, uploadedUrl, technicianId: techId);
                                }
@@ -802,9 +803,13 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                  );
                                }
                             } else {
-                               if (selectedStatus == 'resolved' && proofImagePath != null) {
+                               if (selectedStatus == 'resolved' && proofImageFile != null) {
                                   if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to upload proof image.'), backgroundColor: AppTheme.accentRose));
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                      content: Text(uploadedUrl == null ? 'Failed to upload proof image on the server. Try again.' : 'Failed to update ticket status.'),
+                                      backgroundColor: AppTheme.accentRose,
+                                      duration: const Duration(seconds: 5),
+                                    ));
                                   }
                                }
                             }
