@@ -61,6 +61,10 @@ export function statusBadge(status) {
     active: { class: 'badge-active', label: 'Active' },
     suspended: { class: 'badge-suspended', label: 'Suspended' },
     disconnected: { class: 'badge-suspended', label: 'Disconnected' },
+    pending: { class: 'badge-unpaid', label: 'Pending' },
+    in_progress: { class: 'badge-active', label: 'In Progress' },
+    resolved: { class: 'badge-paid', label: 'Resolved' },
+    cancelled: { class: 'badge-suspended', label: 'Cancelled' },
   };
   const info = map[status] || { class: '', label: status };
   return `<span class="badge badge-dot ${info.class}">${info.label}</span>`;
