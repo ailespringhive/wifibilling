@@ -416,5 +416,8 @@ export function initPlansPage(services) {
       console.error(e);
     }
   }
+
+  // Initial load
+  loadPlans();
 }
 
