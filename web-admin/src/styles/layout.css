@@ -216,6 +216,18 @@
   display: none;
 }
 
+/* Ensure submenu aligns perfectly with main items when collapsed */
+.sidebar.collapsed .nav-submenu {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: none;
+}
+
+.sidebar.collapsed .nav-sub-item {
+  padding-left: 14px; /* match .nav-item left padding */
+  justify-content: flex-start;
+}
+
 /* Scoped to main sidebar only */
 .sidebar .nav-item {
   color: var(--text-secondary);
