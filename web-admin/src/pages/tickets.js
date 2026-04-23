@@ -114,6 +114,29 @@ export function renderTicketsPage() {
         </div>
       </div>
     </div>
+
+    <!-- Ticket Notes Modal -->
+    <div class="modal-overlay" id="notes-modal">
+      <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3 id="notes-modal-title">Internal Notes</h3>
+          <button class="modal-close" id="close-notes-modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="notes-ticket-id" />
+          <div class="form-group">
+            <label class="form-label">Technician & Admin Exchange</label>
+            <textarea class="form-textarea" id="ticket-notes-text" style="min-height: 150px; white-space: pre-wrap; line-height: 1.5;" placeholder="Add an internal note..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="cancel-notes-btn">Cancel</button>
+          <button class="btn btn-primary" id="save-notes-btn" style="background:var(--accent-purple); border-color:var(--accent-purple);">
+            <span class="material-icons-outlined" style="font-size:16px;">save</span> Save Note
+          </button>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -229,6 +252,9 @@ export function initTicketsPage(services, navigateFn) {
             <td>${proofHtml}</td>
             <td>
               <div class="table-actions" style="display:flex; align-items:center; gap:4px;">
+                <button class="btn btn-ghost btn-sm btn-icon" title="Notes" data-notes="${ticket.$id}" style="color:var(--accent-purple);">
+                  <span class="material-icons-outlined" style="font-size:18px;">chat_bubble_outline</span>
+                </button>
                 <button class="btn btn-ghost btn-sm btn-icon" title="Edit" data-edit="${ticket.$id}">
                   <span class="material-icons-outlined" style="font-size:18px;">edit</span>
                 </button>
@@ -248,6 +274,10 @@ export function initTicketsPage(services, navigateFn) {
       
       tbody.querySelectorAll('[data-delete]').forEach(btn => {
         btn.addEventListener('click', () => deleteTicket(btn.dataset.delete));
+      });
+      
+      tbody.querySelectorAll('[data-notes]').forEach(btn => {
+        btn.addEventListener('click', () => openNotesModal(btn.dataset.notes));
       });
     }
 
@@ -382,4 +412,48 @@ export function initTicketsPage(services, navigateFn) {
       showToast('Failed to delete ticket', 'error');
     }
   }
+
+  // --- Notes Modal Logic ---
+  const notesModal = document.getElementById('notes-modal');
+  const notesTextArea = document.getElementById('ticket-notes-text');
+  const notesIdInput = document.getElementById('notes-ticket-id');
+
+  function openNotesModal(ticketId) {
+    const ticket = allTickets.find(t => t.$id === ticketId);
+    if (!ticket) return;
+    notesIdInput.value = ticket.$id;
+    notesTextArea.value = ticket.notes || '';
+    notesModal.classList.add('active');
+  }
+
+  function closeNotesModal() {
+    notesModal.classList.remove('active');
+  }
+
+  document.getElementById('close-notes-modal').addEventListener('click', closeNotesModal);
+  document.getElementById('cancel-notes-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    closeNotesModal();
+  });
+
+  document.getElementById('save-notes-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const id = notesIdInput.value;
+    const saveBtn = document.getElementById('save-notes-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    try {
+      await ticketService.updateTicket(id, { notes: notesTextArea.value.trim() });
+      showToast('Notes saved successfully', 'success');
+      closeNotesModal();
+      loadTickets(currentPage); // preserve pagination
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to save notes', 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<span class="material-icons-outlined" style="font-size:16px;">save</span> Save Note';
+    }
+  });
+
 }
