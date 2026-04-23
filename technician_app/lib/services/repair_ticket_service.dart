@@ -301,7 +301,6 @@ class RepairTicketService {
     }
   }
 
-  /// Upload a ticket image to Storage
   Future<String?> uploadTicketImage(String filePath, String fileName) async {
     try {
       final file = await AppwriteService().storage.createFile(
@@ -312,6 +311,21 @@ class RepairTicketService {
       return '$appwriteEndpoint/storage/buckets/customer_images/files/${file.$id}/view?project=$appwriteProjectId';
     } catch (e) {
       debugPrint('Error uploading ticket image: $e');
+      return null;
+    }
+  }
+
+  /// Upload a ticket image using raw bytes (Web compatible)
+  Future<String?> uploadTicketImageBytes(List<int> bytes, String fileName) async {
+    try {
+      final file = await AppwriteService().storage.createFile(
+        bucketId: 'customer_images',
+        fileId: ID.unique(),
+        file: InputFile.fromBytes(bytes: bytes, filename: fileName),
+      );
+      return '$appwriteEndpoint/storage/buckets/customer_images/files/${file.$id}/view?project=$appwriteProjectId';
+    } catch (e) {
+      debugPrint('Error uploading ticket image bytes: $e');
       return null;
     }
   }

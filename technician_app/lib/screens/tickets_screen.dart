@@ -435,6 +435,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
     final notesCtrl = TextEditingController(text: ticket.notes);
     
     String? proofImagePath;
+    XFile? proofImageFile;
     bool isUploadingProof = false;
     
     // Personnel assignment state
@@ -636,7 +637,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               onTap: () async {
                                 final picker = ImagePicker();
                                 final file = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
-                                if (file != null) setSheetState(() => proofImagePath = file.path);
+                                if (file != null) setSheetState(() {
+                                  proofImageFile = file;
+                                  proofImagePath = file.path;
+                                });
                               },
                               child: Container(
                                 height: 120,
@@ -783,8 +787,9 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             final techName = profile?.fullName ?? 'Technician';
                             final techId = profile?.userId ?? '';
                             
-                            if (selectedStatus == 'resolved' && proofImagePath != null) {
-                               final uploadedUrl = await _ticketService.uploadTicketImage(proofImagePath!, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                            if (selectedStatus == 'resolved' && proofImageFile != null) {
+                               final bytes = await proofImageFile!.readAsBytes();
+                               final uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}.jpg');
                                if (uploadedUrl != null) {
                                  success = await _ticketService.resolveTicketWithProof(ticket.id, ticket.imageUrls, uploadedUrl, technicianId: techId);
                                }
