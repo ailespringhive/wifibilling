@@ -102,11 +102,6 @@
       display: flex; align-items: center; justify-content: center;
       position: relative; flex-shrink: 0;
       background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
-      animation: pulse-glow 3s infinite ease-in-out;
-    }
-    @keyframes pulse-glow {
-      0%,100% { box-shadow: 0 0 10px rgba(59,130,246,.35); }
-      50%      { box-shadow: 0 0 22px rgba(59,130,246,.7); }
     }
     .wifi-animated { position: absolute; width: 100%; height: 100%; }
     .wifi-arc {
@@ -226,7 +221,7 @@
 
     .customer-name { font-weight: 600; color: #f1f5f9; }
     .customer-id   { font-size: .71rem; color: #64748b; margin-top: 2px; }
-    .issue-cell    { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #94a3b8; }
+    .issue-cell    { max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #94a3b8; }
 
     /* ── Status badges — solid colors so text is always visible ── */
     .badge {
@@ -522,11 +517,11 @@
             <thead>
               <tr>
                 <th style="width:112px;">Date</th>
-                <th>Customer</th>
+                <th style="width:230px;">Customer</th>
                 <th>Issue</th>
                 <th style="width:96px;">Priority</th>
                 <th style="width:128px;">Status</th>
-                <th>Repaired By</th>
+                <th style="width:160px;">Repaired By</th>
                 <th style="width:80px;">Proof</th>
                 <th style="width:90px;">Actions</th>
               </tr>
