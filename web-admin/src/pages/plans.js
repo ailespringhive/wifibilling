@@ -47,23 +47,14 @@ export function renderPlansPage() {
               <textarea class="form-textarea" id="plan-description" placeholder="Plan features and details..."></textarea>
             </div>
             <div class="form-group">
-              <label class="form-label" style="margin-bottom:8px; display:block;">Included Features</label>
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text-secondary);">
-                  <input type="checkbox" id="feat-browsing" style="accent-color:var(--accent-blue);"> Browsing &amp; social media
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text-secondary);">
-                  <input type="checkbox" id="feat-email" style="accent-color:var(--accent-blue);"> Email &amp; messaging
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text-secondary);">
-                  <input type="checkbox" id="feat-hd" style="accent-color:var(--accent-blue);"> HD video streaming
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text-secondary);">
-                  <input type="checkbox" id="feat-gaming" style="accent-color:var(--accent-blue);"> Online gaming
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text-secondary);">
-                  <input type="checkbox" id="feat-priority" style="accent-color:var(--accent-blue);"> Priority support
-                </label>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <label class="form-label" style="margin:0;">Included Features</label>
+                <button type="button" class="btn btn-ghost btn-sm" id="add-feature-btn" style="color:var(--accent-blue); padding:4px 8px; height:auto;">
+                  <span class="material-icons-outlined" style="font-size:16px; margin-right:4px;">add_circle</span> Add Feature
+                </button>
+              </div>
+              <div id="dynamic-features-list" style="display:flex; flex-direction:column; gap:8px;">
+                 <!-- JS will inject dynamic rows here -->
               </div>
             </div>
             <div class="form-group">
@@ -125,21 +116,64 @@ function getPlanFeatures(speedNum) {
 }
 
 export function initPlansPage(services) {
-  let allPlans = [];
+  let currentModalFeatures = []; // Array of { id: uniqueId, text: string, included: boolean }
 
-  loadPlans();
+  function renderDynamicFeatures() {
+    const list = document.getElementById('dynamic-features-list');
+    list.innerHTML = currentModalFeatures.map(f => `
+      <div style="display:flex; align-items:center; gap:8px; background:var(--bg-card-hover); padding:6px 10px; border-radius:8px; border:1px solid var(--border-color);">
+        <input type="checkbox" data-feat-id="${f.id}" class="dyn-feat-chk" ${f.included ? 'checked' : ''} title="Check if feature is included" style="accent-color:var(--accent-blue); width:16px; height:16px; cursor:pointer; flex-shrink:0;">
+        <input type="text" data-feat-text="${f.id}" class="form-input" value="${f.text}" placeholder="Type feature..." style="flex:1; padding:4px 8px; font-size:0.85rem; border:none; background:transparent;">
+        <button type="button" class="btn btn-ghost btn-sm btn-icon dyn-feat-del" data-feat-del="${f.id}" style="color:var(--accent-rose); min-width:24px; padding:4px; flex-shrink:0;">
+          <span class="material-icons-outlined" style="font-size:16px;">delete</span>
+        </button>
+      </div>
+    `).join('');
+
+    // Attach listeners
+    list.querySelectorAll('.dyn-feat-chk').forEach(el => {
+      el.addEventListener('change', (e) => {
+        const id = e.target.dataset.featId;
+        const feat = currentModalFeatures.find(x => x.id === id);
+        if (feat) feat.included = e.target.checked;
+      });
+    });
+    list.querySelectorAll('[data-feat-text]').forEach(el => {
+      el.addEventListener('input', (e) => {
+        const id = e.target.dataset.featText;
+        const feat = currentModalFeatures.find(x => x.id === id);
+        if (feat) feat.text = e.target.value;
+      });
+    });
+    list.querySelectorAll('.dyn-feat-del').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const id = el.dataset.featDel;
+        currentModalFeatures = currentModalFeatures.filter(x => x.id !== id);
+        renderDynamicFeatures();
+      });
+    });
+  }
+
+  document.getElementById('add-feature-btn').addEventListener('click', () => {
+    currentModalFeatures.push({ id: Date.now().toString(), text: '', included: true });
+    renderDynamicFeatures();
+  });
 
   document.getElementById('add-plan-btn').addEventListener('click', () => {
     document.getElementById('plan-modal-title').textContent = 'Add WiFi Plan';
     document.getElementById('plan-form').reset();
     document.getElementById('plan-doc-id').value = '';
     document.getElementById('plan-active').checked = true;
-    // Default features for new plan
-    document.getElementById('feat-browsing').checked = true;
-    document.getElementById('feat-email').checked = true;
-    document.getElementById('feat-hd').checked = false;
-    document.getElementById('feat-gaming').checked = false;
-    document.getElementById('feat-priority').checked = false;
+    
+    // Default dynamic features for new plan
+    currentModalFeatures = [
+      { id: '1', text: 'Browsing & social media', included: true },
+      { id: '2', text: 'Email & messaging', included: true },
+      { id: '3', text: 'HD video streaming', included: false },
+      { id: '4', text: 'Online gaming', included: false },
+      { id: '5', text: 'Priority support', included: false }
+    ];
+    renderDynamicFeatures();
     openModal('plan-modal');
   });
 
@@ -156,20 +190,17 @@ export function initPlansPage(services) {
     const form = document.getElementById('plan-form');
     if (!form.checkValidity()) { form.reportValidity(); return; }
 
-    const features = {
-      browsing: document.getElementById('feat-browsing').checked,
-      email: document.getElementById('feat-email').checked,
-      hd: document.getElementById('feat-hd').checked,
-      gaming: document.getElementById('feat-gaming').checked,
-      priority: document.getElementById('feat-priority').checked,
-    };
+    // Map current dynamic features to be saved, filtering out empty texts
+    const featuresData = currentModalFeatures
+      .filter(f => f.text.trim() !== '')
+      .map(f => ({ text: f.text.trim(), included: f.included }));
     const data = {
       name: document.getElementById('plan-name').value.trim(),
       speed: document.getElementById('plan-speed').value.trim(),
       monthlyRate: parseFloat(document.getElementById('plan-rate').value),
       description: document.getElementById('plan-description').value.trim(),
       isActive: document.getElementById('plan-active').checked,
-      features: JSON.stringify(features),
+      features: JSON.stringify(featuresData),
     };
 
     const saveBtn = document.getElementById('save-plan-btn');
@@ -228,20 +259,35 @@ export function initPlansPage(services) {
       const speedNum = parseInt(p.speed) || 50;
       const isRecommended = (p.$id || p.id) === recommendedId;
 
-      // Use saved features if available, otherwise fall back to speed-based defaults
-      let savedFeatures = {};
-      try { savedFeatures = p.features ? JSON.parse(p.features) : {}; } catch(e) {}
-      const hasSaved = Object.keys(savedFeatures).length > 0;
-      const features = [
-        { text: `Up to ${p.speed || speedNum + ' Mbps'} speed`, included: true },
-        { text: 'Browsing & social media', included: hasSaved ? !!savedFeatures.browsing : true },
-        { text: 'Email & messaging', included: hasSaved ? !!savedFeatures.email : true },
-        { text: 'HD video streaming', included: hasSaved ? !!savedFeatures.hd : speedNum > 25 },
-        { text: 'Online gaming', included: hasSaved ? !!savedFeatures.gaming : speedNum > 25 },
-        { text: 'Priority support', included: hasSaved ? !!savedFeatures.priority : speedNum > 50 },
-      ];
+      // Flexible dynamic parsing for backwards compatibility
+      let savedFeatures = null;
+      try { savedFeatures = p.features ? JSON.parse(p.features) : null; } catch(e) {}
+      
+      let featuresToRender = [];
+      
+      if (Array.isArray(savedFeatures)) {
+         featuresToRender = savedFeatures;
+      } else if (savedFeatures && Object.keys(savedFeatures).length > 0) {
+         featuresToRender = [
+            { text: `Up to ${p.speed || speedNum + ' Mbps'} speed`, included: true },
+            { text: 'Browsing & social media', included: !!savedFeatures.browsing },
+            { text: 'Email & messaging', included: !!savedFeatures.email },
+            { text: 'HD video streaming', included: !!savedFeatures.hd },
+            { text: 'Online gaming', included: !!savedFeatures.gaming },
+            { text: 'Priority support', included: !!savedFeatures.priority }
+         ];
+      } else {
+         featuresToRender = [
+            { text: `Up to ${p.speed || speedNum + ' Mbps'} speed`, included: true },
+            { text: 'Browsing & social media', included: true },
+            { text: 'Email & messaging', included: true },
+            { text: 'HD video streaming', included: speedNum > 25 },
+            { text: 'Online gaming', included: speedNum > 25 },
+            { text: 'Priority support', included: speedNum > 50 }
+         ];
+      }
 
-      const featuresHTML = features.map(f => `
+      const featuresHTML = featuresToRender.map(f => `
         <li class="pricing-feature ${f.included ? '' : 'pricing-feature-disabled'}">
           <span class="material-icons-outlined" style="font-size:16px; color:${f.included ? 'var(--accent-blue)' : 'var(--text-muted)'};">
             ${f.included ? 'check' : 'close'}
@@ -312,16 +358,32 @@ export function initPlansPage(services) {
         document.getElementById('plan-rate').value = p.monthlyRate || '';
         document.getElementById('plan-description').value = p.description || '';
         document.getElementById('plan-active').checked = p.isActive !== false;
-        // Load saved features
-        let savedFeatures = {};
-        try { savedFeatures = p.features ? JSON.parse(p.features) : {}; } catch(e) {}
-        const speedNum = parseInt(p.speed) || 0;
-        // Default features based on speed if not saved
-        document.getElementById('feat-browsing').checked = savedFeatures.browsing !== undefined ? savedFeatures.browsing : true;
-        document.getElementById('feat-email').checked = savedFeatures.email !== undefined ? savedFeatures.email : true;
-        document.getElementById('feat-hd').checked = savedFeatures.hd !== undefined ? savedFeatures.hd : speedNum > 25;
-        document.getElementById('feat-gaming').checked = savedFeatures.gaming !== undefined ? savedFeatures.gaming : speedNum > 25;
-        document.getElementById('feat-priority').checked = savedFeatures.priority !== undefined ? savedFeatures.priority : speedNum > 50;
+        // Load saved features dynamically into the modal state
+        let savedFeatures = null;
+        try { savedFeatures = p.features ? JSON.parse(p.features) : null; } catch(e) {}
+        
+        currentModalFeatures = [];
+        if (Array.isArray(savedFeatures)) {
+           // New dynamic array format
+           currentModalFeatures = savedFeatures.map((f, i) => ({ id: i.toString(), text: f.text, included: f.included }));
+        } else if (savedFeatures && typeof savedFeatures === 'object') {
+           // Legacy object format fallback
+           currentModalFeatures.push({ id: '1', text: 'Browsing & social media', included: !!savedFeatures.browsing });
+           currentModalFeatures.push({ id: '2', text: 'Email & messaging', included: !!savedFeatures.email });
+           currentModalFeatures.push({ id: '3', text: 'HD video streaming', included: !!savedFeatures.hd });
+           currentModalFeatures.push({ id: '4', text: 'Online gaming', included: !!savedFeatures.gaming });
+           currentModalFeatures.push({ id: '5', text: 'Priority support', included: !!savedFeatures.priority });
+        } else {
+           // No features saved, use standard defaults based on speed
+           const speedNum = parseInt(p.speed) || 0;
+           currentModalFeatures.push({ id: '1', text: 'Browsing & social media', included: true });
+           currentModalFeatures.push({ id: '2', text: 'Email & messaging', included: true });
+           currentModalFeatures.push({ id: '3', text: 'HD video streaming', included: speedNum > 25 });
+           currentModalFeatures.push({ id: '4', text: 'Online gaming', included: speedNum > 25 });
+           currentModalFeatures.push({ id: '5', text: 'Priority support', included: speedNum > 50 });
+        }
+        
+        renderDynamicFeatures();
         openModal('plan-modal');
       });
     });
