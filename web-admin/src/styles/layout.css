@@ -14,13 +14,12 @@
    ============================================================ */
 .sidebar {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 0;
+  left: 0;
   width: var(--sidebar-width);
-  height: calc(100vh - 32px);
+  height: 100vh;
   background: var(--bg-card); /* Light background */
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   z-index: 1000;
@@ -578,7 +577,7 @@
    ============================================================ */
 .main-content {
   flex: 1;
-  margin-left: calc(var(--sidebar-width) + 32px);
+  margin-left: var(--sidebar-width);
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -589,7 +588,7 @@
 }
 
 body.sidebar-is-collapsed .main-content {
-  margin-left: 112px;
+  margin-left: 80px;
 }
 
 .page-container {
