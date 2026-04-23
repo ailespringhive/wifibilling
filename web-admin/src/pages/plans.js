@@ -116,6 +116,7 @@ function getPlanFeatures(speedNum) {
 }
 
 export function initPlansPage(services) {
+  let allPlans = [];
   let currentModalFeatures = []; // Array of { id: uniqueId, text: string, included: boolean }
 
   function renderDynamicFeatures() {
