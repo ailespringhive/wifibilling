@@ -232,7 +232,7 @@ export function initPlansPage(services) {
       renderPlansGrid(allPlans);
     } catch (error) {
       console.error('Failed to load plans:', error);
-      showToast('Could not load WiFi Plans', 'danger');
+      showToast('Could not load WiFi Plans: ' + (error.message || error), 'danger');
       allPlans = [];
       renderPlansGrid(allPlans);
     }
@@ -240,14 +240,17 @@ export function initPlansPage(services) {
 
   function renderPlansGrid(plans) {
     const grid = document.getElementById('plans-grid');
-    if (!plans || plans.length === 0) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">
-        <div class="empty-icon"><span class="material-icons-outlined" style="font-size:3rem;">cell_tower</span></div>
-        <div class="empty-title">No plans yet</div>
-        <div class="empty-text">Create WiFi service plans to assign to customers.</div>
-      </div>`;
-      return;
-    }
+    if (!grid) return;
+    
+    try {
+      if (!plans || plans.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-icon"><span class="material-icons-outlined" style="font-size:3rem;">cell_tower</span></div>
+          <div class="empty-title">No plans yet</div>
+          <div class="empty-text">Create WiFi service plans to assign to customers.</div>
+        </div>`;
+        return;
+      }
 
     // Find the "recommended" plan (highest active plan that's not the most expensive)
     const activePlans = plans.filter(p => p.isActive !== false);
@@ -407,6 +410,10 @@ export function initPlansPage(services) {
         }
       });
     });
+    } catch(e) {
+      grid.innerHTML = `<div style="color: red; padding: 20px; font-family: monospace; white-space: pre-wrap; word-break: break-all;">CRASH IN RENDER PLAN: ${e.stack}</div>`;
+      console.error(e);
+    }
   }
 }
 

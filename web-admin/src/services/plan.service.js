@@ -17,7 +17,7 @@ export const PlanService = {
       return response;
     } catch (error) {
       console.warn('Client SDK plan list failed, using API bypass:', error.message);
-      const response = await apiBypass.listDocuments(COLLECTIONS.WIFI_PLANS, [Query.limit(100)]);
+      const response = await apiBypass.listDocuments(COLLECTIONS.WIFI_PLANS, ['{"method":"limit","values":[100]}']);
       if (response.documents) {
         response.documents.sort((a, b) => (a.monthlyRate || 0) - (b.monthlyRate || 0));
       }
