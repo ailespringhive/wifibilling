@@ -527,25 +527,38 @@ function navigateTo(page) {
     });
   }
 
-  // Theme Toggle Listener
+  // Theme Toggle Listener (Header)
   const themeToggle = document.getElementById('theme-toggle');
+  const sidebarThemeToggle = document.getElementById('sidebar-theme-toggle-btn');
+  const currentTheme = localStorage.getItem('wifi_admin_theme') || 'light';
+  
   if (themeToggle) {
-    const currentTheme = localStorage.getItem('wifi_admin_theme') || 'light';
     themeToggle.checked = currentTheme === 'dark';
-    
-    themeToggle.addEventListener('change', (e) => {
-      document.documentElement.classList.add('theme-transitioning');
-      const newTheme = e.target.checked ? 'dark' : 'light';
-      console.log('[Theme] Toggled to:', newTheme);
-      document.documentElement.setAttribute('data-theme', newTheme);
-      document.body.setAttribute('data-theme', newTheme);
-      document.body.classList.toggle('dark-theme', newTheme === 'dark');
-      localStorage.setItem('wifi_admin_theme', newTheme);
-      
-      setTimeout(() => {
-        document.documentElement.classList.remove('theme-transitioning');
-      }, 50); // slight delay to allow repaint before re-enabling transitions
+    themeToggle.addEventListener('change', (e) => toggleTheme(e.target.checked ? 'dark' : 'light'));
+  }
+  
+  if (sidebarThemeToggle) {
+    sidebarThemeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      toggleTheme(isDark ? 'light' : 'dark');
+      if (themeToggle) themeToggle.checked = !isDark;
     });
+  }
+
+  function toggleTheme(newTheme) {
+    document.documentElement.classList.add('theme-transitioning');
+    console.log('[Theme] Toggled to:', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    document.body.setAttribute('data-theme', newTheme);
+    document.body.classList.toggle('dark-theme', newTheme === 'dark');
+    localStorage.setItem('wifi_admin_theme', newTheme);
+    
+    // Manage active state of new sidebar buttons visually if needed
+    // (We handle colors via CSS variables primarily)
+    
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning');
+    }, 50);
   }
 
   function showProfileModal() {
