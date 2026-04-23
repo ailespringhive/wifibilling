@@ -3,7 +3,7 @@ import { ticketService } from '../services/ticket.service.js';
 
 export function renderTicketsPage() {
   return `
-    <div class="card glass-card" style="margin-bottom: 24px;">
+    <div class="card glass-card" style="margin-bottom: 24px; min-height: calc(100vh - 140px); display: flex; flex-direction: column;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 24px 24px 0 24px;">
         <h2 class="card-title" style="margin:0;">Repair Tickets</h2>
         <div style="display: flex; gap: 12px; align-items: center;">
@@ -22,7 +22,7 @@ export function renderTicketsPage() {
         </div>
       </div>
 
-      <div class="table-container" style="min-height: 400px; display: flex; flex-direction: column;">
+      <div class="table-container" style="flex: 1; display: flex; flex-direction: column;">
         <div id="tickets-loading" class="spinner" style="margin: 40px auto; display: none;"></div>
         
         <table class="data-table" id="tickets-table">

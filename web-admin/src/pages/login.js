@@ -12,12 +12,15 @@ export function renderLoginPage() {
         </a>
         <style>
           .login-public-ticket-btn {
-            position: absolute; top: 18px; right: 20px;
+            position: absolute; top: 16px; right: 18px;
             color: var(--text-muted); opacity: 0.6;
             transition: all 0.25s ease; text-decoration: none;
             display: flex; align-items: center; justify-content: center;
-            width: 38px; height: 38px; border-radius: 8px;
+            width: 44px; height: 44px; border-radius: 8px;
             background: rgba(255,255,255,0.02); border: 1px solid transparent;
+          }
+          .login-public-ticket-btn .material-icons-outlined {
+            font-size: 28px !important;
           }
           .login-public-ticket-btn:hover {
             opacity: 1; color: var(--blue);
