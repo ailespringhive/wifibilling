@@ -1104,6 +1104,70 @@
     } catch(err) { toast('Failed to delete: ' + err.message, 'error'); startPolling(); }
   });
 
+
+
+  /* ── Image Carousel Logic ── */
+  const carouselModal = document.getElementById('carousel-modal');
+  const carouselMainImg = document.getElementById('carousel-main-image');
+  const carouselTitle = document.getElementById('carousel-title');
+  const carouselPrevBtn = document.getElementById('carousel-prev');
+  const carouselNextBtn = document.getElementById('carousel-next');
+  const carouselIndicators = document.getElementById('carousel-indicators');
+  
+  let carouselImages = [];
+  let currentCarouselIdx = 0;
+
+  function updateCarouselView() {
+    if (carouselImages.length === 0) return;
+    carouselMainImg.style.opacity = '0';
+    setTimeout(() => {
+      carouselMainImg.src = carouselImages[currentCarouselIdx];
+      carouselMainImg.style.opacity = '1';
+    }, 150);
+
+    carouselTitle.textContent = `Proof of Resolution (${currentCarouselIdx + 1} of ${carouselImages.length})`;
+
+    carouselPrevBtn.style.display = currentCarouselIdx > 0 ? 'flex' : 'none';
+    carouselNextBtn.style.display = currentCarouselIdx < carouselImages.length - 1 ? 'flex' : 'none';
+
+    carouselIndicators.innerHTML = carouselImages.map((_, i) => `<div style="width:8px; height:8px; border-radius:50%; background:${i === currentCarouselIdx ? 'white' : 'rgba(255,255,255,0.3)'}; transition:0.2s; cursor:pointer;" data-carousel-jump="${i}"></div>`).join('');
+    
+    carouselIndicators.querySelectorAll('div').forEach(dot => {
+      dot.addEventListener('click', (e) => {
+        currentCarouselIdx = parseInt(e.target.dataset.carouselJump, 10);
+        updateCarouselView();
+      });
+    });
+  }
+
+  function openImageCarousel(ticketId) {
+    const ticket = cachedDocs.find(t => t.$id === ticketId);
+    if (!ticket || !ticket.imageUrls || ticket.imageUrls.length === 0) return;
+    
+    carouselImages = ticket.imageUrls;
+    currentCarouselIdx = 0;
+    carouselModal.classList.add('open');
+    updateCarouselView();
+  }
+
+  function closeCarousel() {
+    carouselModal.classList.remove('open');
+    carouselImages = [];
+    carouselMainImg.src = '';
+  }
+
+  document.getElementById('close-carousel-modal').addEventListener('click', closeCarousel);
+  carouselPrevBtn.addEventListener('click', () => { if (currentCarouselIdx > 0) { currentCarouselIdx--; updateCarouselView(); } });
+  carouselNextBtn.addEventListener('click', () => { if (currentCarouselIdx < carouselImages.length - 1) { currentCarouselIdx++; updateCarouselView(); } });
+
+  // Attach dynamic clicks to the newly created buttons inside the table body!
+  document.getElementById('tbody').addEventListener('click', (e) => {
+    const btn = e.target.closest('.open-carousel-btn');
+    if (btn) {
+      openImageCarousel(btn.dataset.ticketId);
+    }
+  });
+
   /* ── Admin Login button — smart redirect ── */
   function goAdmin(e) {
     e.preventDefault();
