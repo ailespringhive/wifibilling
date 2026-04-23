@@ -46,8 +46,8 @@
         radial-gradient(ellipse 50% 35% at 85% 100%, rgba(99,102,241,.14) 0%, transparent 55%);
     }
 
-    .layout { display: block; min-height: 100vh; position: relative; z-index: 1; }
-    .main   { display: flex; flex-direction: column; }
+    .layout { display: flex; flex-direction: column; min-height: 100vh; position: relative; z-index: 1; }
+    .main   { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
     /* ── Topbar ── */
     .topbar {
@@ -114,7 +114,7 @@
     }
 
     /* ── Page body ── */
-    .page-body { padding: 24px 28px; flex: 1; }
+    .page-body { padding: 24px 28px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 
     /* ── Card ── */
     .card {
@@ -122,6 +122,10 @@
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
       overflow: hidden;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
     .card-header {
@@ -178,7 +182,7 @@
     .filter-select option { background: #0f1428; color: #f1f5f9; }
 
     /* ── Table ── */
-    .table-wrap { overflow-x: auto; }
+    .table-wrap { overflow-x: auto; flex: 1; }
 
     table { width: 100%; border-collapse: collapse; }
 
@@ -277,6 +281,7 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 24px; border-top: 1px solid var(--border);
       font-size: .82rem; color: #64748b;
+      margin-top: auto;
     }
 
     /* ── Spinner ── */
@@ -394,7 +399,6 @@
     }
     .row-new { animation: rowFlash 2s ease forwards; }
 
-    /* ── Responsive ── */
     @media (max-width: 680px) {
       .page-body { padding: 12px; }
       .topbar    { padding: 0 14px; }
