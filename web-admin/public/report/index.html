@@ -845,8 +845,8 @@
                   : '<span style="color:#64748b;font-style:italic;font-size:.82rem;">Unassigned</span>'}
               </td>
               <td>${(t.imageUrls && t.imageUrls.length > 0)
-                  ? `<button class="proof-link open-carousel-btn" data-ticket-id="${t.$id}" style="background:transparent; border:none; cursor:pointer; font-family:inherit; color:inherit; display:flex; align-items:center; gap:4px; padding:0;" type="button">
-                       <span class="material-icons-outlined">image</span>
+                  ? `<button class="proof-link open-carousel-btn" data-ticket-id="${t.$id}" style="background:transparent; border:1px solid rgba(59, 130, 246, 0.15); border-radius:6px; cursor:pointer; font-family:inherit; color:#3b82f6; display:inline-flex; align-items:center; gap:4px; padding:4px 8px; font-weight:600; text-decoration:none;" type="button">
+                       <span class="material-icons-outlined" style="font-size:16px;">image</span>
                        View${t.imageUrls.length > 1 ? ` (${t.imageUrls.length})` : ''}
                      </button>`
                   : `<span style="color:#475569;font-size:.85rem;">—</span>`}
