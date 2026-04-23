@@ -414,8 +414,8 @@ class _MainShellState extends State<MainShell> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildNavItem(0, AppIcons.homeSvg),
-                _buildNavItem(1, AppIcons.customerSvg),
+                _buildNavItem(0, AppIcons.homeSvg, 'Home'),
+                _buildNavItem(1, AppIcons.customerSvg, 'Customers'),
                 
                 Expanded(
                   child: GestureDetector(
@@ -425,19 +425,30 @@ class _MainShellState extends State<MainShell> {
                       );
                     },
                     behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: AppIcons.icon(
-                        AppIcons.addCustomerSvg,
-                        color: const Color(0xFF27272A),
-                        size: 40,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.only(top: 2, bottom: 2),
+                          child: AppIcons.icon(
+                            AppIcons.addCustomerSvg,
+                            color: const Color(0xFF27272A),
+                            size: 32,
+                          ),
+                        ),
+                        Text(
+                          'Add customer', 
+                          style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFF27272A)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                 ),
 
-                _buildNavItem(2, AppIcons.ticketSvg),
-                _buildNavItem(3, AppIcons.profileSvg),
+                _buildNavItem(2, AppIcons.ticketSvg, 'Tickets'),
+                _buildNavItem(3, AppIcons.profileSvg, 'User'),
               ],
             ),
           ),
@@ -446,7 +457,7 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  Widget _buildNavItem(int index, String svgStr) {
+  Widget _buildNavItem(int index, String svgStr, String label) {
     final isActive = _currentIndex == index;
     final color = isActive ? const Color(0xFF5B9E99) : const Color(0xFFB0B8C1);
     
@@ -454,9 +465,24 @@ class _MainShellState extends State<MainShell> {
       child: GestureDetector(
         onTap: () => setState(() => _currentIndex = index),
         behavior: HitTestBehavior.opaque,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: AppIcons.icon(svgStr, color: color, size: 26),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
+              child: AppIcons.icon(svgStr, color: color, size: 24),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: color,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
