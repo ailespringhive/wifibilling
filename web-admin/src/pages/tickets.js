@@ -125,7 +125,7 @@ export function renderTicketsPage() {
         <div class="modal-body">
           <input type="hidden" id="notes-ticket-id" />
           <div class="form-group">
-            <label class="form-label">Technician & Admin Exchange</label>
+            <label class="form-label" id="notes-modal-label">Technician & Admin Exchange</label>
             <textarea class="form-textarea" id="ticket-notes-text" style="min-height: 150px; white-space: pre-wrap; line-height: 1.5;" placeholder="Add an internal note..."></textarea>
           </div>
         </div>
@@ -254,7 +254,7 @@ export function initTicketsPage(services, navigateFn) {
               <div class="table-actions" style="display:flex; align-items:center; gap:4px;">
                 <button class="btn btn-ghost btn-sm btn-icon" title="Notes" data-notes="${ticket.$id}" style="color:var(--accent-purple); position:relative;">
                   <span class="material-icons-outlined" style="font-size:18px;">chat_bubble_outline</span>
-                  ${(typeof ticket.notes === 'string' && ticket.notes !== 'null' && ticket.notes.trim().length > 0) ? '<div style="position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--accent-rose); border-radius:50%; box-shadow:0 0 0 2px var(--bg-card);"></div>' : ''}
+                  ${(typeof ticket.notes === 'string' && ticket.notes !== 'null' && ticket.notes.trim().length > 0 && ticket.notes !== localStorage.getItem('ticket_note_read_' + ticket.$id)) ? '<div class="red-dot-indicator" style="position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--accent-rose); border-radius:50%; box-shadow:0 0 0 2px var(--bg-card);"></div>' : ''}
                 </button>
                 <button class="btn btn-ghost btn-sm btn-icon" title="Edit" data-edit="${ticket.$id}">
                   <span class="material-icons-outlined" style="font-size:18px;">edit</span>
@@ -424,6 +424,18 @@ export function initTicketsPage(services, navigateFn) {
     if (!ticket) return;
     notesIdInput.value = ticket.$id;
     notesTextArea.value = ticket.notes || '';
+    
+    // Update label to feature the specific technician's name
+    const techName = ticket.technicianName || 'Unassigned Technician';
+    document.getElementById('notes-modal-label').textContent = `${techName} & Admin Exchange`;
+    
+    // Mark as read in Local Storage immediately upon opening
+    if (typeof ticket.notes === 'string' && ticket.notes !== 'null') {
+      localStorage.setItem('ticket_note_read_' + ticket.$id, ticket.notes);
+      const dot = document.querySelector(`button[data-notes="${ticket.$id}"] .red-dot-indicator`);
+      if (dot) dot.remove();
+    }
+    
     notesModal.classList.add('active');
   }
 
@@ -444,8 +456,13 @@ export function initTicketsPage(services, navigateFn) {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
     try {
-      await ticketService.updateTicket(id, { notes: notesTextArea.value.trim() });
+      const finalNote = notesTextArea.value.trim();
+      await ticketService.updateTicket(id, { notes: finalNote });
       showToast('Notes saved successfully', 'success');
+      
+      // Admin just authored this note state, mark it as read for themselves
+      localStorage.setItem('ticket_note_read_' + id, finalNote);
+      
       closeNotesModal();
       loadTickets(currentPage); // preserve pagination
     } catch (err) {
