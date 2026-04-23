@@ -263,7 +263,9 @@ export async function initDashboardPage(services, navigateFn) {
             const sub = subsList.documents.find(s => s.$id === bill.subscriptionId);
             if (sub && sub.planId) {
               const plan = plansList.documents.find(p => p.$id === sub.planId);
-              if (plan) bill.planName = plan.name;
+              if (plan) {
+                bill.planName = (plan.name || '').replace('[ARCHIVED] ', '').trim();
+              }
             }
           }
         });
@@ -358,7 +360,8 @@ function renderControlPanel(customers, active, collectors, statusCounts, plansLi
       subsList.documents.forEach(sub => {
         if (sub.status === 'active') { // Only active subs
           const plan = plansList.documents.find(p => p.$id === sub.planId);
-          const pName = plan ? plan.name : 'Unknown';
+          let pName = plan ? plan.name : 'Unknown';
+          pName = pName.replace('[ARCHIVED] ', '').trim();
           planCounts[pName] = (planCounts[pName] || 0) + 1;
         }
       });
