@@ -95,22 +95,40 @@
     }
     .btn-login .material-icons-outlined { font-size: 15px; }
 
-    /* ── Live indicator ── */
-    .live-dot {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: .75rem; font-weight: 600; color: #34d399;
+    /* ── WiFi animated logo (matches sidebar exactly) ── */
+    .brand-icon {
+      width: 44px; height: 44px;
+      border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; flex-shrink: 0;
+      background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+      animation: pulse-glow 3s infinite ease-in-out;
     }
-    .live-dot::before {
-      content: '';
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #34d399;
-      box-shadow: 0 0 0 0 rgba(52,211,153,.6);
-      animation: livePulse 1.8s infinite;
+    @keyframes pulse-glow {
+      0%,100% { box-shadow: 0 0 10px rgba(59,130,246,.35); }
+      50%      { box-shadow: 0 0 22px rgba(59,130,246,.7); }
     }
-    @keyframes livePulse {
-      0%   { box-shadow: 0 0 0 0 rgba(52,211,153,.6); }
-      70%  { box-shadow: 0 0 0 7px rgba(52,211,153,0); }
-      100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+    .wifi-animated { position: absolute; width: 100%; height: 100%; }
+    .wifi-arc {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      border: 3.5px solid transparent;
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      opacity: 0; animation: wifi-fade 1.5s infinite;
+    }
+    .wifi-arc1 { width: 42px; height: 42px; top: 5px;  animation-delay: 0s; }
+    .wifi-arc2 { width: 29px; height: 29px; top: 12px; animation-delay: .3s; }
+    .wifi-arc3 { width: 17px; height: 17px; top: 19px; animation-delay: .6s; }
+    .wifi-dot  {
+      position: absolute; width: 7px; height: 7px;
+      background: #fff; border-radius: 50%;
+      left: 50%; transform: translateX(-50%); top: 25px;
+    }
+    @keyframes wifi-fade { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+
+    .brand-name {
+      font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800;
+      letter-spacing: .07em; color: #f1f5f9;
     }
 
     /* ── Page body ── */
@@ -453,22 +471,19 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-            <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-            <circle cx="12" cy="20" r="1" fill="white" stroke="none"/>
-          </svg>
+          <div class="wifi-animated">
+            <div class="wifi-arc wifi-arc1"></div>
+            <div class="wifi-arc wifi-arc2"></div>
+            <div class="wifi-arc wifi-arc3"></div>
+            <div class="wifi-dot"></div>
+          </div>
         </div>
-        <span class="brand-name">WiFi Billing</span>
+        <span class="brand-name">WIFI BILLING</span>
       </div>
-      <div style="display:flex;align-items:center;gap:14px;">
-        <span class="live-dot" id="live-indicator">Live</span>
-        <a href="#" id="admin-login-btn" class="btn-login" onclick="goAdmin(event)">
-          <span class="material-icons-outlined">lock</span>
-          Admin Login
-        </a>
-      </div>
+      <a href="#" id="admin-login-btn" class="btn-login" onclick="goAdmin(event)">
+        <span class="material-icons-outlined">lock</span>
+        Admin Login
+      </a>
     </header>
 
     <!-- ── Page body ── -->
