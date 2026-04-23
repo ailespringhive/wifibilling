@@ -332,19 +332,19 @@ function navigateTo(page) {
       ]);
       const docs = res.documents || [];
 
-      // Gather unique sender IDs to batch-fetch their profile images
-      const senderIds = [...new Set(docs.map(d => d.senderId || d.collectorId || d.technicianId).filter(Boolean))];
+      // Fetch a global snapshot of all profiles to build ID and Name dictionaries
+      // This heals historically broken notifications sent by mobile apps with hardcoded IDs
+      const profilesRes = await databases.listDocuments(DATABASE_ID, 'users_profile', [Query.limit(200)]);
       const profileMap = {};
-      await Promise.allSettled(senderIds.map(async id => {
-        try {
-          const pRes = await databases.getDocument(DATABASE_ID, 'users_profile', id);
-          profileMap[id] = {
-            image: pRes.profileImage || null,
-            firstName: pRes.firstName || '',
-            lastName: pRes.lastName || '',
-          };
-        } catch (_) {}
-      }));
+      const nameMap = {};
+      profilesRes.documents.forEach(p => {
+        profileMap[p.userId] = p;
+        profileMap[p.$id] = p;
+        const fullName = `${(p.firstName || '').toLowerCase()} ${(p.lastName || '')}`.trim().toLowerCase();
+        nameMap[fullName] = p;
+        // Also map just the first names or combined aliases if needed
+        nameMap[`${(p.firstName || '').toLowerCase()}`.trim()] = p;
+      });
 
       const repairNotifs = docs.map(doc => {
         const diff = Date.now() - new Date(doc.$createdAt).getTime();
@@ -357,13 +357,23 @@ function navigateTo(page) {
         const localMatch = notifications.find(n => n.id === doc.$id);
         const isRead = (localMatch && localMatch.read) || (doc.isRead === true);
         const senderId = doc.senderId || doc.collectorId || doc.technicianId;
-        const senderProfile = senderId ? (profileMap[senderId] || null) : null;
+        let senderProfile = senderId ? (profileMap[senderId] || null) : null;
+        
+        // Fallback: If mobile app posted a hardcoded ID, extract name from message and cross-reference our nameMap!
+        // Example: "Jerald niii updated repair for..."
+        if (!senderProfile && doc.message) {
+          const match = doc.message.match(/^(.+?) (updated|resolved|^collected)/i);
+          if (match) {
+            const extractedName = match[1].trim().toLowerCase();
+            senderProfile = nameMap[extractedName] || null;
+          }
+        }
         
         let initials = null;
         if (senderProfile && (senderProfile.firstName || senderProfile.lastName)) {
           initials = ((senderProfile.firstName?.[0] || '') + (senderProfile.lastName?.[0] || '')).toUpperCase();
         } else if (doc.message) {
-          // Fallback parsing from natural language message e.g. "Jany Calida collected..."
+          // Absolute last resort fallback parsing from natural language message
           const words = doc.message.replace(/[^a-zA-Z ]/g, "").split(' ').filter(Boolean);
           if (words.length >= 2) initials = (words[0][0] + words[1][0]).toUpperCase();
         }
