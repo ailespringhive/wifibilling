@@ -800,9 +800,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             List<String> uploadedUrls = [];
                             bool allUploadsSuccess = true;
                             if (selectedStatus == 'resolved' && proofImageFiles.isNotEmpty) {
-                               for (var file in proofImageFiles) {
+                               for (int i = 0; i < proofImageFiles.length; i++) {
+                                  var file = proofImageFiles[i];
                                   final bytes = await file.readAsBytes();
-                                  final uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                                  final uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
                                   if (uploadedUrl != null) {
                                     uploadedUrls.add(uploadedUrl);
                                   } else {

@@ -137,6 +137,23 @@ export function renderTicketsPage() {
         </div>
       </div>
     </div>
+
+    <!-- Image Carousel Modal -->
+    <div class="modal-overlay" id="carousel-modal">
+      <div class="modal" style="max-width: 800px; width: 90%; padding:0; overflow:hidden; background:var(--bg-secondary); border: 1px solid var(--border-color);">
+        <div class="modal-header" style="position:absolute; top:0; left:0; right:0; z-index:10; background:linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); border:none; padding:16px;">
+          <h3 style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.5); font-size:1.1rem; margin:0;" id="carousel-title">Proof of Resolution (1 of 3)</h3>
+          <button class="modal-close" id="close-carousel-modal" style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.5);">✕</button>
+        </div>
+        <div class="modal-body" style="padding:0; position:relative; min-height:400px; display:flex; align-items:center; justify-content:center; background: #000;">
+           <img id="carousel-main-image" src="" style="max-width:100%; max-height:75vh; object-fit:contain; transition: opacity 0.2s;" />
+           <button id="carousel-prev" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;"><span class="material-icons-outlined">chevron_left</span></button>
+           <button id="carousel-next" style="position:absolute; right:16px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;"><span class="material-icons-outlined">chevron_right</span></button>
+        </div>
+        <div id="carousel-indicators" style="position:absolute; bottom:16px; left:0; right:0; display:flex; justify-content:center; gap:8px; z-index:10;">
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -222,15 +239,11 @@ export function initTicketsPage(services, navigateFn) {
         // Build Proof Button
         let proofHtml = '<span style="color:var(--text-muted);">—</span>';
         if (ticket.imageUrls && Array.isArray(ticket.imageUrls) && ticket.imageUrls.length > 0) {
-          proofHtml = `<div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">`;
-          ticket.imageUrls.forEach((imgUrl, idx) => {
-            proofHtml += `
-              <a href="${imgUrl}" target="_blank" class="btn btn-ghost btn-sm" style="color:var(--accent-blue); padding:4px; border:1px solid rgba(59, 130, 246, 0.15); border-radius:4px;" title="Proof ${idx + 1}" data-tooltip="Proof ${idx + 1}">
-                <span class="material-icons-outlined" style="font-size:16px;">image</span> ${ticket.imageUrls.length > 1 ? (idx + 1) : 'View'}
-              </a>
-            `;
-          });
-          proofHtml += `</div>`;
+          proofHtml = `
+            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" style="color:var(--accent-blue); padding:4px 8px; border:1px solid rgba(59, 130, 246, 0.15); border-radius:4px;">
+              <span class="material-icons-outlined" style="font-size:16px;">image</span> View ${ticket.imageUrls.length > 1 ? `(${ticket.imageUrls.length})` : ''}
+            </button>
+          `;
         }
 
         // Priority Badge helper
@@ -415,6 +428,73 @@ export function initTicketsPage(services, navigateFn) {
       showToast('Failed to delete ticket', 'error');
     }
   }
+
+  // --- Image Carousel Logic ---
+  const carouselModal = document.getElementById('carousel-modal');
+  const carouselMainImg = document.getElementById('carousel-main-image');
+  const carouselTitle = document.getElementById('carousel-title');
+  const carouselPrevBtn = document.getElementById('carousel-prev');
+  const carouselNextBtn = document.getElementById('carousel-next');
+  const carouselIndicators = document.getElementById('carousel-indicators');
+  
+  let carouselImages = [];
+  let currentCarouselIdx = 0;
+
+  function updateCarouselView() {
+    if (carouselImages.length === 0) return;
+    carouselMainImg.style.opacity = '0';
+    setTimeout(() => {
+      carouselMainImg.src = carouselImages[currentCarouselIdx];
+      carouselMainImg.style.opacity = '1';
+    }, 150);
+
+    carouselTitle.textContent = `Proof of Resolution (${currentCarouselIdx + 1} of ${carouselImages.length})`;
+
+    // Connect prev/next visibility
+    carouselPrevBtn.style.display = currentCarouselIdx > 0 ? 'flex' : 'none';
+    carouselNextBtn.style.display = currentCarouselIdx < carouselImages.length - 1 ? 'flex' : 'none';
+
+    // Update dots
+    carouselIndicators.innerHTML = carouselImages.map((_, i) => `
+      <div style="width:8px; height:8px; border-radius:50%; background:${i === currentCarouselIdx ? 'white' : 'rgba(255,255,255,0.3)'}; transition:0.2s; cursor:pointer;" data-carousel-jump="${i}"></div>
+    `).join('');
+
+    // Attach click to dots
+    carouselIndicators.querySelectorAll('div').forEach(dot => {
+      dot.addEventListener('click', (e) => {
+        currentCarouselIdx = parseInt(e.target.dataset.carouselJump, 10);
+        updateCarouselView();
+      });
+    });
+  }
+
+  function openImageCarousel(ticketId) {
+    const ticket = allTickets.find(t => t.$id === ticketId);
+    if (!ticket || !ticket.imageUrls || ticket.imageUrls.length === 0) return;
+    
+    carouselImages = ticket.imageUrls;
+    currentCarouselIdx = 0;
+    carouselModal.classList.add('active');
+    updateCarouselView();
+  }
+
+  function closeCarousel() {
+    carouselModal.classList.remove('active');
+    carouselImages = [];
+    carouselMainImg.src = '';
+  }
+
+  document.getElementById('close-carousel-modal').addEventListener('click', closeCarousel);
+  carouselPrevBtn.addEventListener('click', () => { if (currentCarouselIdx > 0) { currentCarouselIdx--; updateCarouselView(); } });
+  carouselNextBtn.addEventListener('click', () => { if (currentCarouselIdx < carouselImages.length - 1) { currentCarouselIdx++; updateCarouselView(); } });
+
+  // Attach dynamic clicks to the newly created buttons inside the table body!
+  tbody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.open-carousel-btn');
+    if (btn) {
+      openImageCarousel(btn.dataset.ticketId);
+    }
+  });
 
   // --- Notes Modal Logic ---
   const notesModal = document.getElementById('notes-modal');
