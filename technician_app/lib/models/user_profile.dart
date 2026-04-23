@@ -25,6 +25,7 @@ class UserProfile {
   final String? billingStartDate;
   final String? napbox;
   final String? planId;
+  final String? status;
 
   UserProfile({
     required this.id,
@@ -53,6 +54,7 @@ class UserProfile {
     this.billingStartDate,
     this.napbox,
     this.planId,
+    this.status,
   });
 
   String get fullName => '$firstName $lastName'.trim();
@@ -99,6 +101,7 @@ class UserProfile {
       billingStartDate: json['billingStartDate'],
       napbox: json['napbox'],
       planId: json['planId'],
+      status: json['status'],
     );
   }
 
@@ -129,7 +132,7 @@ class UserProfile {
       'billingStartDate': billingStartDate,
       'napbox': napbox,
       'planId': planId,
+      'status': status,
     };
   }
 }
-

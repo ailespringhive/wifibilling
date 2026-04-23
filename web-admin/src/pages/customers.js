@@ -770,15 +770,24 @@ export function initCustomersPage(services, navigateFn) {
         e.target.disabled = true;
         try {
           await services.customer.update(customerId, { status: newStatus });
+          
+          // Also sync with the underlying subscription if it exists
+          const customer = allCustomers.find(c => (c.$id || c.id) === customerId);
+          if (customer && customer.userId) {
+            const existingSub = customerSubscriptions[customer.userId];
+            if (existingSub) {
+              await services.subscription.update(existingSub.$id || existingSub.id, { status: newStatus });
+              existingSub.status = newStatus;
+            }
+            customer.status = newStatus; // Sync local memory
+          }
+
           showToast('Status updated', 'success');
         } catch (error) {
           console.error(error);
           showToast('Failed to update status', 'error');
         } finally {
           e.target.disabled = false;
-          // Sync with local memory
-          const customer = allCustomers.find(c => (c.$id || c.id) === customerId);
-          if (customer) customer.status = newStatus;
         }
       });
     });

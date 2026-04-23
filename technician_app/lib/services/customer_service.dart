@@ -69,6 +69,7 @@ class CustomerService {
 
       return response.rows
           .map((doc) => UserProfile.fromJson(doc.data))
+          .where((profile) => profile.status != 'disable')
           .toList();
     } catch (e) {
       throw Exception('Failed to load all customers: $e');
