@@ -91,8 +91,8 @@ class TicketService {
     const payload = {
       customerId: ticketData.customerId,
       customerName: ticketData.customerName,
-      address: ticketData.address,
-      issueDescription: ticketData.issueDescription,
+      customerAddress: ticketData.address || ticketData.customerAddress || '',
+      issue: ticketData.issueDescription || ticketData.issue || '',
       priority: ticketData.priority || 'medium',
       status: 'pending',
       technicianId: ticketData.technicianId || '',
@@ -114,7 +114,7 @@ class TicketService {
       }
       return res;
     } catch (error) {
-      return await apiBypass.createDocument(COLLECTIONS.REPAIR_TICKETS, payload);
+      return await apiBypass.createDocument(COLLECTIONS.REPAIR_TICKETS, 'unique()', payload);
     }
   }
 

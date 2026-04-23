@@ -33,7 +33,7 @@ export function renderTicketsPage() {
               <th>Issue</th>
               <th>Priority</th>
               <th>Status</th>
-              <th>Assigned To</th>
+              <th>Repaired by</th>
               <th>Proof</th>
               <th style="width: 100px;">Actions</th>
             </tr>
