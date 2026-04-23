@@ -222,13 +222,15 @@ export function initTicketsPage(services, navigateFn) {
         // Build Proof Button
         let proofHtml = '<span style="color:var(--text-muted);">—</span>';
         if (ticket.imageUrls && Array.isArray(ticket.imageUrls) && ticket.imageUrls.length > 0) {
-          // Parse image URL (they are stored as JSON strings usually, but if it's array we grab the last one)
-          const imgUrl = ticket.imageUrls[ticket.imageUrls.length - 1];
-          proofHtml = `
-            <a href="${imgUrl}" target="_blank" class="btn btn-ghost btn-sm" style="color:var(--accent-blue); display:flex; align-items:center; gap:4px; padding:4px 8px;">
-              <span class="material-icons-outlined" style="font-size:16px;">image</span> View
-            </a>
-          `;
+          proofHtml = `<div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">`;
+          ticket.imageUrls.forEach((imgUrl, idx) => {
+            proofHtml += `
+              <a href="${imgUrl}" target="_blank" class="btn btn-ghost btn-sm" style="color:var(--accent-blue); padding:4px; border:1px solid rgba(59, 130, 246, 0.15); border-radius:4px;" title="Proof ${idx + 1}" data-tooltip="Proof ${idx + 1}">
+                <span class="material-icons-outlined" style="font-size:16px;">image</span> ${ticket.imageUrls.length > 1 ? (idx + 1) : 'View'}
+              </a>
+            `;
+          });
+          proofHtml += `</div>`;
         }
 
         // Priority Badge helper
