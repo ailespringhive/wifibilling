@@ -249,7 +249,9 @@ export function initPlansPage(services) {
     if (!grid) return;
     
     try {
-      if (!plans || plans.length === 0) {
+      const visiblePlans = (plans || []).filter(p => p.name && !p.name.startsWith('[ARCHIVED]'));
+      
+      if (visiblePlans.length === 0) {
         grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">
           <div class="empty-icon"><span class="material-icons-outlined" style="font-size:3rem;">cell_tower</span></div>
           <div class="empty-title">No plans yet</div>
@@ -259,7 +261,7 @@ export function initPlansPage(services) {
       }
 
     // Find the "recommended" plan (highest active plan that's not the most expensive)
-    const activePlans = plans.filter(p => p.isActive !== false);
+    const activePlans = visiblePlans.filter(p => p.isActive !== false);
     const sortedByRate = [...activePlans].sort((a, b) => a.monthlyRate - b.monthlyRate);
     const recommendedId = sortedByRate.length >= 2 ? (sortedByRate[Math.floor(sortedByRate.length / 2)].$id || sortedByRate[Math.floor(sortedByRate.length / 2)].id) : null;
 
@@ -406,13 +408,18 @@ export function initPlansPage(services) {
         );
         if (!confirmed) return;
         try {
-          await services.plan.delete(btn.dataset.deletePlan);
-          showToast('Plan deleted', 'success');
-          loadPlans();
-        } catch {
-          allPlans = allPlans.filter(p => (p.$id || p.id) !== btn.dataset.deletePlan);
-          renderPlansGrid(allPlans);
-          showToast('Plan removed (demo)', 'success');
+          const plan = allPlans.find(p => (p.$id || p.id) === btn.dataset.deletePlan);
+          if (plan) {
+            const archivedName = plan.name.startsWith('[ARCHIVED]') ? plan.name : '[ARCHIVED] ' + plan.name;
+            await services.plan.update(plan.$id || plan.id, {
+              name: archivedName,
+              isActive: false
+            });
+            showToast('Plan deleted safely (archived)', 'success');
+            loadPlans();
+          }
+        } catch(e) {
+          showToast('Failed to delete plan: ' + e.message, 'danger');
         }
       });
     });

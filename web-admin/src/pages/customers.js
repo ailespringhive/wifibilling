@@ -285,8 +285,9 @@ export function initCustomersPage(services, navigateFn) {
     const select = document.getElementById('cust-plan');
     try {
       const response = await services.plan.getAll();
-      allPlans = (response.documents || []).filter(p => p.isActive !== false);
-      if (allPlans.length === 0) {
+      allPlans = response.documents || [];
+      const activeOptions = allPlans.filter(p => p.isActive !== false && !p.name.startsWith('[ARCHIVED]'));
+      if (activeOptions.length === 0) {
         select.innerHTML = '<option value="" disabled selected>No plans available — add one in WiFi Plans</option>';
         return;
       }
@@ -294,8 +295,10 @@ export function initCustomersPage(services, navigateFn) {
       console.error('Could not load plans:', e);
       allPlans = [];
     }
+    
+    const activeOptions = allPlans.filter(p => p.isActive !== false && !p.name.startsWith('[ARCHIVED]'));
     select.innerHTML = '<option value="" disabled selected>Select a plan</option>' +
-      allPlans.map(p => `<option value="${p.$id || p.id}">₱${(p.monthlyRate || 0).toLocaleString()} — ${p.name || p.planName || '(Unnamed Plan)'}</option>`).join('');
+      activeOptions.map(p => `<option value="${p.$id || p.id}">₱${(p.monthlyRate || 0).toLocaleString()} — ${p.name || p.planName || '(Unnamed Plan)'}</option>`).join('');
   }
 
   async function loadCollectors() {
@@ -735,7 +738,7 @@ export function initCustomersPage(services, navigateFn) {
           </div>
         </td>
         <td>${c.phone || '—'}</td>
-        <td>${(() => { const p = allPlans.find(x => (x.$id || x.id) === c.planId); return p ? (p.name || '(Unnamed)') + ' — ₱' + (p.monthlyRate || 0).toLocaleString() : (c.planId ? '<span style="color:var(--accent-amber); font-size:0.8rem;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">warning</span> Legacy Plan</span>' : '—'); })()}</td>
+        <td>${(() => { const p = allPlans.find(x => (x.$id || x.id) === c.planId); if (p) { const planName = (p.name || '(Unnamed)').replace('[ARCHIVED] ', ''); const rate = (p.monthlyRate || 0).toLocaleString(); if ((p.name || '').startsWith('[ARCHIVED]')) { return `<span style="color:var(--text-muted);">${planName} — ₱${rate}</span> <span style="color:var(--accent-amber); font-size:0.7rem; margin-left:4px;"><span class="material-icons-outlined" style="font-size:10px; vertical-align:middle;">history</span> Legacy</span>`; } return planName + ' — ₱' + rate; } return c.planId ? '<span style="color:var(--accent-amber); font-size:0.8rem;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">warning</span> Legacy Plan</span>' : '—'; })()}</td>
         <td>
           <select class="form-input btn-sm table-status-select" data-customer-id="${c.$id || c.id}" style="width: auto; padding: 4px 24px 4px 8px; font-size: 0.75rem; border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);" onclick="event.stopPropagation();">
             <option value="active" ${c.status === 'active' || !c.status ? 'selected' : ''}>Active</option>
