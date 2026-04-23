@@ -13,6 +13,9 @@ import '../theme/app_theme.dart';
 import '../theme/app_icons.dart';
 import '../widgets/pop_in_bounce.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 import 'create_ticket_screen.dart';
 
@@ -431,6 +434,9 @@ class _TicketsScreenState extends State<TicketsScreen> {
     String selectedPriority = ticket.priority;
     final notesCtrl = TextEditingController(text: ticket.notes);
     
+    String? proofImagePath;
+    bool isUploadingProof = false;
+    
     // Personnel assignment state
     String? selectedTechId = ticket.technicianId.isNotEmpty ? ticket.technicianId : null;
     String? selectedTechName = ticket.technicianName.isNotEmpty ? ticket.technicianName : null;
@@ -622,6 +628,54 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               );
                             }).toList(),
                           ),
+                          if (selectedStatus == 'resolved') ...[
+                            const SizedBox(height: 20),
+                            Text('Proof of Resolution', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                            const SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: () async {
+                                final picker = ImagePicker();
+                                final file = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                                if (file != null) setSheetState(() => proofImagePath = file.path);
+                              },
+                              child: Container(
+                                height: 120,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.bgDark,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppTheme.border),
+                                  image: proofImagePath != null 
+                                      ? DecorationImage(image: kIsWeb ? NetworkImage(proofImagePath!) : FileImage(File(proofImagePath!)) as ImageProvider, fit: BoxFit.cover) 
+                                      : null,
+                                ),
+                                child: proofImagePath == null 
+                                  ? Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        HugeIcon(icon: HugeIcons.strokeRoundedCamera01, color: AppTheme.textMuted, size: 28.0),
+                                        const SizedBox(height: 8),
+                                        Text('Tap to take photo', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                                      ],
+                                    )
+                                  : Align(
+                                      alignment: Alignment.topRight,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: CircleAvatar(
+                                          radius: 14,
+                                          backgroundColor: Colors.black54,
+                                          child: IconButton(
+                                            padding: EdgeInsets.zero,
+                                            icon: const Icon(Icons.close, size: 16, color: Colors.white),
+                                            onPressed: () => setSheetState(() => proofImagePath = null),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 20),
                           // ── Assigned Personnel Section ──
                           // Only show dropdowns when "In Progress", read-only when "Resolved"
@@ -718,33 +772,51 @@ class _TicketsScreenState extends State<TicketsScreen> {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () async {
+                        onPressed: isUploadingProof ? null : () async {
+                          setSheetState(() => isUploadingProof = true);
                           bool changed = false;
+                          
                           if (selectedStatus != ticket.status) {
                             bool success = false;
-                            success = await _ticketService.updateStatus(ticket.id, selectedStatus);
+                            final auth = context.read<AuthService>();
+                            final profile = auth.currentProfile;
+                            final techName = profile?.fullName ?? 'Technician';
+                            final techId = profile?.userId ?? '';
+                            
+                            if (selectedStatus == 'resolved' && proofImagePath != null) {
+                               final uploadedUrl = await _ticketService.uploadTicketImage(proofImagePath!, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                               if (uploadedUrl != null) {
+                                 success = await _ticketService.resolveTicketWithProof(ticket.id, ticket.imageUrls, uploadedUrl, technicianId: techId);
+                               }
+                            } else {
+                               success = await _ticketService.updateStatus(ticket.id, selectedStatus);
+                            }
                             
                             if (success) {
-                              final auth = context.read<AuthService>();
-                              final profile = auth.currentProfile;
-                              final techName = profile?.fullName ?? 'Technician';
-                              final messenger = ScaffoldMessenger.of(context);
-                              await _ticketService.sendAdminNotification(techName, ticket.customerName, selectedStatus);
-                              
-                              if (mounted) {
-                                final isResolved = selectedStatus == 'resolved';
-                                messenger.showSnackBar(
-                                  SnackBar(
-                                    content: Text('Ticket marked as ${isResolved ? "Resolved" : "In Progress"} — Admin notified!'),
-                                    backgroundColor: isResolved ? AppTheme.accentEmerald : AppTheme.accentBlue,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  ),
-                                );
-                              }
+                               final messenger = ScaffoldMessenger.of(context);
+                               await _ticketService.sendAdminNotification(techName, ticket.customerName, selectedStatus);
+                               
+                               if (mounted) {
+                                 final isResolved = selectedStatus == 'resolved';
+                                 messenger.showSnackBar(
+                                   SnackBar(
+                                     content: Text('Ticket marked as ${isResolved ? "Resolved" : "In Progress"} — Admin notified!'),
+                                     backgroundColor: isResolved ? AppTheme.accentEmerald : AppTheme.accentBlue,
+                                     behavior: SnackBarBehavior.floating,
+                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                   ),
+                                 );
+                               }
+                            } else {
+                               if (selectedStatus == 'resolved' && proofImagePath != null) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to upload proof image.'), backgroundColor: AppTheme.accentRose));
+                                  }
+                               }
                             }
                             changed = true;
                           }
+                          
                           if (selectedPriority != ticket.priority) {
                             await _ticketService.updatePriority(ticket.id, selectedPriority);
                             changed = true;
@@ -769,7 +841,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           if (changed) {
                             _loadTickets();
                           }
-                          if (context.mounted) Navigator.pop(ctx);
+                          if (context.mounted) {
+                             setSheetState(() => isUploadingProof = false);
+                             Navigator.pop(ctx);
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.accentBlue,
@@ -778,7 +853,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
                         ),
-                        child: Text('Save Changes', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700)),
+                        child: Text(isUploadingProof ? 'Uploading Proof...' : 'Save Changes', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700)),
                       ),
                     ),
                   ),
