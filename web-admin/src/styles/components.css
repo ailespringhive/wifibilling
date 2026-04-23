@@ -229,6 +229,12 @@
   background: rgba(59, 130, 246, 0.06);
 }
 
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* ====================== FORMS ====================== */
 .form-row {
   display: grid;

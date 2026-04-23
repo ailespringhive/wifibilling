@@ -228,7 +228,7 @@ export function initTicketsPage(services, navigateFn) {
             <td>${ticket.technicianName || '<span style="color:var(--text-muted); font-style:italic;">Unassigned</span>'}</td>
             <td>${proofHtml}</td>
             <td>
-              <div class="table-actions">
+              <div class="table-actions" style="display:flex; align-items:center; gap:4px;">
                 <button class="btn btn-ghost btn-sm btn-icon" title="Edit" data-edit="${ticket.$id}">
                   <span class="material-icons-outlined" style="font-size:18px;">edit</span>
                 </button>
