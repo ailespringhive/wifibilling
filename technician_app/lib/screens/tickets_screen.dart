@@ -434,8 +434,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
     String selectedPriority = ticket.priority;
     final notesCtrl = TextEditingController(text: ticket.notes);
     
-    String? proofImagePath;
-    XFile? proofImageFile;
+    List<XFile> proofImageFiles = [];
     bool isUploadingProof = false;
     
     // Personnel assignment state
@@ -631,52 +630,74 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             const SizedBox(height: 20),
                             Text('Proof of Resolution', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                             const SizedBox(height: 8),
-                            GestureDetector(
-                              onTap: () async {
-                                final picker = ImagePicker();
-                                final file = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
-                                if (file != null) setSheetState(() {
-                                  proofImageFile = file;
-                                  proofImagePath = file.path;
-                                });
-                              },
-                              child: Container(
-                                height: 120,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.bgDark,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppTheme.border),
-                                  image: proofImagePath != null 
-                                      ? DecorationImage(image: kIsWeb ? NetworkImage(proofImagePath!) : FileImage(File(proofImagePath!)) as ImageProvider, fit: BoxFit.cover) 
-                                      : null,
-                                ),
-                                child: proofImagePath == null 
-                                  ? Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                            if (proofImageFiles.isNotEmpty)
+                              Wrap(
+                                spacing: 12, runSpacing: 12,
+                                children: [
+                                  ...proofImageFiles.map((file) {
+                                    return Stack(
                                       children: [
-                                        HugeIcon(icon: HugeIcons.strokeRoundedCamera01, color: AppTheme.textMuted, size: 28.0),
-                                        const SizedBox(height: 8),
-                                        Text('Tap to take photo', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
-                                      ],
-                                    )
-                                  : Align(
-                                      alignment: Alignment.topRight,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: CircleAvatar(
-                                          radius: 14,
-                                          backgroundColor: Colors.black54,
-                                          child: IconButton(
-                                            padding: EdgeInsets.zero,
-                                            icon: const Icon(Icons.close, size: 16, color: Colors.white),
-                                            onPressed: () => setSheetState(() => proofImagePath = null),
+                                        Container(
+                                          height: 100, width: 100,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(color: AppTheme.border),
+                                            image: DecorationImage(image: kIsWeb ? NetworkImage(file.path) : FileImage(File(file.path)) as ImageProvider, fit: BoxFit.cover),
                                           ),
                                         ),
-                                      ),
+                                        Positioned(
+                                          right: -4, top: -4,
+                                          child: IconButton(
+                                            icon: const CircleAvatar(radius: 12, backgroundColor: Colors.black54, child: Icon(Icons.close, size: 14, color: Colors.white)),
+                                            onPressed: () => setSheetState(() => proofImageFiles.remove(file)),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final picker = ImagePicker();
+                                      final files = await picker.pickMultiImage(imageQuality: 70);
+                                      if (files.isNotEmpty) setSheetState(() => proofImageFiles.addAll(files));
+                                    },
+                                    child: Container(
+                                      height: 100, width: 100,
+                                      decoration: BoxDecoration(color: AppTheme.bgDark, border: Border.all(color: AppTheme.border), borderRadius: BorderRadius.circular(12)),
+                                      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                        const Icon(Icons.add_a_photo, color: AppTheme.textMuted, size: 28),
+                                        const SizedBox(height: 8),
+                                        Text('Add more', style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textMuted))
+                                      ]),
                                     ),
+                                  ),
+                                ]
+                              )
+                            else
+                              GestureDetector(
+                                onTap: () async {
+                                  final picker = ImagePicker();
+                                  final files = await picker.pickMultiImage(imageQuality: 70);
+                                  if (files.isNotEmpty) setSheetState(() => proofImageFiles.addAll(files));
+                                },
+                                child: Container(
+                                  height: 120,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.bgDark,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AppTheme.border),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      HugeIcon(icon: HugeIcons.strokeRoundedCamera01, color: AppTheme.textMuted, size: 28.0),
+                                      const SizedBox(height: 8),
+                                      Text('Tap to select photos', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
                           ],
                           const SizedBox(height: 20),
                           // ── Assigned Personnel Section ──
@@ -776,12 +797,20 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             final techName = profile?.fullName ?? 'Technician';
                             final techId = profile?.userId ?? '';
                             
-                            String? uploadedUrl;
-                            if (selectedStatus == 'resolved' && proofImageFile != null) {
-                               final bytes = await proofImageFile!.readAsBytes();
-                               uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}.jpg');
-                               if (uploadedUrl != null) {
-                                 success = await _ticketService.resolveTicketWithProof(ticket.id, ticket.imageUrls, uploadedUrl, technicianId: techId);
+                            List<String> uploadedUrls = [];
+                            bool allUploadsSuccess = true;
+                            if (selectedStatus == 'resolved' && proofImageFiles.isNotEmpty) {
+                               for (var file in proofImageFiles) {
+                                  final bytes = await file.readAsBytes();
+                                  final uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                                  if (uploadedUrl != null) {
+                                    uploadedUrls.add(uploadedUrl);
+                                  } else {
+                                    allUploadsSuccess = false;
+                                  }
+                               }
+                               if (uploadedUrls.isNotEmpty) {
+                                 success = await _ticketService.resolveTicketWithProof(ticket.id, ticket.imageUrls, uploadedUrls, technicianId: techId);
                                }
                             } else {
                                success = await _ticketService.updateStatus(ticket.id, selectedStatus);
@@ -803,10 +832,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                  );
                                }
                             } else {
-                               if (selectedStatus == 'resolved' && proofImageFile != null) {
+                               if (selectedStatus == 'resolved' && proofImageFiles.isNotEmpty) {
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text(uploadedUrl == null ? 'Failed to upload proof image on the server. Try again.' : 'Failed to update ticket status.'),
+                                      content: Text(!allUploadsSuccess ? 'Failed to upload some proof images on the server. Try again.' : 'Failed to update ticket status.'),
                                       backgroundColor: AppTheme.accentRose,
                                       duration: const Duration(seconds: 5),
                                     ));

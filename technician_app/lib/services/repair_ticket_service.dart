@@ -98,9 +98,9 @@ class RepairTicketService {
     }
   }
 
-  /// Resolve ticket with proof image — offline-aware
-  Future<bool> resolveTicketWithProof(String ticketId, List<String> existingImages, String proofUrl, {String technicianId = ''}) async {
-    final updatedImages = List<String>.from(existingImages)..add(proofUrl);
+  /// Resolve ticket with proof images - offline-aware
+  Future<bool> resolveTicketWithProof(String ticketId, List<String> existingImages, List<String> proofUrls, {String technicianId = ''}) async {
+    final updatedImages = List<String>.from(existingImages)..addAll(proofUrls);
     final patch = {'status': 'resolved', 'imageUrls': updatedImages};
     final cache = LocalCacheService();
 
