@@ -552,6 +552,23 @@
 <!-- Toast container -->
 <div class="toast-container" id="toast-container"></div>
 
+<!-- ── Image Carousel Modal ── -->
+<div class="modal-overlay" id="carousel-modal" style="z-index:9999;">
+  <div class="modal" style="max-width: 800px; width: 90%; padding:0; overflow:hidden; background:#0f172a; border: 1px solid #1e293b;">
+    <div class="modal-header" style="position:absolute; top:0; left:0; right:0; z-index:10; background:linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); border:none; padding:16px;">
+      <h3 style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.5); font-size:1.1rem; margin:0;" id="carousel-title">Proof of Resolution (1 of 3)</h3>
+      <button class="modal-close" id="close-carousel-modal" style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.5);">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0; position:relative; min-height:400px; display:flex; align-items:center; justify-content:center; background: #000;">
+       <img id="carousel-main-image" src="" style="max-width:100%; max-height:75vh; object-fit:contain; transition: opacity 0.2s;" />
+       <button id="carousel-prev" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;"><span class="material-icons-outlined">chevron_left</span></button>
+       <button id="carousel-next" style="position:absolute; right:16px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;"><span class="material-icons-outlined">chevron_right</span></button>
+    </div>
+    <div id="carousel-indicators" style="position:absolute; bottom:16px; left:0; right:0; display:flex; justify-content:center; gap:8px; z-index:10;">
+    </div>
+  </div>
+</div>
+
 <!-- ── Create Ticket Modal ── -->
 <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="modal">
@@ -828,8 +845,12 @@
                   : '<span style="color:#64748b;font-style:italic;font-size:.82rem;">Unassigned</span>'}
               </td>
               <td>${(t.imageUrls && t.imageUrls.length > 0)
-                  ? `<a class="proof-link" href="${t.imageUrls[t.imageUrls.length-1]}" target="_blank" rel="noopener"><span class="material-icons-outlined">image</span>View</a>`
-                  : '<span style="color:#475569;">—</span>'}</td>
+                  ? `<button class="proof-link open-carousel-btn" data-ticket-id="${t.$id}" style="background:transparent; border:none; cursor:pointer; font-family:inherit; color:inherit; display:flex; align-items:center; gap:4px; padding:0;" type="button">
+                       <span class="material-icons-outlined">image</span>
+                       View${t.imageUrls.length > 1 ? ` (${t.imageUrls.length})` : ''}
+                     </button>`
+                  : `<span style="color:#475569;font-size:.85rem;">—</span>`}
+              </td>
               <td>
                 <div style="display:flex;align-items:center;gap:5px;">
                   <button class="act-btn notes" data-notes="${t.$id}" title="Technician Notes">
