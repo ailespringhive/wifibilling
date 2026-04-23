@@ -459,12 +459,25 @@ function renderIncomeChart(projected = [], collected = []) {
   
   const width = 800;
   const height = 230;
-  let rawMax = Math.max(...data1, ...data2) * 1.15;
+  let rawMax = Math.max(...data1, ...data2);
   if (rawMax === 0 || isNaN(rawMax)) rawMax = 100;
   
-  // Snap maxVal to a nice round number (e.g. 100, 250, 500, 1000)
-  const order = Math.pow(10, Math.floor(Math.log10(rawMax)));
-  let maxVal = Math.ceil(rawMax / (order/2)) * (order/2);
+  // Calculate a highly human-readable tick step
+  let tickStep;
+  if (rawMax <= 50) tickStep = 10;
+  else if (rawMax <= 100) tickStep = 20;
+  else if (rawMax <= 500) tickStep = 100;
+  else if (rawMax <= 1000) tickStep = 200;
+  else if (rawMax <= 5000) tickStep = 1000;
+  else if (rawMax <= 10000) tickStep = 2000;
+  else {
+    const order = Math.pow(10, Math.floor(Math.log10(rawMax)));
+    tickStep = order / 5; // e.g. 100000 -> 20000
+  }
+  
+  // Snap maxVal cleanly so it is perfectly divided by 5 ticks, with a slight headroom if close to edge
+  let maxVal = Math.ceil((rawMax * 1.05) / tickStep) * tickStep;
+  if (maxVal < tickStep * 5) maxVal = tickStep * 5;
 
   const stepX = width / (months.length - 1);
   
