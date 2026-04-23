@@ -45,16 +45,20 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
           <span class="nav-text">Billing</span>
         </div>
         <div class="nav-submenu ${isBillingActive ? 'open' : ''}" id="billing-submenu">
-          <div class="nav-sub-item ${activePage === 'billing' ? 'active' : ''}" data-page="billing">
+          <div class="nav-sub-item ${activePage === 'billing' ? 'active' : ''}" data-page="billing" style="gap:12px;">
+            <div class="nav-icon-wrapper" style="transform: scale(0.85); opacity:0.8;"><span class="material-icons-outlined nav-icon">list_alt</span></div>
             <span class="nav-text">All Bills</span>
           </div>
-          <div class="nav-sub-item ${activePage === 'billing_already_paid' ? 'active' : ''}" data-page="billing_already_paid">
+          <div class="nav-sub-item ${activePage === 'billing_already_paid' ? 'active' : ''}" data-page="billing_already_paid" style="gap:12px;">
+             <div class="nav-icon-wrapper" style="transform: scale(0.85); opacity:0.8;"><span class="material-icons-outlined nav-icon">check_circle</span></div>
             <span class="nav-text">Already Paid</span>
           </div>
-          <div class="nav-sub-item ${activePage === 'billing_not_yet_paid' ? 'active' : ''}" data-page="billing_not_yet_paid">
+          <div class="nav-sub-item ${activePage === 'billing_not_yet_paid' ? 'active' : ''}" data-page="billing_not_yet_paid" style="gap:12px;">
+             <div class="nav-icon-wrapper" style="transform: scale(0.85); opacity:0.8;"><span class="material-icons-outlined nav-icon">pending_actions</span></div>
             <span class="nav-text">Not Yet Paid</span>
           </div>
-          <div class="nav-sub-item ${activePage === 'billing_overdue' ? 'active' : ''}" data-page="billing_overdue">
+          <div class="nav-sub-item ${activePage === 'billing_overdue' ? 'active' : ''}" data-page="billing_overdue" style="gap:12px;">
+             <div class="nav-icon-wrapper" style="transform: scale(0.85); opacity:0.8;"><span class="material-icons-outlined nav-icon">warning_amber</span></div>
             <span class="nav-text">Overdue</span>
           </div>
         </div>
