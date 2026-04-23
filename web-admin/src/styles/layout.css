@@ -99,6 +99,24 @@
   white-space: nowrap;
 }
 
+.sidebar-brand .brand-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  transition: transform var(--transition-spring);
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); }
+}
+
 /* Custom Animated WiFi Logo inside Brand Icon */
 .wifi-animated {
   position: absolute;
