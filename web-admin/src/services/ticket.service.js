@@ -1,5 +1,5 @@
 import { databases, COLLECTIONS, Query, apiBypass, DATABASE_ID } from '../config/appwrite.js';
-
+import { MobileNotificationService } from './notification.service.js';
 class TicketService {
   /**
    * Fetch all tickets with optional status filter and pagination
@@ -83,6 +83,30 @@ class TicketService {
     }
   }
 
+  async _notifyTechnicians(ticketData) {
+    const title = 'New Repair Ticket';
+    const message = `${ticketData.customerName} reported an issue: ${ticketData.issueDescription || ticketData.issue}`;
+    try {
+      if (ticketData.technicianId) {
+        MobileNotificationService.sendToTechnician(ticketData.technicianId, title, message).catch(() => {});
+        this.dispatchFcmAlert(ticketData.technicianId, title, message).catch(() => {});
+      } else {
+        // Broadcast to all technicians
+        const response = await databases.listDocuments(
+          import.meta.env.VITE_APPWRITE_DATABASE_ID,
+          COLLECTIONS.USERS_PROFILE,
+          [Query.equal('role', 'technician'), Query.limit(100)]
+        );
+        for (const tech of response.documents) {
+          MobileNotificationService.sendToTechnician(tech.userId || tech.$id, title, message).catch(() => {});
+          this.dispatchFcmAlert(tech.userId || tech.$id, title, message).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to dispatch notifications', e);
+    }
+  }
+
   /**
    * Create a new ticket (used by Admins)
    */
@@ -99,22 +123,23 @@ class TicketService {
       technicianName: ticketData.technicianName || ''
     };
 
+    let res;
     try {
-      const res = await databases.createDocument(
+      res = await databases.createDocument(
         import.meta.env.VITE_APPWRITE_DATABASE_ID,
         COLLECTIONS.REPAIR_TICKETS,
         'unique()',
         payload
       );
-      
-      // Dispatch Push Notification to Technician if they have one assigned
-      if (ticketData.technicianId) {
-        this.dispatchFcmAlert(ticketData.technicianId, 'New Repair Ticket', `${ticketData.customerName} reported an issue: ${ticketData.issueDescription}`).catch(() => {});
-      }
-      return res;
     } catch (error) {
-      return await apiBypass.createDocument(COLLECTIONS.REPAIR_TICKETS, 'unique()', payload);
+      res = await apiBypass.createDocument(COLLECTIONS.REPAIR_TICKETS, 'unique()', payload);
     }
+
+    if (res && res.$id) {
+       this._notifyTechnicians(ticketData).catch(() => {});
+    }
+
+    return res;
   }
 
   /**
