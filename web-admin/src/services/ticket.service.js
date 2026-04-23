@@ -98,8 +98,8 @@ class TicketService {
           [Query.equal('role', 'technician'), Query.limit(100)]
         );
         for (const tech of response.documents) {
-          MobileNotificationService.sendToTechnician(tech.userId || tech.$id, title, message).catch(() => {});
-          this.dispatchFcmAlert(tech.userId || tech.$id, title, message).catch(() => {});
+          MobileNotificationService.sendToTechnician(tech.$id, title, message).catch(() => {});
+          this.dispatchFcmAlert(tech.$id, title, message).catch(() => {});
         }
       }
     } catch (e) {
