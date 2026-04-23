@@ -444,7 +444,7 @@
 
 .nav-sub-item {
   padding: 8px 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
   font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
@@ -456,12 +456,14 @@
 }
 
 .nav-sub-item:hover {
-  color: #FFFFFF;
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
 }
 
 .nav-sub-item.active {
-  color: #FFFFFF;
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+  font-weight: 600;
 }
 
 /* Sidebar footer */
