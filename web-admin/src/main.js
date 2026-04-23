@@ -397,7 +397,7 @@ function navigateTo(page) {
           time: timeStr,
           read: isRead,
           fromAppwrite: true,
-          senderImage: senderProfile?.image || null,
+          senderImage: senderProfile?.profileImage || senderProfile?.image || null,
           initials: initials,
         };
       });
