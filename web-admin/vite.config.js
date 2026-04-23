@@ -60,6 +60,16 @@ export default defineConfig({
             }
           }
 
+          // ── /report/ → serve report portal (public, no login) ──
+          if (url === '/report' || url === '/report/' || url === '/report/index.html') {
+            const reportIndex = path.join(process.cwd(), 'public', 'report', 'index.html');
+            if (fs.existsSync(reportIndex)) {
+              res.setHeader('Content-Type', 'text/html');
+              res.end(fs.readFileSync(reportIndex, 'utf-8'));
+              return;
+            }
+          }
+
           next();
         });
       },

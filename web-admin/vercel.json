@@ -1,9 +1,12 @@
 {
   "redirects": [
     { "source": "/", "destination": "/admin/", "permanent": false },
-    { "source": "/admin", "destination": "/admin/", "permanent": false }
+    { "source": "/admin", "destination": "/admin/", "permanent": false },
+    { "source": "/report", "destination": "/report/", "permanent": false }
   ],
   "rewrites": [
+    { "source": "/report/(.*)", "destination": "/report/index.html" },
+    { "source": "/report/", "destination": "/report/index.html" },
     { "source": "/collector/(.*)", "destination": "/collector/index.html" },
     { "source": "/admin/(.*)", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
