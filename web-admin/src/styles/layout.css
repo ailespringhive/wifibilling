@@ -26,7 +26,6 @@
   z-index: 1000;
   transition: all var(--transition-normal);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
 }
 
 [data-theme="dark"] .sidebar {
@@ -293,6 +292,109 @@
 
 [data-theme="dark"] .sidebar-bottom {
   border-top-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-profile-pill {
+  background: rgba(0,0,0,0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .sidebar-profile-pill {
+  background: rgba(255,255,255,0.03);
+}
+
+.sidebar.collapsed .sidebar-bottom {
+  padding: 16px 8px; /* Tighter padding to fit avatar */
+}
+
+.sidebar.collapsed .sidebar-profile-pill {
+  padding: 6px;
+  border-radius: 50px;
+  gap: 0;
+  justify-content: center;
+}
+
+.sidebar-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-grow: 1;
+  cursor: pointer;
+  min-width: 0; /* Prevents flex flex-grow from overflowing */
+}
+
+.sidebar.collapsed .sidebar-profile-text {
+  display: none;
+}
+
+.sidebar-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-weight: bold;
+  font-size: 15px;
+  background: linear-gradient(135deg, var(--accent-emerald, #10b981), var(--accent-teal, #14b8a6));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.sidebar-profile-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.sidebar-profile-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.sidebar-profile-role {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.sidebar-profile-pill .logout-action {
+  color: var(--accent-rose);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.sidebar.collapsed .sidebar-profile-pill .logout-action {
+  display: none;
+}
+
+.sidebar-profile-pill .logout-action:hover {
+  background: rgba(244,63,94,0.1);
 }
 
 .sidebar-theme-switch-container {

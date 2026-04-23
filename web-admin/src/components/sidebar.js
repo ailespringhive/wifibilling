@@ -83,10 +83,10 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
         </div>
       </nav>
 
-      <div class="sidebar-bottom" style="padding: 16px;">
-        <div class="sidebar-profile-pill" style="background: rgba(0,0,0,0.03); border: 1px solid var(--border-color); border-radius: 14px; padding: 10px 14px; display:flex; align-items:center; gap:12px; transition: all 0.2s ease;">
-          <div id="sidebar-bottom-profile-btn" style="display:flex; align-items:center; gap:12px; flex-grow:1; cursor:pointer;" title="View Admin Profile">
-            <div id="sidebar-bottom-avatar" style="width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; font-weight:bold; font-size:15px; background:linear-gradient(135deg, var(--accent-emerald, #10b981), var(--accent-teal, #14b8a6)); color:#fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div class="sidebar-bottom">
+        <div class="sidebar-profile-pill">
+          <div id="sidebar-bottom-profile-btn" class="sidebar-profile-btn" title="View Admin Profile">
+            <div id="sidebar-bottom-avatar" class="sidebar-avatar">
               ${(() => {
                 const name = currentUser?.profile 
                   ? `${currentUser.profile.firstName || ''} ${currentUser.profile.lastName || ''}`.trim()
@@ -98,17 +98,17 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
                 return (name || 'A').charAt(0).toUpperCase();
               })()}
             </div>
-            <div class="nav-text" style="display:flex; flex-direction:column; line-height:1.25; overflow:hidden; flex-grow:1;">
-              <span id="sidebar-bottom-name" style="font-size:0.85rem; font-weight:600; color:var(--text-primary); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">
+            <div class="sidebar-profile-text nav-text">
+              <span id="sidebar-bottom-name" class="sidebar-profile-name">
                 ${currentUser?.profile ? `${currentUser.profile.firstName || ''} ${currentUser.profile.lastName || ''}`.trim() : (currentUser?.user?.name || 'Admin')}
               </span>
-              <span style="font-size:0.7rem; font-weight: 500; color:var(--text-muted); margin-top:2px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">
+              <span class="sidebar-profile-role">
                 ${currentUser?.profile?.role === 'collector' ? 'Collector' : 'Admin'}
               </span>
             </div>
           </div>
-          <div class="logout-action" title="Logout" style="color:var(--accent-rose); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px; border-radius:6px; flex-shrink:0;" onmouseover="this.style.background='rgba(244,63,94,0.1)'" onmouseout="this.style.background='transparent'">
-            <span class="material-icons-outlined" style="font-size:20px;">logout</span>
+          <div class="logout-action" title="Logout">
+            <span class="material-icons-outlined">logout</span>
           </div>
         </div>
       </div>
