@@ -20,7 +20,8 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
         <div style="margin-left:8px;">
           <div class="brand-text" style="font-size: 1.1rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 2px;">WIFI BILLING</div>
         </div>
-        <!-- Collapse Toggle Arrow -->
+      </div>
+      <div class="sidebar-toggle-row">
         <button class="sidebar-collapse-btn" id="sidebar-collapse-btn">
           <span class="material-icons-outlined">chevron_left</span>
         </button>

@@ -38,32 +38,35 @@
   width: 80px;
 }
 
+.sidebar-toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-toggle-row {
+  justify-content: center;
+}
+
 .sidebar-collapse-btn {
-  position: absolute;
-  right: -12px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 24px;
   height: 24px;
-  background: var(--bg-card);
+  background: var(--bg-card); /* Match sidebar background */
   border: 1px solid var(--border-color);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
   color: var(--text-muted);
-  transition: all 0.2s ease;
-  opacity: 0;
-}
-
-.sidebar:hover .sidebar-collapse-btn {
-  opacity: 1;
+  transition: all 0.3s ease;
+  z-index: 10;
 }
 
 .sidebar.collapsed .sidebar-collapse-btn {
-  transform: translateY(-50%) rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .sidebar-brand {
