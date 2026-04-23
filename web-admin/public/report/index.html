@@ -426,7 +426,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:14px;">
         <span class="live-dot" id="live-indicator">Live</span>
-        <a href="/admin/?force_login=1" class="btn-login">
+        <a href="#" id="admin-login-btn" class="btn-login" onclick="goAdmin(event)">
           <span class="material-icons-outlined">lock</span>
           Admin Login
         </a>
@@ -847,6 +847,14 @@
       label.textContent = 'Submit Ticket';
     }
   });
+
+  /* ── Admin Login button — smart redirect ── */
+  function goAdmin(e) {
+    e.preventDefault();
+    // If a saved session exists the admin is already logged in → go straight to dashboard
+    const hasSession = !!localStorage.getItem('wifi_admin_session');
+    window.location.href = hasSession ? '/admin/' : '/admin/?force_login=1';
+  }
 
   /* ── Boot ── */
   loadTickets(1).then(startPolling);
