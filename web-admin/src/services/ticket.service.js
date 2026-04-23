@@ -96,8 +96,7 @@ class TicketService {
       priority: ticketData.priority || 'medium',
       status: 'pending',
       technicianId: ticketData.technicianId || '',
-      technicianName: ticketData.technicianName || '',
-      imageUrls: ticketData.imageUrls || []
+      technicianName: ticketData.technicianName || ''
     };
 
     try {
