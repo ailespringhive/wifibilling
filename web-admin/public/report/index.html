@@ -60,17 +60,25 @@
 
     .topbar-title { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; }
 
-    .topbar-badge {
-      display: inline-flex; align-items: center; gap: 6px;
+    .btn-login {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px;
       background: rgba(59,130,246,.12);
-      border: 1px solid rgba(59,130,246,.3);
+      border: 1px solid rgba(59,130,246,.35);
+      border-radius: var(--radius-md);
       color: var(--accent-blue);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 0.78rem; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem; font-weight: 600;
+      text-decoration: none;
+      transition: all .2s ease;
     }
-
-    .topbar-badge .material-icons-outlined { font-size: 14px; }
+    .btn-login:hover {
+      background: rgba(59,130,246,.22);
+      border-color: rgba(59,130,246,.6);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(59,130,246,.2);
+    }
+    .btn-login .material-icons-outlined { font-size: 16px; }
 
     /* ── Page body ── */
     .page-body { padding: 24px 28px; flex: 1; }
@@ -332,11 +340,21 @@
 
     <!-- Topbar -->
     <header class="topbar">
-      <span class="topbar-title">Tickets</span>
-      <span class="topbar-badge">
-        <span class="material-icons-outlined">public</span>
-        Public Portal
-      </span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#6366f1);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:white;stroke-width:2.2;stroke-linecap:round;" aria-hidden="true">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <circle cx="12" cy="20" r="1" fill="white" stroke="none"/>
+          </svg>
+        </div>
+        <span style="font-family:'Outfit',sans-serif;font-size:1.05rem;font-weight:800;background:linear-gradient(90deg,#f1f5f9,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">WiFi Billing</span>
+      </div>
+      <a href="/admin/" class="btn-login">
+        <span class="material-icons-outlined" style="font-size:17px;">lock</span>
+        Admin Login
+      </a>
     </header>
 
     <!-- Page body -->
@@ -371,13 +389,13 @@
           <table>
             <thead>
               <tr>
-                <th>Date</th>
+                <th style="width:110px;">Date</th>
                 <th>Customer</th>
                 <th>Issue</th>
-                <th>Priority</th>
-                <th>Status</th>
+                <th style="width:100px;">Priority</th>
+                <th style="width:130px;">Status</th>
                 <th>Repaired By</th>
-                <th>Proof</th>
+                <th style="width:80px;">Proof</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -538,24 +556,41 @@
         emptyEl.style.display = 'block';
       } else {
         tableWrap.style.display = 'block';
-        tbody.innerHTML = docs.map(t => `
-          <tr>
-            <td>${formatDate(t.$createdAt)}</td>
-            <td>
-              <div class="customer-name">${t.customerName || 'Unknown'}</div>
-              <div class="customer-id">${t.customerId || ''}</div>
-            </td>
-            <td class="issue-cell" title="${t.issueDescription || t.issue || ''}">${t.issueDescription || t.issue || '—'}</td>
-            <td>${priorityLabel(t.priority)}</td>
-            <td>${statusBadge(t.status || 'pending')}</td>
-            <td>${t.technicianName || '<span style="color:var(--text-muted);font-style:italic;">Unassigned</span>'}</td>
-            <td>${
-              (t.imageUrls && t.imageUrls.length > 0)
-                ? `<a href="${t.imageUrls[t.imageUrls.length-1]}" target="_blank" style="color:var(--accent-blue);display:flex;align-items:center;gap:4px;font-size:.84rem;font-weight:600;"><span class="material-icons-outlined" style="font-size:16px;">image</span> View</a>`
-                : '<span style="color:var(--text-muted);">—</span>'
-            }</td>
-          </tr>
-        `).join('');
+
+        const priorityAccent = { low: '#64748b', medium: '#f59e0b', high: '#f43f5e', critical: '#ff2d55' };
+
+        tbody.innerHTML = docs.map(t => {
+          const initials = (t.customerName || 'U').split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+          const pColor   = priorityAccent[t.priority] || '#f59e0b';
+          return `
+            <tr style="border-left:3px solid ${pColor};">
+              <td style="color:var(--text-muted);font-size:.8rem;white-space:nowrap;">${formatDate(t.$createdAt)}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0;">${initials}</div>
+                  <div>
+                    <div class="customer-name">${t.customerName || 'Unknown'}</div>
+                    <div class="customer-id">${t.customerId || ''}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="issue-cell" title="${t.issueDescription || t.issue || ''}">${t.issueDescription || t.issue || '—'}</td>
+              <td>${priorityLabel(t.priority)}</td>
+              <td>${statusBadge(t.status || 'pending')}</td>
+              <td>
+                ${t.technicianName
+                  ? `<div style="display:flex;align-items:center;gap:7px;"><div style="width:26px;height:26px;border-radius:50%;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);display:flex;align-items:center;justify-content:center;"><span class="material-icons-outlined" style="font-size:13px;color:#10b981;">engineering</span></div><span>${t.technicianName}</span></div>`
+                  : '<span style="color:var(--text-muted);font-style:italic;font-size:.83rem;">Unassigned</span>'
+                }
+              </td>
+              <td>${
+                (t.imageUrls && t.imageUrls.length > 0)
+                  ? `<a href="${t.imageUrls[t.imageUrls.length-1]}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--accent-blue);font-size:.78rem;font-weight:600;text-decoration:none;"><span class="material-icons-outlined" style="font-size:14px;">image</span>View</a>`
+                  : '<span style="color:var(--text-muted);">—</span>'
+              }</td>
+            </tr>
+          `;
+        }).join('');
       }
 
       // Pagination
