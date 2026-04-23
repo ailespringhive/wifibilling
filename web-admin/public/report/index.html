@@ -958,16 +958,15 @@
     const payload = {
       documentId: 'unique()',
       data: {
-        customerName:     name,
-        customerId:       addr || 'Walk-in',
-        customerAddress:  addr || '',
-        issue:            issue,
-        issueDescription: issue,
-        priority:         selectedPriority,
-        status:           'pending',
-        technicianId:     '',
-        technicianName:   '',
-        notes:            '',
+        customerName:    name,
+        customerId:      addr || 'Walk-in',
+        customerAddress: addr || '',
+        issue:           issue,
+        priority:        selectedPriority,
+        status:          'pending',
+        technicianId:    '',
+        technicianName:  '',
+        notes:           '',
       },
       permissions: ['read("any")', 'update("any")', 'delete("any")']
     };
@@ -1037,7 +1036,7 @@
       await fetch(`${ENDPOINT}/databases/${DATABASE_ID}/collections/${COLLECTION}/documents/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-Appwrite-Project': PROJECT_ID, 'X-Appwrite-Key': API_KEY },
-        body: JSON.stringify({ data: { issueDescription: issue, issue, priority: document.getElementById('edit-priority').value, status: document.getElementById('edit-status').value } })
+        body: JSON.stringify({ data: { issue, priority: document.getElementById('edit-priority').value, status: document.getElementById('edit-status').value } })
       });
       document.getElementById('edit-overlay').classList.remove('open');
       toast('Ticket updated!');
