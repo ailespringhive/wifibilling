@@ -441,8 +441,6 @@ class _TicketsScreenState extends State<TicketsScreen> {
     // Personnel assignment state
     String? selectedTechId = ticket.technicianId.isNotEmpty ? ticket.technicianId : null;
     String? selectedTechName = ticket.technicianName.isNotEmpty ? ticket.technicianName : null;
-    String? selectedCollectorId = ticket.collectorId.isNotEmpty ? ticket.collectorId : null;
-    String? selectedCollectorName = ticket.collectorName.isNotEmpty ? ticket.collectorName : null;
     List<Map<String, String>> personnelList = [];
     bool personnelLoaded = false;
 
@@ -689,25 +687,16 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               personnelLoaded: personnelLoaded,
                               selectedTechId: selectedTechId,
                               selectedTechName: selectedTechName,
-                              selectedCollectorId: selectedCollectorId,
-                              selectedCollectorName: selectedCollectorName,
                               onTechChanged: (id, name) {
                                 setSheetState(() {
                                   selectedTechId = id;
                                   selectedTechName = name;
                                 });
                               },
-                              onCollectorChanged: (id, name) {
-                                setSheetState(() {
-                                  selectedCollectorId = id;
-                                  selectedCollectorName = name;
-                                });
-                              },
                             )
-                          else if (selectedStatus == 'resolved' && (selectedTechName != null && selectedTechName!.isNotEmpty || selectedCollectorName != null && selectedCollectorName!.isNotEmpty))
+                          else if (selectedStatus == 'resolved' && (selectedTechName != null && selectedTechName!.isNotEmpty))
                             _buildResolvedPersonnelInfo(
                               technicianName: selectedTechName,
-                              collectorName: selectedCollectorName,
                             ),
                           const SizedBox(height: 20),
                           Text('Priority', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
@@ -832,14 +821,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           }
                           // Save assigned personnel
                           final techChanged = (selectedTechId ?? '') != ticket.technicianId || (selectedTechName ?? '') != ticket.technicianName;
-                          final collectorChanged = (selectedCollectorId ?? '') != ticket.collectorId || (selectedCollectorName ?? '') != ticket.collectorName;
-                          if (techChanged || collectorChanged) {
+                          if (techChanged) {
                             await _ticketService.updateAssignedPersonnel(
                               ticket.id,
                               technicianId: selectedTechId ?? '',
                               technicianName: selectedTechName ?? '',
-                              collectorId: selectedCollectorId ?? '',
-                              collectorName: selectedCollectorName ?? '',
                             );
                             changed = true;
                           }
@@ -885,19 +871,15 @@ class _TicketsScreenState extends State<TicketsScreen> {
     );
   }
 
-  /// Interactive personnel dropdown selectors for assigning technician/collector
+  /// Interactive personnel dropdown selectors for assigning technician
   Widget _buildPersonnelDropdowns({
     required List<Map<String, String>> personnelList,
     required bool personnelLoaded,
     required String? selectedTechId,
     required String? selectedTechName,
-    required String? selectedCollectorId,
-    required String? selectedCollectorName,
     required void Function(String? id, String? name) onTechChanged,
-    required void Function(String? id, String? name) onCollectorChanged,
   }) {
     final technicians = personnelList.where((p) => p['role'] == 'technician').toList();
-    final collectors = personnelList.where((p) => p['role'] == 'collector').toList();
 
     if (!personnelLoaded) {
       return Column(
@@ -987,54 +969,6 @@ class _TicketsScreenState extends State<TicketsScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
-
-              // Collector Dropdown
-              Row(
-                children: [
-                  HugeIcon(icon: HugeIcons.strokeRoundedMoney03, color: AppTheme.accentEmerald, size: 16.0),
-                  const SizedBox(width: 8),
-                  Text('Collector', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.accentEmerald)),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: AppTheme.bgCard,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTheme.border),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: (selectedCollectorId != null && selectedCollectorId.isNotEmpty && collectors.any((c) => c['id'] == selectedCollectorId)) ? selectedCollectorId : '',
-                    isExpanded: true,
-                    hint: Text('Select collector...', style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textMuted)),
-                    icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowDown01, color: AppTheme.textMuted, size: 18.0),
-                    dropdownColor: AppTheme.bgCard,
-                    style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textPrimary),
-                    items: [
-                      DropdownMenuItem<String>(
-                        value: '',
-                        child: Text('— None —', style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textMuted, fontStyle: FontStyle.italic)),
-                      ),
-                      ...collectors.map((c) => DropdownMenuItem<String>(
-                        value: c['id'],
-                        child: Text(c['name'] ?? 'Unknown', style: GoogleFonts.inter(fontSize: 13)),
-                      )),
-                    ],
-                    onChanged: (val) {
-                      if (val == '') {
-                        onCollectorChanged(null, null);
-                      } else {
-                        final coll = collectors.firstWhere((c) => c['id'] == val, orElse: () => {});
-                        onCollectorChanged(val, coll['name']);
-                      }
-                    },
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -1045,7 +979,6 @@ class _TicketsScreenState extends State<TicketsScreen> {
   /// Read-only display of personnel who resolved the ticket
   Widget _buildResolvedPersonnelInfo({
     required String? technicianName,
-    required String? collectorName,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1075,21 +1008,6 @@ class _TicketsScreenState extends State<TicketsScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 24),
                   child: Text(technicianName, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary)),
-                ),
-                if (collectorName != null && collectorName.isNotEmpty) const SizedBox(height: 14),
-              ],
-              if (collectorName != null && collectorName.isNotEmpty) ...[
-                Row(
-                  children: [
-                    HugeIcon(icon: HugeIcons.strokeRoundedMoney03, color: AppTheme.accentEmerald, size: 16.0),
-                    const SizedBox(width: 8),
-                    Text('Collector', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.accentEmerald)),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.only(left: 24),
-                  child: Text(collectorName, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary)),
                 ),
               ],
             ],
