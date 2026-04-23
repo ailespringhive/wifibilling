@@ -6,8 +6,9 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
   const isBillingActive = billingPages.includes(activePage);
   const isCustomerDetail = activePage.startsWith('customer_detail');
 
+  const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
   return `
-    <aside class="sidebar sidebar-floating" id="sidebar">
+    <aside class="sidebar sidebar-floating ${isCollapsed ? 'collapsed' : ''}" id="sidebar">
       <div class="sidebar-brand">
         <div class="brand-icon">
           <div class="wifi-animated">
@@ -155,10 +156,17 @@ export function initSidebar(navigateFn) {
   const mainContent = document.querySelector('.main-content');
   
   if (collapseBtn) {
+    // Initial sync of body class on script setup (if loaded from fresh refresh)
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+        document.body.classList.add('sidebar-is-collapsed');
+    }
+
     collapseBtn.addEventListener('click', () => {
       sidebar.classList.toggle('collapsed');
+      const isCollapsed = sidebar.classList.contains('collapsed');
+      localStorage.setItem('sidebar_collapsed', isCollapsed);
       if (mainContent) {
-        if (sidebar.classList.contains('collapsed')) {
+        if (isCollapsed) {
           document.body.classList.add('sidebar-is-collapsed');
         } else {
           document.body.classList.remove('sidebar-is-collapsed');
