@@ -168,11 +168,16 @@ export function initPlansPage(services) {
     
     // Default dynamic features for new plan
     currentModalFeatures = [
-      { id: '1', text: 'Browsing & social media', included: true },
-      { id: '2', text: 'Email & messaging', included: true },
-      { id: '3', text: 'HD video streaming', included: false },
-      { id: '4', text: 'Online gaming', included: false },
-      { id: '5', text: 'Priority support', included: false }
+      { id: '1', text: 'Unlimited Data Allocation', included: true },
+      { id: '2', text: 'Symmetrical Speeds (Equal Upload/Download)', included: false },
+      { id: '3', text: 'Optimized for Online Gaming (Low Ping)', included: false },
+      { id: '4', text: 'Supports 5+ Simultaneous Devices', included: true },
+      { id: '5', text: 'Free Dual-Band 5GHz Router Included', included: false },
+      { id: '6', text: 'Seamless 4K & HD Video Streaming', included: false },
+      { id: '7', text: '24/7 Priority Tech Support', included: false },
+      { id: '8', text: 'Static Public IP Address', included: false },
+      { id: '9', text: 'No Lock-In Contract', included: false },
+      { id: '10', text: 'Free Backup Power Supply (Mini UPS)', included: false }
     ];
     renderDynamicFeatures();
     openModal('plan-modal');
