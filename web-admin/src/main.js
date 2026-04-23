@@ -31,6 +31,7 @@ import { renderPlansPage, initPlansPage } from './pages/plans.js';
 import { renderCustomerDetailPage, initCustomerDetailPage } from './pages/customer-detail.js';
 import { renderCollectorDetailPage, initCollectorDetailPage } from './pages/collector-detail.js';
 import { renderTechniciansPage, initTechniciansPage } from './pages/technicians.js';
+import { renderTicketsPage, initTicketsPage } from './pages/tickets.js';
 import { renderNotificationsPage, initNotificationsPage } from './pages/notifications.js';
 
 // Bundle services
@@ -81,6 +82,7 @@ const PAGE_META = {
   collectors: { title: 'Collectors', subtitle: 'Manage payment collectors' },
   plans: { title: 'WiFi Plans', subtitle: 'Manage your service plans & pricing' },
   technicians: { title: 'Technicians', subtitle: 'Manage repair technicians' },
+  tickets: { title: 'Tickets', subtitle: 'Manage repair and support tickets' },
   notifications: { title: 'Notifications', subtitle: 'All system notifications & alerts' },
   customer_detail: { title: 'Customer Details', subtitle: 'View customer information & payment history' },
   collector_detail: { title: 'Collector Details', subtitle: 'View collector information & assigned customers' },
@@ -224,6 +226,7 @@ function navigateTo(page) {
     case 'collectors': pageContent = renderCollectorsPage(); break;
     case 'collector_detail': pageContent = renderCollectorDetailPage(); break;
     case 'technicians': pageContent = renderTechniciansPage(); break;
+    case 'tickets': pageContent = renderTicketsPage(); break;
     case 'plans': pageContent = renderPlansPage(); break;
     case 'notifications': pageContent = renderNotificationsPage(); break;
     default: pageContent = renderDashboardPage(); break;
@@ -1233,6 +1236,7 @@ function navigateTo(page) {
     case 'collectors': initCollectorsPage(services, navigateTo); break;
     case 'collector_detail': initCollectorDetailPage(services, navigateTo, pageParam); break;
     case 'technicians': initTechniciansPage(services, navigateTo); break;
+    case 'tickets': initTicketsPage(services, navigateTo); break;
     case 'plans': initPlansPage(services); break;
     case 'notifications': initNotificationsPage(); break;
   }

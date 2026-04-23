@@ -64,6 +64,11 @@ export function renderSidebar(activePage = 'dashboard', currentUser = null) {
           <span>Technicians</span>
         </div>
 
+        <div class="nav-item ${activePage === 'tickets' ? 'active' : ''}" data-page="tickets">
+          <span class="material-icons-outlined nav-icon">assignment</span>
+          <span>Tickets</span>
+        </div>
+
 
         <div class="nav-item ${activePage === 'plans' ? 'active' : ''}" data-page="plans">
           <span class="material-icons-outlined nav-icon">router</span>
