@@ -699,8 +699,8 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           ],
                           const SizedBox(height: 20),
                           // ── Assigned Personnel Section ──
-                          // Only show dropdowns when "In Progress", or when "Resolved" but no technician assigned. Read-only otherwise when "Resolved".
-                          if (selectedStatus == 'in_progress' || (selectedStatus == 'resolved' && !hasValidTech))
+                          // Only show dropdowns when "In Progress". Read-only when "Resolved".
+                          if (selectedStatus == 'in_progress')
                             _buildPersonnelDropdowns(
                               personnelList: personnelList,
                               personnelLoaded: personnelLoaded,
@@ -713,7 +713,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 });
                               },
                             )
-                          else if (selectedStatus == 'resolved' && hasValidTech)
+                          else if (selectedStatus == 'resolved' && (selectedTechName != null && selectedTechName!.isNotEmpty))
                             _buildResolvedPersonnelInfo(
                               technicianName: selectedTechName,
                             ),
