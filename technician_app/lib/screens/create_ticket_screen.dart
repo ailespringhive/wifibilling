@@ -34,6 +34,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   String _selectedPriority = 'medium';
   final List<XFile> _selectedImages = [];
   LatLng? _selectedLocation;
+  TextEditingController? _autoCompleteCtrl;
   
   @override
   void initState() {
@@ -105,8 +106,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   }
 
   Future<void> _submitTicket() async {
-    if (_selectedCustomer == null) {
-      _showSnackBar('Please select a customer', AppTheme.accentAmber);
+    final customerInputText = _autoCompleteCtrl?.text.trim() ?? '';
+    if (_selectedCustomer == null && customerInputText.isEmpty) {
+      _showSnackBar('Please select or type a customer name', AppTheme.accentAmber);
       return;
     }
     if (_issueCtrl.text.trim().isEmpty) {
@@ -129,10 +131,24 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
         if (url != null) uploadedUrls.add(url);
       }
 
+      String customerIdToSave;
+      String customerNameToSave;
+      String customerAddressToSave;
+
+      if (_selectedCustomer != null) {
+        customerIdToSave = _selectedCustomer!.userId.isNotEmpty ? _selectedCustomer!.userId : _selectedCustomer!.id;
+        customerNameToSave = _selectedCustomer!.fullName;
+        customerAddressToSave = _selectedCustomer!.address;
+      } else {
+        customerIdToSave = 'CUST-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+        customerNameToSave = customerInputText;
+        customerAddressToSave = 'Not provided';
+      }
+
       final data = {
-        'customerId': _selectedCustomer!.userId.isNotEmpty ? _selectedCustomer!.userId : _selectedCustomer!.id,
-        'customerName': _selectedCustomer!.fullName,
-        'customerAddress': _selectedCustomer!.address,
+        'customerId': customerIdToSave,
+        'customerName': customerNameToSave,
+        'customerAddress': customerAddressToSave,
         'technicianId': techId,
         'status': 'pending',
         'priority': _selectedPriority,
@@ -146,7 +162,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       final ticket = await ticketService.createTicket(data);
       if (ticket != null) {
         // Send notification to admin
-        await ticketService.sendAdminNotification(auth.currentProfile?.fullName ?? 'Technician', _selectedCustomer!.fullName, 'pending');
+        await ticketService.sendAdminNotification(auth.currentProfile?.fullName ?? 'Technician', customerNameToSave, 'pending');
         if (mounted) {
           _showSnackBar('Ticket created successfully', AppTheme.accentEmerald);
           Navigator.pop(context, true);
@@ -196,6 +212,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                       setState(() => _selectedCustomer = selection);
                     },
                     fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                      _autoCompleteCtrl = textEditingController;
                       return TextField(
                         controller: textEditingController,
                         focusNode: focusNode,
