@@ -457,6 +457,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            bool hasValidTech = selectedTechId != null && 
+                                selectedTechId!.isNotEmpty && 
+                                personnelLoaded && 
+                                personnelList.any((p) => p['role'] == 'technician' && p['id'] == selectedTechId);
+
             return Container(
               height: MediaQuery.of(context).size.height * 0.85,
               decoration: const BoxDecoration(
@@ -694,8 +699,8 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           ],
                           const SizedBox(height: 20),
                           // ── Assigned Personnel Section ──
-                          // Only show dropdowns when "In Progress", read-only when "Resolved"
-                          if (selectedStatus == 'in_progress')
+                          // Only show dropdowns when "In Progress", or when "Resolved" but no technician assigned. Read-only otherwise when "Resolved".
+                          if (selectedStatus == 'in_progress' || (selectedStatus == 'resolved' && !hasValidTech))
                             _buildPersonnelDropdowns(
                               personnelList: personnelList,
                               personnelLoaded: personnelLoaded,
@@ -708,7 +713,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 });
                               },
                             )
-                          else if (selectedStatus == 'resolved' && (selectedTechName != null && selectedTechName!.isNotEmpty))
+                          else if (selectedStatus == 'resolved' && hasValidTech)
                             _buildResolvedPersonnelInfo(
                               technicianName: selectedTechName,
                             ),
@@ -782,15 +787,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: isUploadingProof ? null : () async {
-                          bool hasValidTech = selectedTechId != null && 
-                                              selectedTechId!.isNotEmpty && 
-                                              personnelLoaded && 
-                                              personnelList.any((p) => p['role'] == 'technician' && p['id'] == selectedTechId);
-
-                          if (selectedStatus == 'in_progress' && !hasValidTech) {
+                          if ((selectedStatus == 'in_progress' || selectedStatus == 'resolved') && !hasValidTech) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Please select a technician to set status to In Progress.', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                                content: Text('Please assign a technician before setting status to ${selectedStatus == 'in_progress' ? 'In Progress' : 'Resolved'}.', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                                 backgroundColor: AppTheme.accentAmber,
                                 behavior: SnackBarBehavior.floating,
                               ),
