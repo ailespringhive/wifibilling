@@ -203,8 +203,14 @@ export function renderTicketsPage() {
             <div><span style="color:var(--text-muted);">Priority:</span> <strong id="ci-ticket-priority" style="text-transform: capitalize;"></strong></div>
             <div><span style="color:var(--text-muted);">Status:</span> <strong id="ci-ticket-status" style="text-transform: capitalize;"></strong></div>
             <div><span style="color:var(--text-muted);">Technician:</span> <strong id="ci-ticket-tech"></strong></div>
+            <div><span style="color:var(--text-muted);">Address:</span> <strong id="ci-ticket-address"></strong></div>
           </div>
           
+          <div id="ci-location-container" style="display: none; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 8px 0; color: var(--text-secondary);">Location</h4>
+            <div id="ci-location-map" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);"></div>
+          </div>
+
           <div id="ci-initial-photos-container" style="display: none;">
             <h4 style="margin: 0 0 8px 0; color: var(--text-secondary);">Initial Issue Photos</h4>
             <div id="ci-initial-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
@@ -768,6 +774,20 @@ export function initTicketsPage(services, navigateFn) {
     } else {
       initContainer.style.display = 'none';
       initDiv.innerHTML = '';
+    }
+
+    // Address
+    document.getElementById('ci-ticket-address').textContent = ticket.customerAddress || 'Not provided';
+
+    // Location map
+    const locContainer = document.getElementById('ci-location-container');
+    const locMap = document.getElementById('ci-location-map');
+    if (ticket.latitude && ticket.longitude) {
+      locContainer.style.display = 'block';
+      locMap.innerHTML = `<iframe width="100%" height="200" frameborder="0" scrolling="no" style="border:0; border-radius:12px;" src="https://www.openstreetmap.org/export/embed.html?bbox=${ticket.longitude - 0.005}%2C${ticket.latitude - 0.003}%2C${ticket.longitude + 0.005}%2C${ticket.latitude + 0.003}&layer=mapnik&marker=${ticket.latitude}%2C${ticket.longitude}"></iframe>`;
+    } else {
+      locContainer.style.display = 'none';
+      locMap.innerHTML = '';
     }
 
     customerInfoModal.classList.add('active');
