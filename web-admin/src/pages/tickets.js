@@ -181,6 +181,9 @@ export function renderTicketsPage() {
             <div><span style="color:var(--text-muted);">Plan ID:</span> <strong id="ci-plan"></strong></div>
           </div>
         </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="btn-close-customer-info">Close</button>
+        </div>
       </div>
     </div>
   `;
