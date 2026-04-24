@@ -69,56 +69,82 @@ export function renderTicketsPage() {
 
     <!-- Ticket Modal -->
     <div class="modal-overlay" id="ticket-modal">
-      <div class="modal" style="max-width: 500px;">
-        <div class="modal-header">
-          <h3 id="ticket-modal-title">Create Ticket</h3>
-          <button class="modal-close" id="close-ticket-modal">✕</button>
+      <div class="modal" style="max-width: 560px; border-radius: 20px; overflow: hidden; padding: 0;">
+        <!-- Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px 24px; border-bottom: 1px solid var(--border-color);">
+          <h3 id="ticket-modal-title" style="margin:0; font-size: 1.2rem; font-weight: 700;">Create Repair Ticket</h3>
+          <button id="close-ticket-modal" style="background: var(--bg-secondary); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary);">
+            <span class="material-icons-outlined" style="font-size: 18px;">close</span>
+          </button>
         </div>
-        <form id="ticket-form" class="modal-body">
+
+        <form id="ticket-form" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; max-height: 75vh; overflow-y: auto;">
           <input type="hidden" id="ticket-id" />
-          
-          <div class="form-group" id="customer-select-container">
-            <label class="form-label">Search / Select Customer <span class="required">*</span></label>
-            <input list="customer-list" class="form-input" id="ticket-customer-input" placeholder="Type name or ID..." required>
-            <datalist id="customer-list">
-            </datalist>
-          </div>
-          
-          <div class="form-group" id="customer-readonly-container" style="display: none;">
-            <label class="form-label">Customer</label>
-            <input type="text" class="form-input" id="ticket-customer-readonly" readonly disabled />
+
+          <!-- Customer -->
+          <div id="customer-select-container">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Customer</div>
+            <input list="customer-list" class="form-input" id="ticket-customer-input" placeholder="Search customer by name or ID..." style="width: 100%; border-radius: 12px; padding: 14px 16px; font-size: 0.95rem; box-sizing: border-box;">
+            <datalist id="customer-list"></datalist>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Issue Description <span class="required">*</span></label>
-            <textarea class="form-textarea" id="ticket-issue" required placeholder="Describe the issue" style="min-height: 80px;"></textarea>
+          <div id="customer-readonly-container" style="display: none;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Customer</div>
+            <input type="text" class="form-input" id="ticket-customer-readonly" readonly disabled style="width: 100%; border-radius: 12px; padding: 14px 16px; box-sizing: border-box;" />
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Priority</label>
-              <select class="form-select" id="ticket-priority">
-                <option value="low">Low</option>
-                <option value="medium" selected>Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
+          <!-- Priority pill selector -->
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Priority</div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="priority-pill" data-priority="low" style="flex:1; padding: 10px 0; border-radius: 30px; border: 2px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s;">Low</button>
+              <button type="button" class="priority-pill active-priority" data-priority="medium" style="flex:1; padding: 10px 0; border-radius: 30px; border: 2px solid var(--accent-amber); background: rgba(245,158,11,0.12); color: var(--accent-amber); cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s;">Medium</button>
+              <button type="button" class="priority-pill" data-priority="high" style="flex:1; padding: 10px 0; border-radius: 30px; border: 2px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s;">High</button>
+              <button type="button" class="priority-pill" data-priority="critical" style="flex:1; padding: 10px 0; border-radius: 30px; border: 2px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s;">Critical</button>
             </div>
-            <div class="form-group">
-              <label class="form-label">Status</label>
-              <select class="form-select" id="ticket-status">
-                <option value="pending" selected>Pending</option>
-                <option value="in_progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
+            <input type="hidden" id="ticket-priority" value="medium">
+          </div>
+
+          <!-- Issue Description -->
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Issue Description</div>
+            <textarea class="form-textarea" id="ticket-issue" required placeholder="Briefly describe the issue (e.g. LOS Red Light)" style="min-height: 100px; border-radius: 12px; padding: 14px 16px; width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+
+          <!-- Photo Attachments -->
+          <div id="customer-select-container-photos">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Attachments (Max 3)</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="ticket-photo-previews"></div>
+            <label for="ticket-photo-input" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; padding: 12px; border: 2px dashed var(--border-color); border-radius: 12px; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.borderColor='var(--accent-blue)'; this.style.color='var(--accent-blue)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-muted)'">
+              <span class="material-icons-outlined">add_photo_alternate</span> Add Photos
+            </label>
+            <input type="file" id="ticket-photo-input" accept="image/*" multiple style="display:none;">
+          </div>
+
+          <!-- Status (only shown when editing) -->
+          <div id="status-field-container" style="display:none;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Status</div>
+            <select class="form-select" id="ticket-status" style="border-radius: 12px; padding: 12px 16px; width: 100%;">
+              <option value="pending" selected>Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <!-- Additional Notes -->
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Additional Notes <span style="font-weight:400; text-transform:none;">(Optional)</span></div>
+            <textarea class="form-textarea" id="ticket-notes-field" placeholder="Any extra context?" style="min-height: 70px; border-radius: 12px; padding: 14px 16px; width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
           </div>
 
         </form>
-        <div class="modal-footer">
-          <button class="btn btn-ghost" id="cancel-ticket-btn">Cancel</button>
-          <button class="btn btn-primary" id="save-ticket-btn">Save Ticket</button>
+
+        <!-- Submit button -->
+        <div style="padding: 0 24px 24px 24px;">
+          <button class="btn btn-primary" id="save-ticket-btn" style="width: 100%; padding: 16px; border-radius: 14px; font-size: 1rem; font-weight: 700; letter-spacing: 0.02em;">
+            Submit Ticket
+          </button>
         </div>
       </div>
     </div>
@@ -455,33 +481,92 @@ export function initTicketsPage(services, navigateFn) {
 
   // Modals
   document.getElementById('add-ticket-btn').addEventListener('click', () => openTicketModal());
-  
+
+  // Priority pills
+  document.querySelectorAll('.priority-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setActivePriority(btn.dataset.priority);
+    });
+  });
+
+  function setActivePriority(value) {
+    document.getElementById('ticket-priority').value = value;
+    const colors = { low: '#6b7280', medium: 'var(--accent-amber)', high: 'var(--accent-rose)', critical: 'red' };
+    const bgs = { low: 'transparent', medium: 'rgba(245,158,11,0.12)', high: 'rgba(239,68,68,0.1)', critical: 'rgba(239,68,68,0.15)' };
+    document.querySelectorAll('.priority-pill').forEach(p => {
+      const active = p.dataset.priority === value;
+      p.style.borderColor = active ? colors[value] : 'var(--border-color)';
+      p.style.color = active ? colors[value] : 'var(--text-secondary)';
+      p.style.background = active ? bgs[value] : 'transparent';
+      p.style.fontWeight = active ? '600' : '500';
+    });
+  }
+
+  // Photo attachment preview
+  let selectedPhotoFiles = [];
+  document.getElementById('ticket-photo-input').addEventListener('change', function() {
+    const files = Array.from(this.files);
+    const remaining = 3 - selectedPhotoFiles.length;
+    const toAdd = files.slice(0, remaining);
+    selectedPhotoFiles = [...selectedPhotoFiles, ...toAdd];
+    renderPhotoPreviews();
+    this.value = '';
+  });
+
+  function renderPhotoPreviews() {
+    const container = document.getElementById('ticket-photo-previews');
+    container.innerHTML = selectedPhotoFiles.map((f, i) => {
+      const url = URL.createObjectURL(f);
+      return `<div style="position:relative; display:inline-block;">
+        <img src="${url}" style="width:70px; height:70px; object-fit:cover; border-radius:10px; border:1px solid var(--border-color);">
+        <button type="button" data-photo-index="${i}" style="position:absolute; top:-6px; right:-6px; background:var(--accent-rose); color:#fff; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; line-height:1;" class="remove-photo-btn">✕</button>
+      </div>`;
+    }).join('');
+    container.querySelectorAll('.remove-photo-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedPhotoFiles.splice(parseInt(btn.dataset.photoIndex), 1);
+        renderPhotoPreviews();
+      });
+    });
+  }
+
   function openTicketModal(ticketId = null) {
+    selectedPhotoFiles = [];
+    renderPhotoPreviews();
+
     if (ticketId) {
       // Editing
       const ticket = allTickets.find(t => t.$id === ticketId);
       if (!ticket) return;
 
-      modalTitle.textContent = 'Edit/Assign Ticket';
+      modalTitle.textContent = 'Edit Ticket';
       idInput.value = ticket.$id;
-      
+
       customerSelectContainer.style.display = 'none';
       customerReadonlyContainer.style.display = 'block';
       customerReadonly.value = ticket.customerName || ticket.customerId;
-      
+
+      document.getElementById('status-field-container').style.display = 'block';
+      document.getElementById('customer-select-container-photos').style.display = 'none';
+
       issueInput.value = ticket.issueDescription || ticket.issue || '';
-      prioritySelect.value = ticket.priority || 'medium';
+      setActivePriority(ticket.priority || 'medium');
       statusSelect.value = ticket.status || 'pending';
+      document.getElementById('ticket-notes-field').value = ticket.notes || '';
     } else {
       // Creating new
       form.reset();
-      modalTitle.textContent = 'Create Ticket';
+      modalTitle.textContent = 'Create Repair Ticket';
       idInput.value = '';
       customerSelectContainer.style.display = 'block';
       customerReadonlyContainer.style.display = 'none';
       customerInput.value = '';
-      prioritySelect.value = 'medium';
-      statusSelect.value = 'pending';
+
+      document.getElementById('status-field-container').style.display = 'none';
+      document.getElementById('customer-select-container-photos').style.display = 'block';
+
+      setActivePriority('medium');
+      document.getElementById('ticket-notes-field').value = '';
     }
 
     modal.classList.add('active');
@@ -492,6 +577,7 @@ export function initTicketsPage(services, navigateFn) {
   }
 
   document.getElementById('close-ticket-modal').addEventListener('click', closeModal);
+
   document.getElementById('cancel-ticket-btn').addEventListener('click', (e) => {
     e.preventDefault();
     closeModal();
@@ -519,18 +605,36 @@ export function initTicketsPage(services, navigateFn) {
       if (!issueInput.value.trim()) { showToast('Please describe the issue', 'warning'); return; }
     }
 
+    const priorityVal = document.getElementById('ticket-priority').value || 'medium';
+    const notesVal = document.getElementById('ticket-notes-field').value.trim();
+
     const payload = {
-      priority: prioritySelect.value,
-      status: statusSelect.value,
+      priority: priorityVal,
+      status: statusSelect.value || 'pending',
+      notes: notesVal,
     };
     
-    // For Issue payload on new/edit
     if (isNew) {
       payload.customerId = customerId;
       payload.customerName = customerName;
       payload.issueDescription = issueInput.value.trim();
+      payload.issue = issueInput.value.trim();
+      // Upload photos if any
+      if (selectedPhotoFiles.length > 0) {
+        showToast('Uploading photos...', 'info');
+        try {
+          const { ticketService: ts } = await import('../services/ticket.service.js');
+          const urls = [];
+          for (const f of selectedPhotoFiles) {
+            const url = await ticketService.uploadTicketImage(f);
+            if (url) urls.push(url);
+          }
+          payload.imageUrls = urls;
+        } catch { /* ignore upload errors */ }
+      }
     } else {
       payload.issueDescription = issueInput.value.trim();
+      payload.issue = issueInput.value.trim();
     }
 
     const saveBtn = document.getElementById('save-ticket-btn');
@@ -546,13 +650,13 @@ export function initTicketsPage(services, navigateFn) {
         showToast('Ticket updated successfully', 'success');
       }
       closeModal();
-      loadTickets(1); // Reload data
+      loadTickets(1);
     } catch (err) {
       console.error(err);
       showToast('Failed to save ticket', 'error');
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Save Ticket';
+      saveBtn.textContent = 'Submit Ticket';
     }
   });
 
