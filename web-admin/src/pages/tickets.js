@@ -216,35 +216,64 @@ export function renderTicketsPage() {
       </div>
     </div>
 
-    <!-- Ticket & Customer Info Modal -->
+    <!-- Ticket Details Modal -->
     <div class="modal-overlay" id="customer-info-modal">
-      <div class="modal" style="max-width: 500px;">
-        <div class="modal-header">
-          <h3 id="customer-info-title">Ticket Details</h3>
+      <div class="modal" style="max-width: 500px; padding: 0; overflow: hidden;">
+        <div class="modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: rgba(245,158,11,0.1); color: var(--accent-amber); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <span class="material-icons-outlined">build</span>
+            </div>
+            <div>
+              <h3 id="customer-info-title" style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">Ticket Details</h3>
+              <div id="ci-ticket-customer-name" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;"></div>
+            </div>
+          </div>
           <button class="modal-close" id="close-customer-info-modal">✕</button>
         </div>
-        <div class="modal-body" style="line-height: 1.6; max-height: 70vh; overflow-y: auto;">
-          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-            <div><span style="color:var(--text-muted);">Issue:</span> <strong id="ci-ticket-issue" style="white-space: pre-wrap;"></strong></div>
-            <div><span style="color:var(--text-muted);">Notes:</span> <strong id="ci-ticket-notes" style="white-space: pre-wrap;"></strong></div>
-            <div><span style="color:var(--text-muted);">Priority:</span> <strong id="ci-ticket-priority" style="text-transform: capitalize;"></strong></div>
-            <div><span style="color:var(--text-muted);">Status:</span> <strong id="ci-ticket-status" style="text-transform: capitalize;"></strong></div>
-            <div><span style="color:var(--text-muted);">Technician:</span> <strong id="ci-ticket-tech"></strong></div>
-            <div><span style="color:var(--text-muted);">Address:</span> <strong id="ci-ticket-address"></strong></div>
+        
+        <div class="modal-body" style="padding: 24px; line-height: 1.6; max-height: 70vh; overflow-y: auto;">
+          
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Address</div>
+            <div id="ci-ticket-address" style="font-size: 0.95rem; color: var(--text-primary);"></div>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Issue Description</div>
+            <div id="ci-ticket-issue" style="font-size: 0.95rem; color: var(--text-primary); white-space: pre-wrap;"></div>
+          </div>
+
+          <div id="ci-location-container" style="display: none; margin-bottom: 24px;">
+            <div id="ci-location-map" style="width: 100%; height: 180px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);"></div>
           </div>
           
-          <div id="ci-location-container" style="display: none; margin-bottom: 16px;">
-            <h4 style="margin: 0 0 8px 0; color: var(--text-secondary);">Location</h4>
-            <div id="ci-location-map" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);"></div>
+          <div style="display: flex; gap: 20px; margin-bottom: 24px;">
+            <div style="flex: 1;">
+               <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Status</div>
+               <span id="ci-ticket-status" style="display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:0.85rem; font-weight:500;"></span>
+            </div>
+            <div style="flex: 1;">
+               <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Priority</div>
+               <span id="ci-ticket-priority" style="display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:0.85rem; font-weight:600;"></span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Technician</div>
+            <div id="ci-ticket-tech" style="font-size: 0.95rem; color: var(--text-primary);"></div>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Notes / Progress</div>
+            <div id="ci-ticket-notes" style="background: var(--bg-secondary); padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-secondary); white-space: pre-wrap;"></div>
           </div>
 
           <div id="ci-initial-photos-container" style="display: none;">
-            <h4 style="margin: 0 0 8px 0; color: var(--text-secondary);">Initial Issue Photos</h4>
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Initial Issue Photos</div>
             <div id="ci-initial-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-ghost" id="btn-close-customer-info">Close</button>
+
         </div>
       </div>
     </div>
@@ -885,11 +914,51 @@ export function initTicketsPage(services, navigateFn) {
     if (!ticket) return;
 
     // Populate ticket info
+    document.getElementById('ci-ticket-customer-name').textContent = ticket.customerName || ticket.customerId || 'Unknown Customer';
     document.getElementById('ci-ticket-issue').textContent = ticket.issueDescription || ticket.issue || 'No description';
-    document.getElementById('ci-ticket-notes').textContent = ticket.notes || 'No notes';
-    document.getElementById('ci-ticket-priority').textContent = ticket.priority || 'medium';
-    document.getElementById('ci-ticket-status').textContent = ticket.status || 'pending';
+    document.getElementById('ci-ticket-notes').textContent = ticket.notes || 'No notes provided.';
     document.getElementById('ci-ticket-tech').textContent = ticket.technicianName || 'Unassigned';
+
+    // Status Pill
+    const statusPill = document.getElementById('ci-ticket-status');
+    const statusStr = ticket.status || 'pending';
+    statusPill.textContent = statusStr.replace('_', ' ');
+    if (statusStr === 'resolved') {
+      statusPill.style.background = 'rgba(16,185,129,0.15)';
+      statusPill.style.color = 'var(--accent-green)';
+      statusPill.style.border = '1px solid var(--accent-green)';
+    } else if (statusStr === 'in_progress') {
+      statusPill.style.background = 'rgba(59,130,246,0.15)';
+      statusPill.style.color = 'var(--accent-blue)';
+      statusPill.style.border = '1px solid var(--accent-blue)';
+    } else if (statusStr === 'cancelled') {
+      statusPill.style.background = 'rgba(107,114,128,0.15)';
+      statusPill.style.color = 'var(--text-secondary)';
+      statusPill.style.border = '1px solid var(--border-color)';
+    } else {
+      statusPill.style.background = 'rgba(245,158,11,0.15)';
+      statusPill.style.color = 'var(--accent-amber)';
+      statusPill.style.border = '1px solid var(--accent-amber)';
+    }
+
+    // Priority Pill
+    const prioPill = document.getElementById('ci-ticket-priority');
+    const prioStr = ticket.priority || 'medium';
+    prioPill.textContent = prioStr;
+    if (prioStr === 'critical') {
+      prioPill.style.background = 'rgba(239,68,68,0.15)';
+      prioPill.style.color = 'var(--accent-rose)';
+    } else if (prioStr === 'high') {
+      prioPill.style.background = 'rgba(239,68,68,0.1)';
+      prioPill.style.color = 'var(--accent-rose)';
+    } else if (prioStr === 'low') {
+      prioPill.style.background = 'transparent';
+      prioPill.style.color = 'var(--text-secondary)';
+      prioPill.style.border = '1px solid var(--border-color)';
+    } else {
+      prioPill.style.background = 'rgba(245,158,11,0.15)';
+      prioPill.style.color = 'var(--accent-amber)';
+    }
 
     // Populate photos
     const initContainer = document.getElementById('ci-initial-photos-container');
