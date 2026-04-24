@@ -752,7 +752,6 @@ export function initCustomersPage(services, navigateFn) {
         </td>
         <td>
           <div class="table-actions">
-            <button class="btn btn-ghost btn-sm btn-icon" title="Request Repair" data-repair="${c.$id || c.id}" style="color:var(--accent-amber);"><span class="material-icons-outlined" style="font-size:18px;">build</span></button>
             <button class="btn btn-ghost btn-sm btn-icon" title="View" data-view="${c.$id || c.id}"><span class="material-icons-outlined" style="font-size:18px;">visibility</span></button>
             <button class="btn btn-ghost btn-sm btn-icon" title="Delete" data-delete="${c.$id || c.id}" style="color:var(--accent-rose);"><span class="material-icons-outlined" style="font-size:18px;">delete</span></button>
           </div>
