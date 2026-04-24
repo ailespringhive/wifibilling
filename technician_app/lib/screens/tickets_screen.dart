@@ -443,6 +443,8 @@ class _TicketsScreenState extends State<TicketsScreen> {
     String? selectedTechName = ticket.technicianName.isNotEmpty ? ticket.technicianName : null;
     List<Map<String, String>> personnelList = [];
     bool personnelLoaded = false;
+    
+    String? validationError;
 
     // Pre-fetch personnel
     _fetchPersonnel().then((list) {
@@ -608,7 +610,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               final isSelected = selectedStatus == s;
                               final color = _statusColor(s);
                               return GestureDetector(
-                                onTap: () => setSheetState(() => selectedStatus = s),
+                                onTap: () => setSheetState(() {
+                                  selectedStatus = s;
+                                  validationError = null;
+                                }),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                   decoration: BoxDecoration(
@@ -710,6 +715,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 setSheetState(() {
                                   selectedTechId = id;
                                   selectedTechName = name;
+                                  validationError = null;
                                 });
                               },
                             )
@@ -783,25 +789,41 @@ class _TicketsScreenState extends State<TicketsScreen> {
                     decoration: const BoxDecoration(
                       border: Border(top: BorderSide(color: AppTheme.border)),
                     ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isUploadingProof ? null : () async {
-                          if ((selectedStatus == 'in_progress' || selectedStatus == 'resolved') && !hasValidTech) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Please assign a technician before setting status to ${selectedStatus == 'in_progress' ? 'In Progress' : 'Resolved'}.', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-                                backgroundColor: AppTheme.accentAmber,
-                                behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.only(
-                                  bottom: MediaQuery.of(context).size.height - 150,
-                                  left: 20,
-                                  right: 20,
-                                ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (validationError != null)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentRose.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppTheme.accentRose),
                               ),
-                            );
-                            return;
-                          }
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.error_outline, color: AppTheme.accentRose, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      validationError!,
+                                      style: GoogleFonts.inter(color: AppTheme.accentRose, fontSize: 13, fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: isUploadingProof ? null : () async {
+                                if ((selectedStatus == 'in_progress' || selectedStatus == 'resolved') && !hasValidTech) {
+                                  setSheetState(() {
+                                    validationError = 'Please assign a technician before setting status to ${selectedStatus == 'in_progress' ? 'In Progress' : 'Resolved'}.';
+                                  });
+                                  return;
+                                }
 
                           setSheetState(() => isUploadingProof = true);
                           bool changed = false;
@@ -898,9 +920,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
                         child: Text(isUploadingProof ? 'Uploading Proof...' : 'Save Changes', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700)),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            ],
+          ),
             );
           },
         );
