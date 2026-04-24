@@ -550,12 +550,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               height: 150,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                physics: const PageScrollPhysics(),
                                 itemCount: ticket.imageUrls.length,
                                 itemBuilder: (ctx, i) {
                                   return Container(
-                                    width: MediaQuery.of(ctx).size.width - 40,
-                                    margin: EdgeInsets.only(right: i == ticket.imageUrls.length - 1 ? 0 : 12),
+                                    width: MediaQuery.of(ctx).size.width * 0.8,
+                                    margin: const EdgeInsets.only(right: 12),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: AppTheme.border),
@@ -577,12 +576,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               height: 150,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                physics: const PageScrollPhysics(),
                                 itemCount: ticket.proofUrls.length,
                                 itemBuilder: (ctx, i) {
                                   return Container(
-                                    width: MediaQuery.of(ctx).size.width - 40,
-                                    margin: EdgeInsets.only(right: i == ticket.proofUrls.length - 1 ? 0 : 12),
+                                    width: MediaQuery.of(ctx).size.width * 0.8,
+                                    margin: const EdgeInsets.only(right: 12),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: AppTheme.border),

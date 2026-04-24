@@ -979,7 +979,7 @@ export function initTicketsPage(services, navigateFn) {
     if (ticket.imageUrls && ticket.imageUrls.length > 0) {
       initContainer.style.display = 'block';
       initDiv.innerHTML = ticket.imageUrls.map(url => `
-        <img src="${url}" style="flex: 0 0 100%; height: 220px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(0.98)'" onmouseout="this.style.transform='scale(1)'" onclick="document.getElementById('close-customer-info-modal').click(); setTimeout(() => document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']') && document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']').click(), 300)" />
+        <img src="${url}" style="flex: 0 0 85%; height: 220px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(0.98)'" onmouseout="this.style.transform='scale(1)'" onclick="document.getElementById('close-customer-info-modal').click(); setTimeout(() => document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']') && document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']').click(), 300)" />
       `).join('');
     } else {
       initContainer.style.display = 'none';
