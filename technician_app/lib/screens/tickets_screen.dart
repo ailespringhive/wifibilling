@@ -548,24 +548,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             const SizedBox(height: 8),
                             SizedBox(
                               height: 150,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: ticket.imageUrls.length,
-                                itemBuilder: (ctx, i) {
-                                  return Container(
-                                    width: MediaQuery.of(ctx).size.width * 0.8,
-                                    margin: const EdgeInsets.only(right: 12),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppTheme.border),
-                                      image: DecorationImage(
-                                        image: NetworkImage(ticket.imageUrls[i]),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                              child: _ImageCarousel(imageUrls: ticket.imageUrls),
                             ),
                             const SizedBox(height: 16),
                           ],
@@ -574,24 +557,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             const SizedBox(height: 8),
                             SizedBox(
                               height: 150,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: ticket.proofUrls.length,
-                                itemBuilder: (ctx, i) {
-                                  return Container(
-                                    width: MediaQuery.of(ctx).size.width * 0.8,
-                                    margin: const EdgeInsets.only(right: 12),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppTheme.border),
-                                      image: DecorationImage(
-                                        image: NetworkImage(ticket.proofUrls[i]),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                              child: _ImageCarousel(imageUrls: ticket.proofUrls),
                             ),
                             const SizedBox(height: 16),
                           ],
@@ -816,7 +782,12 @@ class _TicketsScreenState extends State<TicketsScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: isUploadingProof ? null : () async {
-                          if (selectedStatus == 'in_progress' && (selectedTechId == null || selectedTechId!.isEmpty)) {
+                          bool hasValidTech = selectedTechId != null && 
+                                              selectedTechId!.isNotEmpty && 
+                                              personnelLoaded && 
+                                              personnelList.any((p) => p['role'] == 'technician' && p['id'] == selectedTechId);
+
+                          if (selectedStatus == 'in_progress' && !hasValidTech) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Please select a technician to set status to In Progress.', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
@@ -1183,3 +1154,111 @@ class _TicketsScreenState extends State<TicketsScreen> {
     );
   }
 }
+
+class _ImageCarousel extends StatefulWidget {
+  final List<String> imageUrls;
+  const _ImageCarousel({required this.imageUrls});
+
+  @override
+  State<_ImageCarousel> createState() => _ImageCarouselState();
+}
+
+class _ImageCarouselState extends State<_ImageCarousel> {
+  final PageController _controller = PageController();
+  int _currentIndex = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _next() {
+    if (_currentIndex < widget.imageUrls.length - 1) {
+      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    } else {
+      _controller.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    }
+  }
+
+  void _prev() {
+    if (_currentIndex > 0) {
+      _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    } else {
+      _controller.animateToPage(widget.imageUrls.length - 1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.imageUrls.isEmpty) return const SizedBox.shrink();
+    
+    return Stack(
+      children: [
+        PageView.builder(
+          controller: _controller,
+          onPageChanged: (idx) => setState(() => _currentIndex = idx),
+          itemCount: widget.imageUrls.length,
+          itemBuilder: (ctx, i) {
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.border),
+                image: DecorationImage(
+                  image: NetworkImage(widget.imageUrls[i]),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          },
+        ),
+        if (widget.imageUrls.length > 1) ...[
+          Positioned(
+            left: 8, top: 0, bottom: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: _prev,
+                child: const CircleAvatar(
+                  backgroundColor: Colors.black54,
+                  radius: 16,
+                  child: Icon(Icons.chevron_left, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 8, top: 0, bottom: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: _next,
+                child: const CircleAvatar(
+                  backgroundColor: Colors.black54,
+                  radius: 16,
+                  child: Icon(Icons.chevron_right, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 8, left: 0, right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.imageUrls.length,
+                (index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  width: 6, height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentIndex == index ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+

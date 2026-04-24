@@ -978,9 +978,28 @@ export function initTicketsPage(services, navigateFn) {
     const initDiv = document.getElementById('ci-initial-photos');
     if (ticket.imageUrls && ticket.imageUrls.length > 0) {
       initContainer.style.display = 'block';
-      initDiv.innerHTML = ticket.imageUrls.map(url => `
-        <img src="${url}" style="flex: 0 0 85%; height: 220px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(0.98)'" onmouseout="this.style.transform='scale(1)'" onclick="document.getElementById('close-customer-info-modal').click(); setTimeout(() => document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']') && document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']').click(), 300)" />
+      const imagesHtml = ticket.imageUrls.map(url => `
+        <img src="${url}" style="flex: 0 0 100%; width: 100%; height: 220px; object-fit: cover; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(0.98)'" onmouseout="this.style.transform='scale(1)'" onclick="document.getElementById('close-customer-info-modal').click(); setTimeout(() => document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']') && document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']').click(), 300)" />
       `).join('');
+      
+      initDiv.style.gap = '0';
+      initDiv.style.overflowX = 'visible';
+      initDiv.style.paddingBottom = '0';
+      initDiv.innerHTML = `
+        <div style="position: relative; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          <div id="ci-carousel-track" style="display: flex; overflow-x: hidden; scroll-behavior: smooth; width: 100%;">
+            ${imagesHtml}
+          </div>
+          ${ticket.imageUrls.length > 1 ? `
+            <button onclick="document.getElementById('ci-carousel-track').scrollBy({left: -document.getElementById('ci-carousel-track').clientWidth, behavior: 'smooth'})" style="position:absolute; left:8px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index: 2; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">
+              <span class="material-icons-outlined" style="font-size:18px;">chevron_left</span>
+            </button>
+            <button onclick="document.getElementById('ci-carousel-track').scrollBy({left: document.getElementById('ci-carousel-track').clientWidth, behavior: 'smooth'})" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index: 2; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">
+              <span class="material-icons-outlined" style="font-size:18px;">chevron_right</span>
+            </button>
+          ` : ''}
+        </div>
+      `;
     } else {
       initContainer.style.display = 'none';
       initDiv.innerHTML = '';
