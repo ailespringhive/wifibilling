@@ -11,13 +11,19 @@ export function renderDashboardPage() {
       <!-- Top Metrics Row -->
       <div class="metrics-grid">
         <div class="metric-card pop-in-active">
-          <div class="metric-title">Total Revenue</div>
+          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Total Revenue</span>
+            <span class="material-icons-outlined" style="font-size:1.3rem; color:var(--accent-blue); background:rgba(59,130,246,0.1); padding:6px; border-radius:8px;">account_balance_wallet</span>
+          </div>
           <div class="metric-value font-bold" id="stat-collected">—</div>
           <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+12.4% <span style="color: var(--text-muted);">this month</span></div>
         </div>
         
         <div class="metric-card pop-in-active" style="animation-delay: 0.1s;">
-          <div class="metric-title">Active Customers</div>
+          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Active Customers</span>
+            <span class="material-icons-outlined" style="font-size:1.3rem; color:var(--accent-emerald); background:rgba(16,185,129,0.1); padding:6px; border-radius:8px;">groups</span>
+          </div>
           <div class="metric-value-wrapper">
             <div class="metric-value font-bold" id="stat-active">—</div>
             <div class="metric-denominator">/ <span id="stat-customers">—</span> Total</div>
@@ -26,7 +32,10 @@ export function renderDashboardPage() {
         </div>
         
         <div class="metric-card pop-in-active" style="animation-delay: 0.2s;">
-          <div class="metric-title">Unpaid Bills</div>
+          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Unpaid Bills</span>
+            <span class="material-icons-outlined" style="font-size:1.3rem; color:#F97316; background:rgba(249,115,22,0.1); padding:6px; border-radius:8px;">receipt_long</span>
+          </div>
           <div class="metric-value-wrapper">
             <div class="metric-value font-bold" id="stat-unpaid">—</div>
             <div class="metric-denominator">/ <span id="stat-overdue">—</span> Overdue</div>
@@ -35,7 +44,10 @@ export function renderDashboardPage() {
         </div>
 
         <div class="metric-card pop-in-active" style="animation-delay: 0.3s;">
-          <div class="metric-title">Staff Overview</div>
+          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Staff Overview</span>
+            <span class="material-icons-outlined" style="font-size:1.3rem; color:#8B5CF6; background:rgba(139,92,246,0.1); padding:6px; border-radius:8px;">engineering</span>
+          </div>
           <div class="metric-value-wrapper">
             <div class="metric-value font-bold" id="stat-collectors">—</div>
             <div class="metric-denominator">Collectors <span style="margin:0 4px">•</span> <span id="stat-technicians">—</span> Techs</div>

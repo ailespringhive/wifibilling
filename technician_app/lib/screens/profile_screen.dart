@@ -164,24 +164,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Standard App Bar Substitute
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              color: AppTheme.bgCard,
-              child: Text(
-                'Technician Details',
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-            ),
-            
+
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
                 child: Column(
                   children: [
                     // ── TOP PROFILE NAVIGATION CARD ──
@@ -320,14 +306,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildFormField('Role', null, readOnly: true, value: 'Technician'),
 
                             const SizedBox(height: 32),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: _buildActionButton(
-                                icon: HugeIcons.strokeRoundedFloppyDisk,
-                                label: _isSavingProfile ? 'Saving...' : 'Save Changes',
-                                isLoading: _isSavingProfile,
-                                onPressed: _isSavingProfile ? null : _saveProfile,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(child: _buildSignOutBtn(context)),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildActionButton(
+                                    icon: HugeIcons.strokeRoundedFloppyDisk,
+                                    label: _isSavingProfile ? 'Saving...' : 'Save Changes',
+                                    isLoading: _isSavingProfile,
+                                    onPressed: _isSavingProfile ? null : _saveProfile,
+                                  ),
+                                ),
+                              ],
                             ),
                           ] else ...[
                             // Password Form
@@ -342,65 +333,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
 
                             const SizedBox(height: 32),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: _buildActionButton(
-                                icon: HugeIcons.strokeRoundedKey01,
-                                label: _isChangingPassword ? 'Updating...' : 'Update Password',
-                                isLoading: _isChangingPassword,
-                                onPressed: _isChangingPassword ? null : _changePassword,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(child: _buildSignOutBtn(context)),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildActionButton(
+                                    icon: HugeIcons.strokeRoundedKey01,
+                                    label: _isChangingPassword ? 'Updating...' : 'Update Password',
+                                    isLoading: _isChangingPassword,
+                                    onPressed: _isChangingPassword ? null : _changePassword,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ],
                       ),
                     )),
 
-                    const SizedBox(height: 24),
-
-                    // Log out button
-                    PopInBounce(
-                      delay: const Duration(milliseconds: 300),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                        color: AppTheme.accentRose.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.accentRose.withValues(alpha: 0.2)),
-                      ),
-                      child: TextButton.icon(
-                        onPressed: () async {
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              backgroundColor: AppTheme.bgCard,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppTheme.border)),
-                              title: Text('Sign Out', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-                              content: Text('Are you sure you want to sign out?', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Cancel', style: GoogleFonts.inter(color: AppTheme.textMuted))),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  style: TextButton.styleFrom(foregroundColor: AppTheme.accentRose),
-                                  child: Text('Sign Out', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                                ),
-                              ],
-                            ),
-                          );
-                          if (confirm == true && mounted) {
-                            final authService = context.read<AuthService>();
-                            await authService.logout();
-                          }
-                        },
-                        icon: HugeIcon(icon: HugeIcons.strokeRoundedLogout01, color: AppTheme.accentRose, size: 20.0),
-                        label: Text('Sign Out', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold)),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.accentRose,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    )),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -468,12 +420,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         icon: isLoading 
             ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
             : HugeIcon(icon: icon, size: 18.0, color: Colors.white),
-        label: Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
+        label: FittedBox(fit: BoxFit.scaleDown, child: Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold))),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -567,6 +519,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSignOutBtn(BuildContext context) {
+    return TextButton.icon(
+      onPressed: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppTheme.bgCard,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppTheme.border)),
+            title: Text('Sign Out', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            content: Text('Are you sure you want to sign out?', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Cancel', style: GoogleFonts.inter(color: AppTheme.textMuted))),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: TextButton.styleFrom(foregroundColor: AppTheme.accentRose),
+                child: Text('Sign Out', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        );
+        if (confirm == true && mounted) {
+          final authService = context.read<AuthService>();
+          await authService.logout();
+        }
+      },
+      icon: HugeIcon(icon: HugeIcons.strokeRoundedLogout01, color: AppTheme.accentRose, size: 18.0),
+      label: FittedBox(fit: BoxFit.scaleDown, child: Text('Sign Out', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold))),
+      style: TextButton.styleFrom(
+        foregroundColor: AppTheme.accentRose,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        backgroundColor: AppTheme.accentRose.withValues(alpha: 0.05),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppTheme.accentRose.withValues(alpha: 0.2)),
+        ),
+      ),
     );
   }
 }
