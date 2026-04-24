@@ -156,8 +156,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
         'priority': _selectedPriority,
         'issue': _issueCtrl.text.trim(),
         'notes': _notesCtrl.text.trim(),
-        'latitude': _selectedLocation?.latitude,
-        'longitude': _selectedLocation?.longitude,
+        'latitude': _selectedLocation?.latitude ?? _selectedCustomer?.latitude,
+        'longitude': _selectedLocation?.longitude ?? _selectedCustomer?.longitude,
         'imageUrls': uploadedUrls,
       };
 
@@ -181,6 +181,11 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool hideLocationAndAddress = _selectedCustomer != null &&
+        _selectedCustomer!.latitude != null &&
+        _selectedCustomer!.longitude != null &&
+        _selectedCustomer!.address.isNotEmpty;
+
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
@@ -346,34 +351,36 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                       ),
                     ),
 
-                  const SizedBox(height: 20),
-                  _buildLabel('Address (Optional)'),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _addressCtrl,
-                    style: GoogleFonts.inter(fontSize: 14),
-                    decoration: _inputDecoration('Enter customer address...'),
-                  ),
+                  if (!hideLocationAndAddress) ...[
+                    const SizedBox(height: 20),
+                    _buildLabel('Address (Optional)'),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _addressCtrl,
+                      style: GoogleFonts.inter(fontSize: 14),
+                      decoration: _inputDecoration('Enter customer address...'),
+                    ),
 
-                  const SizedBox(height: 20),
-                  _buildLabel('Location (Optional)'),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    onTap: _pickLocation,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade300),
+                    const SizedBox(height: 20),
+                    _buildLabel('Location (Optional)'),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      onTap: _pickLocation,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      tileColor: Colors.white,
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: AppTheme.accentBlue.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        child: const HugeIcon(icon: HugeIcons.strokeRoundedLocation01, color: AppTheme.accentBlue, size: 20),
+                      ),
+                      title: Text(_selectedLocation != null ? 'Location Selected' : 'Tap to pin location', style: GoogleFonts.inter(fontSize: 14)),
+                      subtitle: _selectedLocation != null ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}', style: GoogleFonts.inter(fontSize: 12)) : null,
+                      trailing: const HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, color: AppTheme.textMuted, size: 16),
                     ),
-                    tileColor: Colors.white,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: AppTheme.accentBlue.withValues(alpha: 0.1), shape: BoxShape.circle),
-                      child: HugeIcon(icon: HugeIcons.strokeRoundedLocation01, color: AppTheme.accentBlue, size: 20),
-                    ),
-                    title: Text(_selectedLocation != null ? 'Location Selected' : 'Tap to pin location', style: GoogleFonts.inter(fontSize: 14)),
-                    subtitle: _selectedLocation != null ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}', style: GoogleFonts.inter(fontSize: 12)) : null,
-                    trailing: const HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, color: AppTheme.textMuted, size: 16),
-                  ),
+                  ],
 
                   const SizedBox(height: 20),
                   _buildLabel('Additional Notes (Optional)'),
