@@ -818,6 +818,17 @@ class _TicketsScreenState extends State<TicketsScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: isUploadingProof ? null : () async {
+                          if (selectedStatus == 'in_progress' && (selectedTechId == null || selectedTechId!.isEmpty)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Please select a technician to set status to In Progress.', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                                backgroundColor: AppTheme.accentAmber,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                            return;
+                          }
+
                           setSheetState(() => isUploadingProof = true);
                           bool changed = false;
                           
