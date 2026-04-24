@@ -171,9 +171,9 @@ export function renderTicketsPage() {
             <div><span style="color:var(--text-muted);">Technician:</span> <strong id="ci-ticket-tech"></strong></div>
           </div>
           
-          <div id="ci-proof-photos-container" style="display: none;">
-            <h4 style="margin: 0 0 8px 0; color: var(--accent-emerald);">Proof of Resolution</h4>
-            <div id="ci-proof-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+          <div id="ci-initial-photos-container" style="display: none;">
+            <h4 style="margin: 0 0 8px 0; color: var(--text-secondary);">Initial Issue Photos</h4>
+            <div id="ci-initial-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
           </div>
         </div>
         <div class="modal-footer">
@@ -266,10 +266,10 @@ export function initTicketsPage(services, navigateFn) {
       
       tbody.innerHTML = allTickets.map(ticket => {
         let photosHtml = '<span style="color:var(--text-muted);">—</span>';
-        if (ticket.imageUrls && Array.isArray(ticket.imageUrls) && ticket.imageUrls.length > 0) {
+        if (ticket.proofUrls && Array.isArray(ticket.proofUrls) && ticket.proofUrls.length > 0) {
           photosHtml = `
-            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" data-type="initial" style="color:var(--accent-blue); padding:4px 8px; border:1px solid rgba(59, 130, 246, 0.15); border-radius:4px;">
-              <span class="material-icons-outlined" style="font-size:16px;">image</span> View ${ticket.imageUrls.length > 1 ? `(${ticket.imageUrls.length})` : ''}
+            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" data-type="proof" style="color:var(--accent-blue); padding:4px 8px; border:1px solid rgba(59, 130, 246, 0.15); border-radius:4px;">
+              <span class="material-icons-outlined" style="font-size:16px;">image</span> View ${ticket.proofUrls.length > 1 ? `(${ticket.proofUrls.length})` : ''}
             </button>
           `;
         }
@@ -560,16 +560,16 @@ export function initTicketsPage(services, navigateFn) {
     document.getElementById('ci-ticket-tech').textContent = ticket.technicianName || 'Unassigned';
 
     // Populate photos
-    const proofContainer = document.getElementById('ci-proof-photos-container');
-    const proofDiv = document.getElementById('ci-proof-photos');
-    if (ticket.proofUrls && ticket.proofUrls.length > 0) {
-      proofContainer.style.display = 'block';
-      proofDiv.innerHTML = ticket.proofUrls.map(url => `
+    const initContainer = document.getElementById('ci-initial-photos-container');
+    const initDiv = document.getElementById('ci-initial-photos');
+    if (ticket.imageUrls && ticket.imageUrls.length > 0) {
+      initContainer.style.display = 'block';
+      initDiv.innerHTML = ticket.imageUrls.map(url => `
         <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.open('${url}', '_blank')" />
       `).join('');
     } else {
-      proofContainer.style.display = 'none';
-      proofDiv.innerHTML = '';
+      initContainer.style.display = 'none';
+      initDiv.innerHTML = '';
     }
 
     customerInfoModal.classList.add('active');
