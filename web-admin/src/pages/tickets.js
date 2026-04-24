@@ -365,7 +365,9 @@ export function initTicketsPage(services, navigateFn) {
       tbody.querySelectorAll('tr[data-id]').forEach(row => {
         let pressTimer = null;
 
-        const startPress = () => {
+        const startPress = (e) => {
+          // Don't trigger long-press when clicking on interactive elements
+          if (e.target.closest('[data-edit],[data-delete],[data-notes],.customer-info-trigger,.open-carousel-btn,.ticket-row-checkbox')) return;
           pressTimer = setTimeout(() => {
             enterSelectionMode();
             const cb = row.querySelector('.ticket-row-checkbox');

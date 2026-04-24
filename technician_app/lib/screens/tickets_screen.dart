@@ -411,6 +411,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                         ],
                       ),
                     ),
+                    if (ticket.status != 'resolved')
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
@@ -652,7 +653,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               );
                             }).toList(),
                           ),
-                          if (selectedStatus == 'resolved') ...[
+                          if (selectedStatus == 'resolved' && ticket.status != 'resolved') ...[
                             const SizedBox(height: 20),
                             Text('Proof of Resolution', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                             const SizedBox(height: 8),
@@ -745,6 +746,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             _buildResolvedPersonnelInfo(
                               technicianName: selectedTechName,
                             ),
+                          if (ticket.status != 'resolved') ...[
                           const SizedBox(height: 20),
                           Text('Priority', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                           const SizedBox(height: 8),
@@ -774,6 +776,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               );
                             }).toList(),
                           ),
+                          ], // end if ticket.status != 'resolved'
                           const SizedBox(height: 20),
                           Text('Notes / Progress', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                           const SizedBox(height: 8),
