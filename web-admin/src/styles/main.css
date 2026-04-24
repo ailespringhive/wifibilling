@@ -5,11 +5,11 @@
 
 :root {
   /* Colors — Modern Corporate Theme */
-  --bg-primary: #F4F7FC;
+  --bg-primary: #f2efe9;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F8FAFC;
-  --bg-input: #F5F7FA;
+  --bg-card-hover: #faf9f6;
+  --bg-input: #ffffff;
   --bg-input-focus: #FFFFFF;
   --bg-sidebar: #0a192f;
   --bg-header: #FFFFFF;

@@ -6,123 +6,121 @@ import { ENDPOINT, PROJECT_ID, API_KEY } from '../config/appwrite.js';
  */
 export function renderDashboardPage() {
   return `
-    <div class="dashboard-modern">
-      
-      <!-- Top Metrics Row -->
-      <div class="metrics-grid">
-        <div class="metric-card pop-in-active">
-          <div class="metric-title">Total Revenue</div>
-          <div class="metric-value font-bold" id="stat-collected">—</div>
-          <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+12.4% <span style="color: var(--text-muted);">this month</span></div>
-        </div>
-        
-        <div class="metric-card pop-in-active" style="animation-delay: 0.1s;">
-          <div class="metric-title">Active Customers</div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-active">—</div>
-            <div class="metric-denominator">/ <span id="stat-customers">—</span> Total</div>
-          </div>
-          <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+4.1% <span style="color: var(--text-muted);">this month</span></div>
-        </div>
-        
-        <div class="metric-card pop-in-active" style="animation-delay: 0.2s;">
-          <div class="metric-title">Unpaid Bills</div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-unpaid">—</div>
-            <div class="metric-denominator">/ <span id="stat-overdue">—</span> Overdue</div>
-          </div>
-          <div class="metric-sub text-xs" style="color: var(--accent-blue);">Unpaid Collections</div>
-        </div>
+    <!-- Entire Dashboard as 1 Grid -->
+    <div class="dashboard-bento">
 
-        <div class="metric-card pop-in-active" style="animation-delay: 0.3s;">
-          <div class="metric-title">Staff Overview</div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-collectors">—</div>
-            <div class="metric-denominator">Collectors <span style="margin:0 4px">•</span> <span id="stat-technicians">—</span> Techs</div>
-          </div>
-          <div class="metric-sub text-xs" style="color: var(--text-muted);">Field Operations</div>
+      <!-- 1. Spent this Month (Revenue) -->
+      <div class="bento-card bento-small grid-pos-1">
+        <div class="metric-title">Total Revenue</div>
+        <div class="metric-value font-bold" id="stat-collected">—</div>
+        <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+12.4% <span style="color: var(--text-muted);">this month</span></div>
+      </div>
+      
+      <!-- 2. New Clients (Active Customers) -->
+      <div class="bento-card bento-small grid-pos-2">
+        <div class="metric-title">Active Customers</div>
+        <div class="metric-value-wrapper">
+          <div class="metric-value font-bold" id="stat-active">—</div>
+          <div class="metric-denominator">/ <span id="stat-customers">—</span> Total</div>
         </div>
+        <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+4.1% <span style="color: var(--text-muted);">this month</span></div>
+      </div>
+      
+      <!-- 3. Earnings (Unpaid Bills) -->
+      <div class="bento-card bento-small grid-pos-3">
+        <div class="metric-title">Unpaid Bills</div>
+        <div class="metric-value-wrapper">
+          <div class="metric-value font-bold" id="stat-unpaid">—</div>
+          <div class="metric-denominator">/ <span id="stat-overdue">—</span> Overdue</div>
+        </div>
+        <div class="metric-sub text-xs" style="color: var(--accent-blue);">Unpaid Collections</div>
       </div>
 
-      <!-- Main Chart Row -->
-      <div class="chart-card pop-in-active" style="animation-delay: 0.4s;">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-          <h3 class="card-title" style="margin:0; font-size:1.1rem;">Revenue Over Time (Last 12 Months)</h3>
+      <!-- 4. Activity (Staff Overview - Dark Theme) -->
+      <div class="bento-card bento-small bento-dark grid-pos-4">
+        <div class="metric-title" style="color: rgba(255,255,255,0.7);">Staff Overview</div>
+        <div class="metric-value-wrapper">
+          <div class="metric-value font-bold" id="stat-collectors">—</div>
+          <div class="metric-denominator" style="color: rgba(255,255,255,0.6);">Collectors <span style="margin:0 4px">•</span> <span id="stat-technicians">—</span> Techs</div>
         </div>
-        <div class="card-body" id="income-chart-area" style="height: 280px; position:relative; width: 100%;">
+        <div class="metric-sub text-xs" style="color: rgba(255,255,255,0.8);">Field Operations</div>
+        
+        <!-- Decoration Line for the dark card -->
+        <svg class="bento-dark-decor" viewBox="0 0 100 30" preserveAspectRatio="none">
+           <path d="M0,15 C20,25 40,-5 60,15 C80,35 90,5 100,20" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="3"></path>
+        </svg>
+      </div>
+
+      <!-- 5. Balance (Revenue Chart - Wide) -->
+      <div class="bento-card bento-wide grid-pos-5">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <h3 class="card-title" style="margin:0; font-size:1.1rem;">Revenue Over Time</h3>
+        </div>
+        <div class="card-body" id="income-chart-area" style="height: 230px; position:relative; width: 100%;">
           <!-- Render Area Chart Here -->
         </div>
       </div>
-
-      <!-- Bottom Grid (Pie, Bar, Table, Status) -->
-      <div class="bottom-dash-grid">
-        
-        <!-- Pie Chart -->
-        <div class="chart-card pop-in-active" style="animation-delay: 0.5s; padding: 24px; display:flex; flex-direction:column; justify-content:center;">
-          <h3 class="card-title" style="margin:0 0 24px 0; font-size:1rem;">Data Usage by Service Plan</h3>
-          <div class="pie-chart-container" style="display:flex; gap:20px; align-items:center;">
-             <div class="css-donut" style="--perc1: 48%; --perc2: 32%; --perc3: 15%; --perc4: 5%;">
-                <div class="donut-hole"></div>
-                <div class="donut-label donut-label-1">48%</div>
-                <div class="donut-label donut-label-2">32%</div>
-                <div class="donut-label donut-label-3">15%</div>
-                <div class="donut-label donut-label-4">5%</div>
-             </div>
-             <div class="pie-legend" style="flex:1;">
-               <div class="legend-item"><span class="dot" style="background:#14B8A6;"></span> Premium (48%)</div>
-               <div class="legend-item"><span class="dot" style="background:#F97316;"></span> Standard (32%)</div>
-               <div class="legend-item"><span class="dot" style="background:#EAB308;"></span> Basic (15%)</div>
-               <div class="legend-item"><span class="dot" style="background:#3B82F6;"></span> Trial (5%)</div>
-             </div>
-          </div>
+      
+      <!-- 6. Earnings Circle (Pie Chart - Medium) -->
+      <div class="bento-card bento-tall grid-pos-6" style="display:flex; flex-direction:column; justify-content:center;">
+        <h3 class="card-title" style="margin:0 0 24px 0; font-size:1rem;">Service Plans</h3>
+        <div class="pie-chart-container" style="display:flex; flex-direction:column; gap:20px; align-items:center;">
+           <div class="css-donut" style="--perc1: 48%; --perc2: 32%; --perc3: 15%; --perc4: 5%; width:120px; height:120px; transform:rotate(-30deg) translate(-10px, 0px);">
+              <div class="donut-hole" style="width:60px; height:60px;"></div>
+              <div class="donut-label donut-label-1">48%</div>
+              <div class="donut-label donut-label-2">32%</div>
+              <div class="donut-label donut-label-3">15%</div>
+              <div class="donut-label donut-label-4">5%</div>
+           </div>
+           <div class="pie-legend" style="width:100%; display:flex; flex-direction:column; gap:4px;">
+             <div class="legend-item" style="font-size:0.75rem;"><span class="dot" style="background:#5b7565;"></span> Premium (48%)</div>
+             <div class="legend-item" style="font-size:0.75rem;"><span class="dot" style="background:#a5b5a2;"></span> Standard (32%)</div>
+             <div class="legend-item" style="font-size:0.75rem;"><span class="dot" style="background:#d4c4b7;"></span> Basic (15%)</div>
+             <div class="legend-item" style="font-size:0.75rem;"><span class="dot" style="background:#3B82F6;"></span> Trial (5%)</div>
+           </div>
         </div>
+      </div>
 
-        <!-- Bar Chart -->
-        <div class="chart-card pop-in-active" style="animation-delay: 0.6s; padding: 24px;">
-          <h3 class="card-title" style="margin:0 0 24px 0; font-size:1rem;">Payment Status Distribution</h3>
-          <div class="css-bar-chart" id="status-bar-chart" style="display:flex; align-items:flex-end; gap:32px; height: 210px; padding-bottom: 24px; position:relative; padding-left:40px;">
-             <!-- Y-axis -->
-             <div style="position:absolute; bottom:24px; left:0; width:calc(100% - 40px); border-bottom:1px solid var(--border-color); z-index:0;"></div>
-             <div style="position:absolute; bottom:calc(25% + 18px); left:40px; width:calc(100% - 40px); border-top:1px solid var(--chart-grid); z-index:0;"></div>
-             <div style="position:absolute; bottom:calc(50% + 12px); left:40px; width:calc(100% - 40px); border-top:1px solid var(--chart-grid); z-index:0;"></div>
-             <div style="position:absolute; bottom:calc(75% + 6px); left:40px; width:calc(100% - 40px); border-top:1px solid var(--chart-grid); z-index:0;"></div>
-             <div style="position:absolute; top:0; left:40px; width:calc(100% - 40px); border-top:1px solid var(--chart-grid); z-index:0;"></div>
+      <!-- 7. Profile (Payment Status - Medium) -->
+      <div class="bento-card bento-tall grid-pos-7">
+        <h3 class="card-title" style="margin:0 0 24px 0; font-size:1rem;">Payment Status</h3>
+        <div class="css-bar-chart" id="status-bar-chart" style="display:flex; align-items:flex-end; gap:20px; height: 180px; padding-bottom: 24px; position:relative; padding-left:30px;">
+           <!-- Y-axis -->
+           <div style="position:absolute; bottom:24px; left:0; width:100%; border-bottom:1px solid #eaeaea; z-index:0;"></div>
+           <div style="position:absolute; bottom:calc(25% + 18px); left:30px; width:calc(100% - 30px); border-top:1px dashed #f0f0f0; z-index:0;"></div>
+           <div style="position:absolute; bottom:calc(50% + 12px); left:30px; width:calc(100% - 30px); border-top:1px dashed #f0f0f0; z-index:0;"></div>
+           <div style="position:absolute; bottom:calc(75% + 6px); left:30px; width:calc(100% - 30px); border-top:1px dashed #f0f0f0; z-index:0;"></div>
 
-             <div id="y-axis-0" style="position:absolute; bottom:20px; left:0; font-size:0.65rem; color:var(--text-muted); width:32px; text-align:right;">0</div>
-             <div id="y-axis-1" style="position:absolute; bottom:calc(25% + 14px); left:0; font-size:0.65rem; color:var(--text-muted); width:32px; text-align:right;">1</div>
-             <div id="y-axis-2" style="position:absolute; bottom:calc(50% + 8px); left:0; font-size:0.65rem; color:var(--text-muted); width:32px; text-align:right;">2</div>
-             <div id="y-axis-3" style="position:absolute; bottom:calc(75% + 2px); left:0; font-size:0.65rem; color:var(--text-muted); width:32px; text-align:right;">3</div>
-             <div id="y-axis-4" style="position:absolute; top:-4px; left:0; font-size:0.65rem; color:var(--text-muted); width:32px; text-align:right;">4</div>
+           <div id="y-axis-0" style="position:absolute; bottom:20px; left:0; font-size:0.6rem; color:var(--text-muted); width:20px; text-align:right;">0</div>
+           <div id="y-axis-1" style="position:absolute; bottom:calc(25% + 14px); left:0; font-size:0.6rem; color:var(--text-muted); width:20px; text-align:right;">1</div>
+           <div id="y-axis-2" style="position:absolute; bottom:calc(50% + 8px); left:0; font-size:0.6rem; color:var(--text-muted); width:20px; text-align:right;">2</div>
+           <div id="y-axis-3" style="position:absolute; bottom:calc(75% + 2px); left:0; font-size:0.6rem; color:var(--text-muted); width:20px; text-align:right;">3</div>
+           <div id="y-axis-4" style="position:absolute; top:-4px; left:0; font-size:0.6rem; color:var(--text-muted); width:20px; text-align:right;">4</div>
 
-             <div class="bar-col" style="z-index:1;">
-               <div class="bar-fill" id="bar-paid" style="height: 0%; background: #14B8A6; width:48px; transition: height 1s ease-out;"></div>
-               <div class="bar-label" style="position:absolute; bottom:-24px; font-size:0.75rem; color:var(--text-primary); width:48px; text-align:center; font-weight:500;">Paid</div>
-             </div>
-             <div class="bar-col" style="z-index:1;">
-               <div class="bar-fill" id="bar-pending" style="height: 0%; background: #EAB308; width:48px; transition: height 1s ease-out;"></div>
-               <div class="bar-label" style="position:absolute; bottom:-24px; font-size:0.75rem; color:var(--text-primary); width:48px; text-align:center; font-weight:500;">Unpaid</div>
-             </div>
-             <div class="bar-col" style="z-index:1;">
-               <div class="bar-fill" id="bar-overdue" style="height: 0%; background: #F97316; width:48px; transition: height 1s ease-out;"></div>
-               <div class="bar-label" style="position:absolute; bottom:-24px; font-size:0.75rem; color:var(--text-primary); width:48px; text-align:center; font-weight:500;">Overdue</div>
-             </div>
-          </div>
+           <div class="bar-col" style="z-index:1;">
+             <div class="bar-fill" id="bar-paid" style="height: 0%; background: #5b7565; width:36px; transition: height 1s ease-out; border-radius: 6px;"></div>
+             <div class="bar-label" style="position:absolute; bottom:-24px; font-size:0.7rem; color:var(--text-primary); width:36px; text-align:center;">Paid</div>
+           </div>
+           <div class="bar-col" style="z-index:1;">
+             <div class="bar-fill" id="bar-pending" style="height: 0%; background: #a5b5a2; width:36px; transition: height 1s ease-out; border-radius: 6px;"></div>
+             <div class="bar-label" style="position:absolute; bottom:-24px; font-size:0.7rem; color:var(--text-primary); width:36px; text-align:center;">Unpaid</div>
+           </div>
+           <div class="bar-col" style="z-index:1;">
+             <div class="bar-fill" id="bar-overdue" style="height: 0%; background: #d4c4b7; width:36px; transition: height 1s ease-out; border-radius: 6px;"></div>
+             <div class="bar-label" style="position:absolute; bottom:-24px; font-size:0.7rem; color:var(--text-primary); width:36px; text-align:center;">Late</div>
+           </div>
         </div>
+      </div>
 
-        <!-- 3rd Column: Recents -->
-        <div style="display:flex; flex-direction:column;">
-          <!-- Recent Transactions -->
-          <div class="chart-card pop-in-active" style="animation-delay: 0.7s; padding: 24px; flex:1; display:flex; flex-direction:column; justify-content: flex-start;">
-             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-               <h3 class="card-title" style="margin:0; font-size:1rem;">Recent Transactions</h3>
-             </div>
-             <div id="recent-billing" style="width: 100%;">
-               <!-- Table updates via JS -->
-             </div>
-             <div id="recent-billing-pagination" style="display:none; padding-top:12px; display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top: auto;"></div>
-          </div>
-        </div>
-
+      <!-- 8. Credit Card style long bottom (Recent Transactions) -->
+      <div class="bento-card bento-wide grid-pos-8" style="display:flex; flex-direction:column; justify-content: flex-start;">
+         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+           <h3 class="card-title" style="margin:0; font-size:1rem;">Your Transfers & Billing</h3>
+         </div>
+         <div id="recent-billing" style="width: 100%;">
+           <!-- Table updates via JS -->
+         </div>
+         <div id="recent-billing-pagination" style="display:none; padding-top:12px; display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top: auto;"></div>
       </div>
 
     </div>
