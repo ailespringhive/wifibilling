@@ -578,12 +578,8 @@ export function initTicketsPage(services, navigateFn) {
     modal.classList.remove('active');
   }
 
-  document.getElementById('close-ticket-modal').addEventListener('click', closeModal);
 
-  document.getElementById('cancel-ticket-btn').addEventListener('click', (e) => {
-    e.preventDefault();
-    closeModal();
-  });
+  document.getElementById('close-ticket-modal').addEventListener('click', closeModal);
 
   // Save changes
   document.getElementById('save-ticket-btn').addEventListener('click', async (e) => {
