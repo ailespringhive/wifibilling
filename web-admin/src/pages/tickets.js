@@ -93,6 +93,12 @@ export function renderTicketsPage() {
             <input type="text" class="form-input" id="ticket-customer-readonly" readonly disabled style="width: 100%; border-radius: 12px; padding: 14px 16px; box-sizing: border-box;" />
           </div>
 
+          <!-- Address / Location -->
+          <div id="ticket-address-container">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Address / Location <span style="font-weight:400; text-transform:none;" id="ticket-address-hint"></span></div>
+            <textarea class="form-textarea" id="ticket-address" placeholder="Enter customer address..." style="min-height: 70px; border-radius: 12px; padding: 14px 16px; width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+
           <!-- Priority pill selector -->
           <div>
             <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Priority</div>
@@ -575,10 +581,30 @@ export function initTicketsPage(services, navigateFn) {
 
       setActivePriority('medium');
       document.getElementById('ticket-notes-field').value = '';
+      document.getElementById('ticket-address-container').style.display = 'block';
+      document.getElementById('ticket-address').value = '';
+      document.getElementById('ticket-address-hint').textContent = '';
     }
 
     modal.classList.add('active');
   }
+
+  // Auto-fill address when a customer is selected
+  document.getElementById('ticket-customer-input').addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    const parts = val.split(' - ');
+    if (parts.length > 1) {
+      const customerId = parts[parts.length - 1].trim();
+      const existingCust = allCustomers.find(c => (c.userId || c.$id) === customerId);
+      if (existingCust && existingCust.address) {
+        document.getElementById('ticket-address').value = existingCust.address;
+        document.getElementById('ticket-address-hint').textContent = '(Auto-filled from customer)';
+        document.getElementById('ticket-address-hint').style.color = 'var(--accent-amber)';
+      }
+    } else {
+      document.getElementById('ticket-address-hint').textContent = '';
+    }
+  });
 
   function closeModal() {
     modal.classList.remove('active');
@@ -626,9 +652,16 @@ export function initTicketsPage(services, navigateFn) {
       // Inherit location and address from existing customer if available
       const existingCust = allCustomers.find(c => (c.userId || c.$id) === customerId);
       if (existingCust) {
-        if (existingCust.address) payload.address = existingCust.address;
         if (existingCust.latitude !== undefined && existingCust.latitude !== null) payload.latitude = existingCust.latitude;
         if (existingCust.longitude !== undefined && existingCust.longitude !== null) payload.longitude = existingCust.longitude;
+      }
+      
+      // Allow overriding or setting manual address
+      const manualAddress = document.getElementById('ticket-address').value.trim();
+      if (manualAddress) {
+        payload.address = manualAddress;
+      } else if (existingCust && existingCust.address) {
+        payload.address = existingCust.address;
       }
     } else {
       payload.issueDescription = issueInput.value.trim();
