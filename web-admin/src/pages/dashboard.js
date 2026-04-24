@@ -9,51 +9,77 @@ export function renderDashboardPage() {
     <div class="dashboard-modern">
       
       <!-- Top Metrics Row -->
-      <div class="metrics-grid">
-        <div class="metric-card pop-in-active">
-          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Total Revenue</span>
-            <span class="material-icons-outlined" style="font-size:1.3rem; color:var(--accent-blue); background:rgba(59,130,246,0.1); padding:6px; border-radius:8px;">account_balance_wallet</span>
+      <div class="metrics-grid" style="gap: 16px;">
+        
+        <!-- Total Revenue (Like "Spent this month") -->
+        <div class="metric-card pop-in-active" style="display:flex; justify-content:space-between; align-items:center; padding: 16px 24px; border-radius: 16px;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600; text-transform:none;">Total Revenue</span>
+            <span class="metric-value font-bold" style="font-size:1.5rem;" id="stat-collected">—</span>
           </div>
-          <div class="metric-value font-bold" id="stat-collected">—</div>
-          <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+12.4% <span style="color: var(--text-muted);">this month</span></div>
+          <div style="display:flex; align-items:flex-end; gap:4px; height:32px;">
+            <div style="width:4px; height:60%; background:var(--chart-grid); border-radius:2px;"></div>
+            <div style="width:4px; height:100%; background:var(--accent-emerald); border-radius:2px;"></div>
+            <div style="width:4px; height:40%; background:var(--chart-grid); border-radius:2px;"></div>
+            <div style="width:4px; height:80%; background:var(--accent-emerald); border-radius:2px;"></div>
+            <div style="width:4px; height:100%; background:var(--chart-grid); border-radius:2px;"></div>
+            <div style="width:4px; height:30%; background:var(--accent-emerald); border-radius:2px;"></div>
+          </div>
         </div>
         
-        <div class="metric-card pop-in-active" style="animation-delay: 0.1s;">
-          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Active Customers</span>
-            <span class="material-icons-outlined" style="font-size:1.3rem; color:var(--accent-emerald); background:rgba(16,185,129,0.1); padding:6px; border-radius:8px;">groups</span>
+        <!-- Active Customers (Like "New clients") -->
+        <div class="metric-card pop-in-active" style="display:flex; justify-content:space-between; align-items:center; padding: 16px 24px; border-radius: 16px; animation-delay: 0.1s;">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="width:48px; height:48px; border-radius:50%; background:rgba(20,184,166,0.1); display:flex; align-items:center; justify-content:center;">
+              <span class="material-icons-outlined" style="color:#14B8A6; font-size:1.4rem;">groups</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600; text-transform:none;">Active Customers</span>
+              <div style="display:flex; align-items:baseline; gap:4px;">
+                <span class="metric-value font-bold" style="font-size:1.5rem;" id="stat-active">—</span>
+                <span style="font-size:0.75rem; color:var(--text-muted);">/ <span id="stat-customers">—</span></span>
+              </div>
+            </div>
           </div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-active">—</div>
-            <div class="metric-denominator">/ <span id="stat-customers">—</span> Total</div>
+          <div style="width:48px; height:32px;">
+            <svg viewBox="0 0 48 32" preserveAspectRatio="none" style="width:100%; height:100%; overflow:visible;">
+              <path d="M0,24 C12,24 16,8 24,8 C32,8 36,24 48,16" fill="none" stroke="var(--chart-grid)" stroke-width="3" stroke-linecap="round"></path>
+            </svg>
           </div>
-          <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+4.1% <span style="color: var(--text-muted);">this month</span></div>
         </div>
         
-        <div class="metric-card pop-in-active" style="animation-delay: 0.2s;">
-          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Unpaid Bills</span>
-            <span class="material-icons-outlined" style="font-size:1.3rem; color:#F97316; background:rgba(249,115,22,0.1); padding:6px; border-radius:8px;">receipt_long</span>
+        <!-- Unpaid Bills (Like "Earnings") -->
+        <div class="metric-card pop-in-active" style="display:flex; align-items:center; padding: 16px 24px; border-radius: 16px; animation-delay: 0.2s;">
+          <div style="display:flex; align-items:center; gap:16px; width:100%;">
+            <div style="width:48px; height:48px; border-radius:50%; background:rgba(249,115,22,0.1); display:flex; align-items:center; justify-content:center;">
+              <span class="material-icons-outlined" style="color:#F97316; font-size:1.4rem;">receipt_long</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600; text-transform:none;">Unpaid Bills</span>
+              <div style="display:flex; align-items:baseline; gap:4px;">
+                <span class="metric-value font-bold" style="font-size:1.5rem;" id="stat-unpaid">—</span>
+                <span style="font-size:0.75rem; color:var(--text-muted);">/ <span id="stat-overdue">—</span></span>
+              </div>
+            </div>
           </div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-unpaid">—</div>
-            <div class="metric-denominator">/ <span id="stat-overdue">—</span> Overdue</div>
-          </div>
-          <div class="metric-sub text-xs" style="color: var(--accent-blue);">Unpaid Collections</div>
         </div>
 
-        <div class="metric-card pop-in-active" style="animation-delay: 0.3s;">
-          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Staff Overview</span>
-            <span class="material-icons-outlined" style="font-size:1.3rem; color:#8B5CF6; background:rgba(139,92,246,0.1); padding:6px; border-radius:8px;">engineering</span>
+        <!-- Staff Overview (Like "Activity" with green solid bg) -->
+        <div class="metric-card pop-in-active" style="display:flex; justify-content:space-between; align-items:center; padding: 16px 24px; border-radius: 16px; background: linear-gradient(135deg, #749681, #51715e); color: white; border:none; animation-delay: 0.3s;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span style="font-size:0.85rem; font-weight:500; opacity:0.9; text-transform:none; color:rgba(255,255,255,0.9);">Staff Overview</span>
+            <div style="display:flex; align-items:baseline; gap:4px;">
+              <span class="metric-value font-bold" style="font-size:1.5rem; color:white;" id="stat-collectors">—</span>
+              <span style="font-size:0.75rem; opacity:0.8;">C <span style="margin:0 2px">•</span> <span id="stat-technicians">—</span> T</span>
+            </div>
           </div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-collectors">—</div>
-            <div class="metric-denominator">Collectors <span style="margin:0 4px">•</span> <span id="stat-technicians">—</span> Techs</div>
+          <div style="width:48px; height:32px;">
+             <svg viewBox="0 0 48 32" preserveAspectRatio="none" style="width:100%; height:100%; overflow:visible;">
+              <path d="M0,24 C8,24 12,8 20,8 C28,8 32,24 40,16 C44,12 48,12 48,12" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-linecap="round"></path>
+            </svg>
           </div>
-          <div class="metric-sub text-xs" style="color: var(--text-muted);">Field Operations</div>
         </div>
+        
       </div>
 
       <!-- Main Chart Row -->
