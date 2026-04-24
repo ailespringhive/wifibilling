@@ -324,132 +324,139 @@
   font-size: 1.05rem;
 }
 
-/* ====================== DASHBOARD BENTO REDESIGN ====================== */
-.dashboard-bento {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Base Card Styling (Cream/White Palette) */
-.bento-card {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+/* ====================== DASHBOARD MODERN (CONCEPT 5) ====================== */
+.dashboard-modern {
   display: flex;
   flex-direction: column;
+  gap: var(--space-lg);
+  margin-top: -10px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-lg);
+}
+
+.metric-value-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 4px 0;
+  flex-wrap: wrap;
+}
+
+.metric-value {
+  font-size: clamp(1.4rem, 2.8vw, 1.8rem);
+  line-height: 1.1;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.metric-denominator {
+  color: var(--text-muted);
+  font-size: clamp(0.75rem, 1.25vw, 0.85rem);
+  white-space: nowrap;
+}
+
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 1px solid rgba(0,0,0,0.02);
 }
 
-.bento-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
 }
 
-/* Grid Positioning & Spans */
-.grid-pos-1 { grid-column: span 1; }
-.grid-pos-2 { grid-column: span 1; }
-.grid-pos-3 { grid-column: span 1; }
-.grid-pos-4 { grid-column: span 1; }
-.grid-pos-5 { grid-column: span 2; grid-row: span 2; } /* Wide Revenue Chart */
-.grid-pos-6 { grid-column: span 1; grid-row: span 2; } /* Pie Chart */
-.grid-pos-7 { grid-column: span 1; grid-row: span 2; } /* Bar Chart */
-.grid-pos-8 { grid-column: span 2; } /* Recent Transactions */
-
-.bento-small { min-height: 120px; }
-.bento-wide { min-height: 320px; }
-.bento-tall { min-height: 320px; }
-
-/* Dark Sage Variant */
-.bento-dark {
-  background: #5b7565;
-  color: #ffffff;
-}
-
-.bento-dark .metric-value,
-.bento-dark .metric-title {
-  color: #ffffff !important;
-}
-
-.bento-dark-decor {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 80%;
-  height: 50%;
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-/* Metric Typography Adjustments */
-.metric-value {
-  font-size: clamp(1.4rem, 2vw, 1.6rem);
-  color: var(--text-primary);
-  margin: 6px 0;
-}
-.metric-title {
-  font-size: 0.8rem;
-  color: #888;
-  font-weight: 600;
-}
-
-.card-title {
-  color: var(--text-primary);
-  font-weight: 700;
-}
-
-[data-theme="dark"] .bento-card {
-  background: var(--bg-card);
-  border-color: var(--border-color);
+[data-theme="dark"] .metric-card {
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
+.metric-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  padding: 20px 24px;
+}
+
+[data-theme="dark"] .chart-card {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.bottom-dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-lg);
+}
+
+
 /* CSS Donut Chart (Customer distribution) */
 .css-donut {
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   background: conic-gradient(
-    #5b7565 0% var(--perc1),
-    #a5b5a2 var(--perc1) calc(var(--perc1) + var(--perc2)),
-    #d4c4b7 calc(var(--perc1) + var(--perc2)) calc(var(--perc1) + var(--perc2) + var(--perc3)),
-    #f2efe9 calc(var(--perc1) + var(--perc2) + var(--perc3)) 100%
+    #14B8A6 0% var(--perc1),
+    #F97316 var(--perc1) calc(var(--perc1) + var(--perc2)),
+    #EAB308 calc(var(--perc1) + var(--perc2)) calc(var(--perc1) + var(--perc2) + var(--perc3)),
+    #3B82F6 calc(var(--perc1) + var(--perc2) + var(--perc3)) 100%
   );
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: rotate(-30deg); /* Rotate to match image angles roughly */
 }
 
 .donut-hole {
-  background: #ffffff;
+  width: 70px;
+  height: 70px;
+  background: var(--bg-card);
   border-radius: 50%;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
-[data-theme="dark"] .donut-hole { background: var(--bg-card); }
 
 .donut-label {
   position: absolute;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: white;
-  transform: rotate(30deg); 
+  transform: rotate(30deg); /* Counter-rotate text */
 }
-.donut-label-1 { top: 35%; right: 15%; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-.donut-label-2 { bottom: 25%; left: 30%; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.donut-label-1 { top: 35%; right: 15%; }
+.donut-label-2 { bottom: 25%; left: 30%; }
 .donut-label-3 { top: 30%; left: 15%; }
-.donut-label-4 { top: 12%; left: 60%; color: var(--text-muted); }
+.donut-label-4 { top: 12%; left: 60%; }
 
 .pie-legend .legend-item {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .pie-legend .dot {
@@ -469,29 +476,28 @@
 }
 
 .css-bar-chart .bar-fill {
+  width: 32px;
+  border-radius: 4px 4px 0 0;
   transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-  height: 0%; 
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  height: 0%; /* initial for animation */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-@media (max-width: 1200px) {
-  .dashboard-bento {
+@media (max-width: 1400px) {
+  .bottom-dash-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .grid-pos-1, .grid-pos-2, .grid-pos-3, .grid-pos-4 { grid-column: span 1; }
-  .grid-pos-5 { grid-column: span 2; grid-row: auto; }
-  .grid-pos-6 { grid-column: span 1; grid-row: auto; }
-  .grid-pos-7 { grid-column: span 1; grid-row: auto; }
-  .grid-pos-8 { grid-column: span 2; }
 }
 
-@media (max-width: 768px) {
-  .dashboard-bento {
+@media (max-width: 1024px) {
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .bottom-dash-grid {
     grid-template-columns: 1fr;
   }
-  .dashboard-bento > div {
+  .chart-card[style*="grid-column"] {
     grid-column: span 1 !important;
-    grid-row: auto !important;
   }
 }
 
