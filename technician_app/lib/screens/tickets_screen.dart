@@ -547,14 +547,15 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             Text('Initial Issue Photos', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                             const SizedBox(height: 8),
                             SizedBox(
-                              height: 120,
+                              height: 150,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
+                                physics: const PageScrollPhysics(),
                                 itemCount: ticket.imageUrls.length,
                                 itemBuilder: (ctx, i) {
                                   return Container(
-                                    width: 120,
-                                    margin: const EdgeInsets.only(right: 12),
+                                    width: MediaQuery.of(ctx).size.width - 40,
+                                    margin: EdgeInsets.only(right: i == ticket.imageUrls.length - 1 ? 0 : 12),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: AppTheme.border),
@@ -573,14 +574,15 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             Text('Proof of Resolution', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                             const SizedBox(height: 8),
                             SizedBox(
-                              height: 120,
+                              height: 150,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
+                                physics: const PageScrollPhysics(),
                                 itemCount: ticket.proofUrls.length,
                                 itemBuilder: (ctx, i) {
                                   return Container(
-                                    width: 120,
-                                    margin: const EdgeInsets.only(right: 12),
+                                    width: MediaQuery.of(ctx).size.width - 40,
+                                    margin: EdgeInsets.only(right: i == ticket.proofUrls.length - 1 ? 0 : 12),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: AppTheme.border),
