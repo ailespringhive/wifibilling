@@ -218,60 +218,73 @@ export function renderTicketsPage() {
 
     <!-- Ticket Details Modal -->
     <div class="modal-overlay" id="customer-info-modal">
-      <div class="modal" style="max-width: 500px; padding: 0; overflow: hidden;">
-        <div class="modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="background: rgba(245,158,11,0.1); color: var(--accent-amber); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-              <span class="material-icons-outlined">build</span>
+      <div class="modal" style="max-width: 550px; padding: 0; overflow: hidden; background: var(--bg-primary);">
+        <div class="modal-header" style="padding: 24px 28px; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="background: linear-gradient(135deg, var(--accent-amber), #d97706); color: #fff; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(245,158,11,0.2);">
+              <span class="material-icons-outlined" style="font-size: 24px;">construction</span>
             </div>
             <div>
-              <h3 id="customer-info-title" style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">Ticket Details</h3>
-              <div id="ci-ticket-customer-name" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;"></div>
+              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em;">Ticket Details</h3>
+              <div id="ci-ticket-customer-name" style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px; font-weight: 500;"></div>
             </div>
           </div>
           <button class="modal-close" id="close-customer-info-modal">✕</button>
         </div>
         
-        <div class="modal-body" style="padding: 24px; line-height: 1.6; max-height: 70vh; overflow-y: auto;">
+        <div class="modal-body" style="padding: 28px; line-height: 1.6; max-height: 75vh; overflow-y: auto;">
           
-          <div style="margin-bottom: 20px;">
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Address</div>
-            <div id="ci-ticket-address" style="font-size: 0.95rem; color: var(--text-primary);"></div>
-          </div>
-
-          <div style="margin-bottom: 24px;">
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Issue Description</div>
-            <div id="ci-ticket-issue" style="font-size: 0.95rem; color: var(--text-primary); white-space: pre-wrap;"></div>
-          </div>
-
-          <div id="ci-location-container" style="display: none; margin-bottom: 24px;">
-            <div id="ci-location-map" style="width: 100%; height: 180px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);"></div>
-          </div>
-          
-          <div style="display: flex; gap: 20px; margin-bottom: 24px;">
-            <div style="flex: 1;">
-               <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Status</div>
-               <span id="ci-ticket-status" style="display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:0.85rem; font-weight:500;"></span>
+          <div style="background: var(--bg-secondary); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 24px;">
+            <div style="display: flex; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1;">
+                 <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Status</div>
+                 <span id="ci-ticket-status" style="display:inline-flex; align-items:center; padding:6px 14px; border-radius:30px; font-size:0.85rem; font-weight:600;"></span>
+              </div>
+              <div style="flex: 1;">
+                 <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Priority</div>
+                 <span id="ci-ticket-priority" style="display:inline-flex; align-items:center; padding:6px 14px; border-radius:30px; font-size:0.85rem; font-weight:600;"></span>
+              </div>
             </div>
-            <div style="flex: 1;">
-               <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Priority</div>
-               <span id="ci-ticket-priority" style="display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:0.85rem; font-weight:600;"></span>
+            <div>
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Assigned Technician</div>
+              <div id="ci-ticket-tech" style="font-size: 0.95rem; color: var(--text-primary); font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons-outlined" style="font-size: 16px; color: var(--accent-blue);">engineering</span>
+                <span id="ci-ticket-tech-text"></span>
+              </div>
             </div>
           </div>
 
-          <div style="margin-bottom: 20px;">
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Technician</div>
-            <div id="ci-ticket-tech" style="font-size: 0.95rem; color: var(--text-primary);"></div>
+          <div style="margin-bottom: 28px;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <span class="material-icons-outlined" style="font-size: 14px;">report_problem</span> Issue Description
+            </div>
+            <div id="ci-ticket-issue" style="font-size: 1rem; color: var(--text-primary); white-space: pre-wrap; background: var(--bg-secondary); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);"></div>
           </div>
 
-          <div style="margin-bottom: 24px;">
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Notes / Progress</div>
-            <div id="ci-ticket-notes" style="background: var(--bg-secondary); padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-secondary); white-space: pre-wrap;"></div>
+          <div style="margin-bottom: 28px;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <span class="material-icons-outlined" style="font-size: 14px;">speaker_notes</span> Notes & Progress
+            </div>
+            <div id="ci-ticket-notes" style="font-size: 0.95rem; color: var(--text-secondary); white-space: pre-wrap; background: rgba(0,0,0,0.1); padding: 16px; border-radius: 12px; border: 1px dashed var(--border-color);"></div>
           </div>
 
-          <div id="ci-initial-photos-container" style="display: none;">
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Initial Issue Photos</div>
-            <div id="ci-initial-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+          <div style="margin-bottom: 28px;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <span class="material-icons-outlined" style="font-size: 14px;">location_on</span> Customer Address
+            </div>
+            <div id="ci-ticket-address" style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 12px; padding: 0 4px;"></div>
+            
+            <div id="ci-location-container" style="display: none;">
+              <div id="ci-location-map" style="width: 100%; height: 220px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.2);"></div>
+            </div>
+          </div>
+
+          <div id="ci-initial-photos-container" style="display: none; margin-bottom: 12px;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              <span class="material-icons-outlined" style="font-size: 14px;">image</span> Initial Issue Photos
+            </div>
+            <!-- Horizontal scroll container for large images -->
+            <div id="ci-initial-photos" style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory;"></div>
           </div>
 
         </div>
@@ -917,7 +930,7 @@ export function initTicketsPage(services, navigateFn) {
     document.getElementById('ci-ticket-customer-name').textContent = ticket.customerName || ticket.customerId || 'Unknown Customer';
     document.getElementById('ci-ticket-issue').textContent = ticket.issueDescription || ticket.issue || 'No description';
     document.getElementById('ci-ticket-notes').textContent = ticket.notes || 'No notes provided.';
-    document.getElementById('ci-ticket-tech').textContent = ticket.technicianName || 'Unassigned';
+    document.getElementById('ci-ticket-tech-text').textContent = ticket.technicianName || 'Unassigned';
 
     // Status Pill
     const statusPill = document.getElementById('ci-ticket-status');
@@ -966,7 +979,7 @@ export function initTicketsPage(services, navigateFn) {
     if (ticket.imageUrls && ticket.imageUrls.length > 0) {
       initContainer.style.display = 'block';
       initDiv.innerHTML = ticket.imageUrls.map(url => `
-        <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;" onclick="document.getElementById('close-customer-info-modal').click(); setTimeout(() => document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']') && document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']').click(), 300)" />
+        <img src="${url}" style="flex: 0 0 100%; height: 220px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(0.98)'" onmouseout="this.style.transform='scale(1)'" onclick="document.getElementById('close-customer-info-modal').click(); setTimeout(() => document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']') && document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']').click(), 300)" />
       `).join('');
     } else {
       initContainer.style.display = 'none';
