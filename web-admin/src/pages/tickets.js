@@ -70,10 +70,10 @@ export function renderTicketsPage() {
           <input type="hidden" id="ticket-id" />
           
           <div class="form-group" id="customer-select-container">
-            <label class="form-label">Select Customer <span class="required">*</span></label>
-            <select class="form-select" id="ticket-customer" required>
-              <option value="">Loading customers...</option>
-            </select>
+            <label class="form-label">Search / Select Customer <span class="required">*</span></label>
+            <input list="customer-list" class="form-input" id="ticket-customer-input" placeholder="Type name or ID..." required>
+            <datalist id="customer-list">
+            </datalist>
           </div>
           
           <div class="form-group" id="customer-readonly-container" style="display: none;">
@@ -205,7 +205,8 @@ export function initTicketsPage(services, navigateFn) {
   const form = document.getElementById('ticket-form');
   const modalTitle = document.getElementById('ticket-modal-title');
   const idInput = document.getElementById('ticket-id');
-  const customerSelect = document.getElementById('ticket-customer');
+  const idInput = document.getElementById('ticket-id');
+  const customerInput = document.getElementById('ticket-customer-input');
   const customerReadonly = document.getElementById('ticket-customer-readonly');
   const customerSelectContainer = document.getElementById('customer-select-container');
   const customerReadonlyContainer = document.getElementById('customer-readonly-container');
@@ -224,8 +225,10 @@ export function initTicketsPage(services, navigateFn) {
     try {
       const resp = await services.customer.getAll(1000, 0); // Need all possible to map IDs
       allCustomers = resp.documents || [];
-      customerSelect.innerHTML = `<option value="">Select a customer</option>` + 
-        allCustomers.map(c => `<option value="${c.userId || c.$id}">${c.firstName || ''} ${c.lastName || ''} - ${c.userId || c.$id}</option>`).join('');
+      const datalist = document.getElementById('customer-list');
+      if (datalist) {
+        datalist.innerHTML = allCustomers.map(c => `<option value="${c.firstName || ''} ${c.lastName || ''} - ${c.userId || c.$id}"></option>`).join('');
+      }
     } catch (e) {
       console.error('Failed to load customers for ticket assignment', e);
     }
@@ -365,10 +368,9 @@ export function initTicketsPage(services, navigateFn) {
       form.reset();
       modalTitle.textContent = 'Create Ticket';
       idInput.value = '';
-      
       customerSelectContainer.style.display = 'block';
       customerReadonlyContainer.style.display = 'none';
-      customerSelect.value = '';
+      customerInput.value = '';
       prioritySelect.value = 'medium';
       statusSelect.value = 'pending';
     }
@@ -394,12 +396,18 @@ export function initTicketsPage(services, navigateFn) {
     
     let customerId, customerName;
     if (isNew) {
-      if (!customerSelect.value) { showToast('Please select a customer', 'warning'); return; }
-      if (!issueInput.value.trim()) { showToast('Please describe the issue', 'warning'); return; }
+      const inputVal = customerInput.value.trim();
+      if (!inputVal) { showToast('Please select or enter a customer', 'warning'); return; }
       
-      customerId = customerSelect.value;
-      const cObj = allCustomers.find(c => (c.userId || c.$id) === customerId);
-      customerName = cObj ? `${cObj.firstName || ''} ${cObj.lastName || ''}`.trim() : customerId;
+      const parts = inputVal.split(' - ');
+      if (parts.length > 1) {
+        customerId = parts[parts.length - 1].trim();
+        customerName = parts.slice(0, -1).join(' - ').trim();
+      } else {
+        customerId = 'CUST-' + Date.now().toString().slice(-6);
+        customerName = inputVal;
+      }
+      if (!issueInput.value.trim()) { showToast('Please describe the issue', 'warning'); return; }
     }
 
     const payload = {
