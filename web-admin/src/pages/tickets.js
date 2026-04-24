@@ -7,6 +7,13 @@ export function renderTicketsPage() {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 24px 24px 0 24px;">
         <h2 class="card-title" style="margin:0;">Repair Tickets</h2>
         <div style="display: flex; gap: 12px; align-items: center;">
+          <div id="bulk-action-bar" style="display:none; align-items:center; gap:8px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:6px 12px;">
+            <span id="bulk-count" style="font-size:0.85rem; color:var(--accent-rose); font-weight:600;">0 selected</span>
+            <button class="btn btn-sm" id="bulk-delete-btn" style="background:var(--accent-rose); color:#fff; padding:4px 12px; border-radius:6px;">
+              <span class="material-icons-outlined" style="font-size:15px; vertical-align:middle;">delete</span> Delete Selected
+            </button>
+            <button class="btn btn-ghost btn-sm" id="bulk-cancel-btn" style="padding:4px 8px;">Cancel</button>
+          </div>
           <select id="filter-ticket-status" class="form-select" style="width: auto; min-width: 150px; background: rgba(0,0,0,0.2) !important;">
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -28,6 +35,7 @@ export function renderTicketsPage() {
         <table class="data-table" id="tickets-table">
           <thead>
             <tr>
+              <th style="width:40px;"><input type="checkbox" id="select-all-tickets" title="Select all" style="cursor:pointer; width:16px; height:16px;"></th>
               <th>Date</th>
               <th>Customer</th>
               <th>Issue</th>
@@ -280,7 +288,8 @@ export function initTicketsPage(services, navigateFn) {
         const pBadge = `<span style="color:${pColor}; font-weight:600; text-transform:capitalize;">${ticket.priority || 'medium'}</span>`;
 
         return `
-          <tr class="hover-row">
+          <tr class="hover-row" data-id="${ticket.$id}">
+            <td style="text-align:center;"><input type="checkbox" class="ticket-row-checkbox" data-id="${ticket.$id}" style="cursor:pointer; width:16px; height:16px;"></td>
             <td>${formatDate(ticket.$createdAt)}</td>
             <td>
               <div class="customer-info-trigger" data-ticket-id="${ticket.$id}" style="cursor:pointer; padding:4px; border-radius:4px; transition:0.2s;" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
@@ -325,7 +334,17 @@ export function initTicketsPage(services, navigateFn) {
       tbody.querySelectorAll('[data-notes]').forEach(btn => {
         btn.addEventListener('click', () => openNotesModal(btn.dataset.notes));
       });
+
+      // Row checkbox change
+      tbody.querySelectorAll('.ticket-row-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateBulkBar);
+      });
     }
+
+    // Reset select-all when table reloads
+    const selectAll = document.getElementById('select-all-tickets');
+    if (selectAll) selectAll.checked = false;
+    updateBulkBar();
 
     // Pagination controls
     infoStr.textContent = `Page ${currentPage}`;
@@ -342,6 +361,47 @@ export function initTicketsPage(services, navigateFn) {
   
   // Filter change triggers re-fetch
   document.getElementById('filter-ticket-status').addEventListener('change', () => loadTickets(1));
+
+  // Select-all checkbox
+  document.getElementById('select-all-tickets').addEventListener('change', function() {
+    document.querySelectorAll('.ticket-row-checkbox').forEach(cb => cb.checked = this.checked);
+    updateBulkBar();
+  });
+
+  function updateBulkBar() {
+    const checked = document.querySelectorAll('.ticket-row-checkbox:checked');
+    const bar = document.getElementById('bulk-action-bar');
+    const countEl = document.getElementById('bulk-count');
+    if (checked.length > 0) {
+      bar.style.display = 'flex';
+      countEl.textContent = `${checked.length} selected`;
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+
+  document.getElementById('bulk-cancel-btn').addEventListener('click', () => {
+    document.querySelectorAll('.ticket-row-checkbox').forEach(cb => cb.checked = false);
+    const selectAll = document.getElementById('select-all-tickets');
+    if (selectAll) selectAll.checked = false;
+    updateBulkBar();
+  });
+
+  document.getElementById('bulk-delete-btn').addEventListener('click', async () => {
+    const checked = Array.from(document.querySelectorAll('.ticket-row-checkbox:checked'));
+    if (checked.length === 0) return;
+    const confirmed = await showConfirm(`Delete ${checked.length} ticket(s)? This cannot be undone.`);
+    if (!confirmed) return;
+    let success = 0, failed = 0;
+    for (const cb of checked) {
+      try {
+        await ticketService.deleteTicket(cb.dataset.id);
+        success++;
+      } catch { failed++; }
+    }
+    showToast(`${success} ticket(s) deleted${failed ? `, ${failed} failed` : ''}.`, failed ? 'warning' : 'success');
+    loadTickets(currentPage);
+  });
 
   // Modals
   document.getElementById('add-ticket-btn').addEventListener('click', () => openTicketModal());
