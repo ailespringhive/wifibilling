@@ -754,181 +754,198 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             }).toList(),
                           ),
                           ], // end if ticket.status != 'resolved'
-                          const SizedBox(height: 20),
-                          Text('Notes / Progress', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: notesCtrl,
-                            maxLines: 4,
-                            style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textPrimary),
-                            decoration: InputDecoration(
-                              hintText: 'Add notes about the repair...',
-                              hintStyle: GoogleFonts.inter(color: AppTheme.textMuted),
-                              filled: true,
-                              fillColor: AppTheme.bgDark,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppTheme.border),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppTheme.border),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppTheme.accentBlue),
+                          if (ticket.status != 'resolved') ...[
+                            const SizedBox(height: 20),
+                            Text('Notes / Progress', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: notesCtrl,
+                              maxLines: 4,
+                              style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textPrimary),
+                              decoration: InputDecoration(
+                                hintText: 'Add notes about the repair...',
+                                hintStyle: GoogleFonts.inter(color: AppTheme.textMuted),
+                                filled: true,
+                                fillColor: AppTheme.bgDark,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: AppTheme.border),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: AppTheme.border),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: AppTheme.accentBlue),
+                                ),
                               ),
                             ),
-                          ),
+                          ] else if (ticket.notes.isNotEmpty) ...[
+                            const SizedBox(height: 20),
+                            Text('Notes / Progress', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppTheme.bgDark,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppTheme.border),
+                              ),
+                              child: Text(ticket.notes, style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textPrimary)),
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                    decoration: const BoxDecoration(
-                      border: Border(top: BorderSide(color: AppTheme.border)),
-                    ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (validationError != null)
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppTheme.accentRose.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppTheme.accentRose),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.error_outline, color: AppTheme.accentRose, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      validationError!,
-                                      style: GoogleFonts.inter(color: AppTheme.accentRose, fontSize: 13, fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: isUploadingProof ? null : () async {
-                                if ((selectedStatus == 'in_progress' || selectedStatus == 'resolved') && !hasValidTech) {
-                                  setSheetState(() {
-                                    validationError = 'Please assign a technician before setting status to ${selectedStatus == 'in_progress' ? 'In Progress' : 'Resolved'}.';
-                                  });
-                                  return;
-                                }
-                                if (selectedStatus == 'resolved' && ticket.status != 'resolved' && proofImageFiles.isEmpty) {
-                                  setSheetState(() {
-                                    validationError = 'Proof Repaired photos are required to resolve a ticket.';
-                                  });
-                                  return;
-                                }
-
-                          setSheetState(() => isUploadingProof = true);
-                          bool changed = false;
-                          
-                          if (selectedStatus != ticket.status) {
-                            bool success = false;
-                            final auth = context.read<AuthService>();
-                            final profile = auth.currentProfile;
-                            final techName = profile?.fullName ?? 'Technician';
-                            final techId = profile?.userId ?? '';
-                            
-                            List<String> uploadedUrls = [];
-                            bool allUploadsSuccess = true;
-                            if (selectedStatus == 'resolved' && proofImageFiles.isNotEmpty) {
-                               for (int i = 0; i < proofImageFiles.length; i++) {
-                                  var file = proofImageFiles[i];
-                                  final bytes = await file.readAsBytes();
-                                  final uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
-                                  if (uploadedUrl != null) {
-                                    uploadedUrls.add(uploadedUrl);
-                                  } else {
-                                    allUploadsSuccess = false;
-                                  }
-                               }
-                               if (uploadedUrls.isNotEmpty) {
-                                 success = await _ticketService.resolveTicketWithProof(ticket.id, ticket.imageUrls, uploadedUrls, technicianId: techId);
-                               }
-                            } else {
-                               success = await _ticketService.updateStatus(ticket.id, selectedStatus);
-                            }
-                            
-                            if (success) {
-                               final messenger = ScaffoldMessenger.of(context);
-                               await _ticketService.sendAdminNotification(techName, ticket.customerName, selectedStatus);
-                               
-                               if (mounted) {
-                                 final isResolved = selectedStatus == 'resolved';
-                                 messenger.showSnackBar(
-                                   SnackBar(
-                                     content: Text('Ticket marked as ${isResolved ? "Resolved" : "In Progress"} — Admin notified!'),
-                                     backgroundColor: isResolved ? AppTheme.accentEmerald : AppTheme.accentBlue,
-                                     behavior: SnackBarBehavior.floating,
-                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                   ),
-                                 );
-                               }
-                            } else {
-                               if (selectedStatus == 'resolved' && proofImageFiles.isNotEmpty) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text(!allUploadsSuccess ? 'Failed to upload some proof images on the server. Try again.' : 'Failed to update ticket status.'),
-                                      backgroundColor: AppTheme.accentRose,
-                                      duration: const Duration(seconds: 5),
-                                    ));
-                                  }
-                               }
-                            }
-                            changed = true;
-                          }
-                          
-                          if (selectedPriority != ticket.priority) {
-                            await _ticketService.updatePriority(ticket.id, selectedPriority);
-                            changed = true;
-                          }
-                          if (notesCtrl.text != ticket.notes) {
-                            await _ticketService.updateNotes(ticket.id, notesCtrl.text);
-                            changed = true;
-                          }
-                          // Save assigned personnel
-                          final techChanged = (selectedTechId ?? '') != ticket.technicianId || (selectedTechName ?? '') != ticket.technicianName;
-                          if (techChanged) {
-                            await _ticketService.updateAssignedPersonnel(
-                              ticket.id,
-                              technicianId: selectedTechId ?? '',
-                              technicianName: selectedTechName ?? '',
-                            );
-                            changed = true;
-                          }
-                          if (changed) {
-                            _loadTickets();
-                          }
-                          if (context.mounted) {
-                             setSheetState(() => isUploadingProof = false);
-                             Navigator.pop(ctx);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentBlue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
-                        ),
-                        child: Text(isUploadingProof ? 'Uploading Proof...' : 'Save Changes', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700)),
+                  if (ticket.status != 'resolved')
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                      decoration: const BoxDecoration(
+                        border: Border(top: BorderSide(color: AppTheme.border)),
                       ),
-                    ),
-                  ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (validationError != null)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.accentRose.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AppTheme.accentRose),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.error_outline, color: AppTheme.accentRose, size: 20),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        validationError!,
+                                        style: GoogleFonts.inter(color: AppTheme.accentRose, fontSize: 13, fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: isUploadingProof ? null : () async {
+                                  if ((selectedStatus == 'in_progress' || selectedStatus == 'resolved') && !hasValidTech) {
+                                    setSheetState(() {
+                                      validationError = 'Please assign a technician before setting status to ${selectedStatus == 'in_progress' ? 'In Progress' : 'Resolved'}.';
+                                    });
+                                    return;
+                                  }
+                                  if (selectedStatus == 'resolved' && ticket.status != 'resolved' && proofImageFiles.isEmpty) {
+                                    setSheetState(() {
+                                      validationError = 'Proof Repaired photos are required to resolve a ticket.';
+                                    });
+                                    return;
+                                  }
+
+                            setSheetState(() => isUploadingProof = true);
+                            bool changed = false;
+                            
+                            if (selectedStatus != ticket.status) {
+                              bool success = false;
+                              final auth = context.read<AuthService>();
+                              final profile = auth.currentProfile;
+                              final techName = profile?.fullName ?? 'Technician';
+                              final techId = profile?.userId ?? '';
+                              
+                              List<String> uploadedUrls = [];
+                              bool allUploadsSuccess = true;
+                              if (selectedStatus == 'resolved' && proofImageFiles.isNotEmpty) {
+                                 for (int i = 0; i < proofImageFiles.length; i++) {
+                                    var file = proofImageFiles[i];
+                                    final bytes = await file.readAsBytes();
+                                    final uploadedUrl = await _ticketService.uploadTicketImageBytes(bytes, 'proof_${ticket.id}_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
+                                    if (uploadedUrl != null) {
+                                      uploadedUrls.add(uploadedUrl);
+                                    } else {
+                                      allUploadsSuccess = false;
+                                    }
+                                 }
+                                 if (uploadedUrls.isNotEmpty) {
+                                   success = await _ticketService.resolveTicketWithProof(ticket.id, ticket.imageUrls, uploadedUrls, technicianId: techId);
+                                 }
+                              } else {
+                                 success = await _ticketService.updateStatus(ticket.id, selectedStatus);
+                              }
+                              
+                              if (success) {
+                                 final messenger = ScaffoldMessenger.of(context);
+                                 await _ticketService.sendAdminNotification(techName, ticket.customerName, selectedStatus);
+                                 
+                                 if (mounted) {
+                                   final isResolved = selectedStatus == 'resolved';
+                                   messenger.showSnackBar(
+                                     SnackBar(
+                                       content: Text('Ticket marked as ${isResolved ? "Resolved" : "In Progress"} — Admin notified!'),
+                                       backgroundColor: isResolved ? AppTheme.accentEmerald : AppTheme.accentBlue,
+                                       behavior: SnackBarBehavior.floating,
+                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                     ),
+                                   );
+                                 }
+                              } else {
+                                 if (selectedStatus == 'resolved' && proofImageFiles.isNotEmpty) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                        content: Text(!allUploadsSuccess ? 'Failed to upload some proof images on the server. Try again.' : 'Failed to update ticket status.'),
+                                        backgroundColor: AppTheme.accentRose,
+                                        duration: const Duration(seconds: 5),
+                                      ));
+                                    }
+                                 }
+                              }
+                              changed = true;
+                            }
+                            
+                            if (selectedPriority != ticket.priority) {
+                              await _ticketService.updatePriority(ticket.id, selectedPriority);
+                              changed = true;
+                            }
+                            if (notesCtrl.text != ticket.notes) {
+                              await _ticketService.updateNotes(ticket.id, notesCtrl.text);
+                              changed = true;
+                            }
+                            // Save assigned personnel
+                            final techChanged = (selectedTechId ?? '') != ticket.technicianId || (selectedTechName ?? '') != ticket.technicianName;
+                            if (techChanged) {
+                              await _ticketService.updateAssignedPersonnel(
+                                ticket.id,
+                                technicianId: selectedTechId ?? '',
+                                technicianName: selectedTechName ?? '',
+                              );
+                              changed = true;
+                            }
+                            if (changed) {
+                              _loadTickets();
+                            }
+                            if (context.mounted) {
+                               setSheetState(() => isUploadingProof = false);
+                               Navigator.pop(ctx);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentBlue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: Text(isUploadingProof ? 'Uploading Proof...' : 'Save Changes', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
             );
