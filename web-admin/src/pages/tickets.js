@@ -205,7 +205,6 @@ export function initTicketsPage(services, navigateFn) {
   const form = document.getElementById('ticket-form');
   const modalTitle = document.getElementById('ticket-modal-title');
   const idInput = document.getElementById('ticket-id');
-  const idInput = document.getElementById('ticket-id');
   const customerInput = document.getElementById('ticket-customer-input');
   const customerReadonly = document.getElementById('ticket-customer-readonly');
   const customerSelectContainer = document.getElementById('customer-select-container');
