@@ -755,6 +755,12 @@ export function initTicketsPage(services, navigateFn) {
 
     try {
       if (isNew) {
+        if (selectedPhotoFiles && selectedPhotoFiles.length > 0) {
+          saveBtn.textContent = 'Uploading Photos...';
+          const uploadPromises = selectedPhotoFiles.map(file => ticketService.uploadTicketImage(file));
+          payload.imageUrls = await Promise.all(uploadPromises);
+          saveBtn.textContent = 'Saving...';
+        }
         await ticketService.createTicket(payload);
         showToast('Ticket created successfully', 'success');
       } else {
@@ -891,7 +897,7 @@ export function initTicketsPage(services, navigateFn) {
     if (ticket.imageUrls && ticket.imageUrls.length > 0) {
       initContainer.style.display = 'block';
       initDiv.innerHTML = ticket.imageUrls.map(url => `
-        <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.open('${url}', '_blank')" />
+        <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;" onclick="document.getElementById('close-customer-info-modal').click(); setTimeout(() => document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']') && document.querySelector('.open-carousel-btn[data-ticket-id=\\'${ticket.$id}\\'][data-type=\\'initial\\']').click(), 300)" />
       `).join('');
     } else {
       initContainer.style.display = 'none';

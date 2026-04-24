@@ -1,4 +1,4 @@
-import { Client, Account, Databases, ID, Query, Permission, Role } from 'appwrite';
+import { Client, Account, Databases, Storage, ID, Query, Permission, Role } from 'appwrite';
 
 // ============================================================
 // APPWRITE CONFIGURATION
@@ -28,10 +28,12 @@ client
 // Services
 export const account = new Account(client);
 export const databases = new Databases(client);
+export const storage = new Storage(client);
 export const DATABASE_ID = APPWRITE_DATABASE_ID;
 export const ENDPOINT = APPWRITE_ENDPOINT;
 export const PROJECT_ID = APPWRITE_PROJECT_ID;
 export const API_KEY = APPWRITE_API_KEY;
+export const STORAGE_BUCKET_ID = 'customer_images';
 export { ID, Query, Permission, Role };
 
 export const apiBypass = {

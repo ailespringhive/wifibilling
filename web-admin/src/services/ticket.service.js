@@ -1,6 +1,24 @@
-import { databases, COLLECTIONS, Query, apiBypass, DATABASE_ID } from '../config/appwrite.js';
+import { databases, COLLECTIONS, Query, apiBypass, DATABASE_ID, storage, ID, STORAGE_BUCKET_ID, ENDPOINT, PROJECT_ID } from '../config/appwrite.js';
 import { MobileNotificationService } from './notification.service.js';
 class TicketService {
+  /**
+   * Upload an image to the tickets bucket and return the view URL.
+   */
+  async uploadTicketImage(file) {
+    try {
+      const response = await storage.createFile(
+        STORAGE_BUCKET_ID,
+        ID.unique(),
+        file
+      );
+      // Construct the view URL manually as done in Flutter
+      return `${ENDPOINT}/storage/buckets/${STORAGE_BUCKET_ID}/files/${response.$id}/view?project=${PROJECT_ID}`;
+    } catch (e) {
+      console.error('Failed to upload image:', e);
+      throw e;
+    }
+  }
+
   /**
    * Fetch all tickets with optional status filter and pagination
    */
