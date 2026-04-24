@@ -130,7 +130,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       }
 
       final data = {
-        'customerId': _selectedCustomer!.id,
+        'customerId': _selectedCustomer!.userId.isNotEmpty ? _selectedCustomer!.userId : _selectedCustomer!.id,
         'customerName': _selectedCustomer!.fullName,
         'customerAddress': _selectedCustomer!.address,
         'technicianId': techId,
@@ -181,25 +181,57 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                 children: [
                   _buildLabel('Customer'),
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<UserProfile>(
-                        isExpanded: true,
-                        hint: Text('Select Customer', style: GoogleFonts.inter(color: AppTheme.textMuted)),
-                        value: _selectedCustomer,
-                        items: _customers.map((c) => DropdownMenuItem(
-                          value: c,
-                          child: Text(c.fullName, style: GoogleFonts.inter()),
-                        )).toList(),
-                        onChanged: (val) => setState(() => _selectedCustomer = val),
-                      ),
-                    ),
+                  Autocomplete<UserProfile>(
+                    displayStringForOption: (UserProfile option) => option.fullName,
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<UserProfile>.empty();
+                      }
+                      return _customers.where((UserProfile customer) {
+                        return customer.fullName.toLowerCase().contains(textEditingValue.text.toLowerCase()) || 
+                               customer.userId.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                      });
+                    },
+                    onSelected: (UserProfile selection) {
+                      setState(() => _selectedCustomer = selection);
+                    },
+                    fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                      return TextField(
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        style: GoogleFonts.inter(fontSize: 14),
+                        decoration: _inputDecoration('Search customer by name or ID...'),
+                      );
+                    },
+                    optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<UserProfile> onSelected, Iterable<UserProfile> options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width - 40,
+                            constraints: const BoxConstraints(maxHeight: 200),
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              itemCount: options.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final UserProfile option = options.elementAt(index);
+                                return ListTile(
+                                  title: Text(option.fullName, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500)),
+                                  subtitle: Text(option.userId, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                                  onTap: () {
+                                    onSelected(option);
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 20),

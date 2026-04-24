@@ -171,11 +171,6 @@ export function renderTicketsPage() {
             <div><span style="color:var(--text-muted);">Technician:</span> <strong id="ci-ticket-tech"></strong></div>
           </div>
           
-          <div id="ci-initial-photos-container" style="display: none; margin-bottom: 20px;">
-            <h4 style="margin: 0 0 8px 0; color: var(--text-secondary);">Initial Issue Photos</h4>
-            <div id="ci-initial-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-          </div>
-
           <div id="ci-proof-photos-container" style="display: none;">
             <h4 style="margin: 0 0 8px 0; color: var(--accent-emerald);">Proof of Resolution</h4>
             <div id="ci-proof-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
@@ -268,26 +263,14 @@ export function initTicketsPage(services, navigateFn) {
       tableStr.style.display = 'table';
       
       tbody.innerHTML = allTickets.map(ticket => {
-        let photosHtml = '<div style="display:flex; gap:4px; flex-wrap:wrap;">';
-        let hasPhotos = false;
+        let photosHtml = '<span style="color:var(--text-muted);">—</span>';
         if (ticket.imageUrls && Array.isArray(ticket.imageUrls) && ticket.imageUrls.length > 0) {
-          hasPhotos = true;
-          photosHtml += `
-            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" data-type="initial" style="color:var(--text-secondary); padding:2px 6px; border:1px solid var(--border-color); border-radius:4px; font-size:11px;">
-              <span class="material-icons-outlined" style="font-size:14px;">image</span> Initial (${ticket.imageUrls.length})
+          photosHtml = `
+            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" data-type="initial" style="color:var(--accent-blue); padding:4px 8px; border:1px solid rgba(59, 130, 246, 0.15); border-radius:4px;">
+              <span class="material-icons-outlined" style="font-size:16px;">image</span> View ${ticket.imageUrls.length > 1 ? `(${ticket.imageUrls.length})` : ''}
             </button>
           `;
         }
-        if (ticket.proofUrls && Array.isArray(ticket.proofUrls) && ticket.proofUrls.length > 0) {
-          hasPhotos = true;
-          photosHtml += `
-            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" data-type="proof" style="color:var(--accent-emerald); padding:2px 6px; border:1px solid rgba(16, 185, 129, 0.2); border-radius:4px; font-size:11px;">
-              <span class="material-icons-outlined" style="font-size:14px;">check_circle</span> Proof (${ticket.proofUrls.length})
-            </button>
-          `;
-        }
-        photosHtml += '</div>';
-        if (!hasPhotos) photosHtml = '<span style="color:var(--text-muted);">—</span>';
 
         // Priority Badge helper
         const priorityColors = { low: 'gray', medium: 'var(--accent-amber)', high: 'var(--accent-rose)', critical: 'red' };
@@ -570,18 +553,6 @@ export function initTicketsPage(services, navigateFn) {
     document.getElementById('ci-ticket-tech').textContent = ticket.technicianName || 'Unassigned';
 
     // Populate photos
-    const initContainer = document.getElementById('ci-initial-photos-container');
-    const initDiv = document.getElementById('ci-initial-photos');
-    if (ticket.imageUrls && ticket.imageUrls.length > 0) {
-      initContainer.style.display = 'block';
-      initDiv.innerHTML = ticket.imageUrls.map(url => `
-        <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.open('${url}', '_blank')" />
-      `).join('');
-    } else {
-      initContainer.style.display = 'none';
-      initDiv.innerHTML = '';
-    }
-
     const proofContainer = document.getElementById('ci-proof-photos-container');
     const proofDiv = document.getElementById('ci-proof-photos');
     if (ticket.proofUrls && ticket.proofUrls.length > 0) {
