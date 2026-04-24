@@ -129,6 +129,9 @@ class TicketService {
       payload.imageUrls = ticketData.imageUrls;
     }
 
+    if (ticketData.latitude !== undefined) payload.latitude = ticketData.latitude;
+    if (ticketData.longitude !== undefined) payload.longitude = ticketData.longitude;
+
     let res;
     try {
       res = await databases.createDocument(

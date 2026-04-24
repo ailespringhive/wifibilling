@@ -622,6 +622,14 @@ export function initTicketsPage(services, navigateFn) {
       payload.customerId = customerId;
       payload.customerName = customerName;
       payload.issue = issueInput.value.trim();
+
+      // Inherit location and address from existing customer if available
+      const existingCust = allCustomers.find(c => (c.userId || c.$id) === customerId);
+      if (existingCust) {
+        if (existingCust.address) payload.address = existingCust.address;
+        if (existingCust.latitude !== undefined && existingCust.latitude !== null) payload.latitude = existingCust.latitude;
+        if (existingCust.longitude !== undefined && existingCust.longitude !== null) payload.longitude = existingCust.longitude;
+      }
     } else {
       payload.issueDescription = issueInput.value.trim();
       payload.issue = issueInput.value.trim();
