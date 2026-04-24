@@ -602,7 +602,7 @@ export function initTicketsPage(services, navigateFn) {
 
       setActivePriority('medium');
       document.getElementById('ticket-notes-field').value = '';
-      document.getElementById('ticket-address-container').style.display = 'block';
+      document.getElementById('ticket-location-container').style.display = 'block';
       document.getElementById('ticket-address').value = '';
       document.getElementById('ticket-address-hint').textContent = '';
     }
