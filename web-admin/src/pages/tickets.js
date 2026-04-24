@@ -34,7 +34,7 @@ export function renderTicketsPage() {
               <th>Priority</th>
               <th>Status</th>
               <th>Repaired by</th>
-              <th>Proof</th>
+              <th>Photos</th>
               <th style="width: 100px;">Actions</th>
             </tr>
           </thead>
@@ -154,6 +154,25 @@ export function renderTicketsPage() {
         </div>
       </div>
     </div>
+
+    <!-- Customer Info Modal -->
+    <div class="modal-overlay" id="customer-info-modal">
+      <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3 id="customer-info-title">Customer Info</h3>
+          <button class="modal-close" id="close-customer-info-modal">✕</button>
+        </div>
+        <div class="modal-body" style="line-height: 1.6;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div><span style="color:var(--text-muted);">Name:</span> <strong id="ci-name"></strong></div>
+            <div><span style="color:var(--text-muted);">Phone:</span> <strong id="ci-phone"></strong></div>
+            <div><span style="color:var(--text-muted);">Email:</span> <strong id="ci-email"></strong></div>
+            <div><span style="color:var(--text-muted);">Address:</span> <strong id="ci-address" style="white-space: pre-wrap;"></strong></div>
+            <div><span style="color:var(--text-muted);">Plan ID:</span> <strong id="ci-plan"></strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -236,15 +255,26 @@ export function initTicketsPage(services, navigateFn) {
       tableStr.style.display = 'table';
       
       tbody.innerHTML = allTickets.map(ticket => {
-        // Build Proof Button
-        let proofHtml = '<span style="color:var(--text-muted);">—</span>';
+        let photosHtml = '<div style="display:flex; gap:4px; flex-wrap:wrap;">';
+        let hasPhotos = false;
         if (ticket.imageUrls && Array.isArray(ticket.imageUrls) && ticket.imageUrls.length > 0) {
-          proofHtml = `
-            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" style="color:var(--accent-blue); padding:4px 8px; border:1px solid rgba(59, 130, 246, 0.15); border-radius:4px;">
-              <span class="material-icons-outlined" style="font-size:16px;">image</span> View ${ticket.imageUrls.length > 1 ? `(${ticket.imageUrls.length})` : ''}
+          hasPhotos = true;
+          photosHtml += `
+            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" data-type="initial" style="color:var(--text-secondary); padding:2px 6px; border:1px solid var(--border-color); border-radius:4px; font-size:11px;">
+              <span class="material-icons-outlined" style="font-size:14px;">image</span> Initial (${ticket.imageUrls.length})
             </button>
           `;
         }
+        if (ticket.proofUrls && Array.isArray(ticket.proofUrls) && ticket.proofUrls.length > 0) {
+          hasPhotos = true;
+          photosHtml += `
+            <button class="btn btn-ghost btn-sm open-carousel-btn" data-ticket-id="${ticket.$id}" data-type="proof" style="color:var(--accent-emerald); padding:2px 6px; border:1px solid rgba(16, 185, 129, 0.2); border-radius:4px; font-size:11px;">
+              <span class="material-icons-outlined" style="font-size:14px;">check_circle</span> Proof (${ticket.proofUrls.length})
+            </button>
+          `;
+        }
+        photosHtml += '</div>';
+        if (!hasPhotos) photosHtml = '<span style="color:var(--text-muted);">—</span>';
 
         // Priority Badge helper
         const priorityColors = { low: 'gray', medium: 'var(--accent-amber)', high: 'var(--accent-rose)', critical: 'red' };
@@ -254,9 +284,11 @@ export function initTicketsPage(services, navigateFn) {
         return `
           <tr class="hover-row">
             <td>${formatDate(ticket.$createdAt)}</td>
-            <td style="font-weight: 500;">
-              ${ticket.customerName || 'Unknown'} 
-              <div style="font-size:0.75rem; color:var(--text-muted);">${ticket.customerId}</div>
+            <td>
+              <div class="customer-info-trigger" data-customer-id="${ticket.customerId}" style="cursor:pointer; padding:4px; border-radius:4px; transition:0.2s;" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
+                <div style="font-weight: 500; color:var(--accent-blue);">${ticket.customerName || 'Unknown'}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${ticket.customerId}</div>
+              </div>
             </td>
             <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${ticket.issueDescription || ticket.issue || ''}">
               ${ticket.issueDescription || ticket.issue || '—'}
@@ -264,7 +296,7 @@ export function initTicketsPage(services, navigateFn) {
             <td>${pBadge}</td>
             <td>${statusBadge(ticket.status || 'pending')}</td>
             <td>${ticket.technicianName || '<span style="color:var(--text-muted); font-style:italic;">Unassigned</span>'}</td>
-            <td>${proofHtml}</td>
+            <td>${photosHtml}</td>
             <td>
               <div class="table-actions" style="display:flex; align-items:center; gap:4px;">
                 <button class="btn btn-ghost btn-sm btn-icon" title="Notes" data-notes="${ticket.$id}" style="color:var(--accent-purple); position:relative;">
@@ -440,6 +472,8 @@ export function initTicketsPage(services, navigateFn) {
   let carouselImages = [];
   let currentCarouselIdx = 0;
 
+  let currentCarouselType = 'proof';
+
   function updateCarouselView() {
     if (carouselImages.length === 0) return;
     carouselMainImg.style.opacity = '0';
@@ -448,7 +482,8 @@ export function initTicketsPage(services, navigateFn) {
       carouselMainImg.style.opacity = '1';
     }, 150);
 
-    carouselTitle.textContent = `Proof of Resolution (${currentCarouselIdx + 1} of ${carouselImages.length})`;
+    const titlePrefix = currentCarouselType === 'proof' ? 'Proof of Resolution' : 'Initial Issue Photos';
+    carouselTitle.textContent = `${titlePrefix} (${currentCarouselIdx + 1} of ${carouselImages.length})`;
 
     // Connect prev/next visibility
     carouselPrevBtn.style.display = currentCarouselIdx > 0 ? 'flex' : 'none';
@@ -468,11 +503,16 @@ export function initTicketsPage(services, navigateFn) {
     });
   }
 
-  function openImageCarousel(ticketId) {
+  function openImageCarousel(ticketId, type) {
     const ticket = allTickets.find(t => t.$id === ticketId);
-    if (!ticket || !ticket.imageUrls || ticket.imageUrls.length === 0) return;
+    if (!ticket) return;
     
-    carouselImages = ticket.imageUrls;
+    currentCarouselType = type;
+    const urls = type === 'proof' ? ticket.proofUrls : ticket.imageUrls;
+    
+    if (!urls || urls.length === 0) return;
+    
+    carouselImages = urls;
     currentCarouselIdx = 0;
     carouselModal.classList.add('active');
     updateCarouselView();
@@ -490,11 +530,35 @@ export function initTicketsPage(services, navigateFn) {
 
   // Attach dynamic clicks to the newly created buttons inside the table body!
   tbody.addEventListener('click', (e) => {
-    const btn = e.target.closest('.open-carousel-btn');
-    if (btn) {
-      openImageCarousel(btn.dataset.ticketId);
+    const carouselBtn = e.target.closest('.open-carousel-btn');
+    if (carouselBtn) {
+      openImageCarousel(carouselBtn.dataset.ticketId, carouselBtn.dataset.type || 'proof');
+      return;
+    }
+    
+    const customerTrigger = e.target.closest('.customer-info-trigger');
+    if (customerTrigger) {
+      openCustomerInfoModal(customerTrigger.dataset.customerId);
+      return;
     }
   });
+
+  // --- Customer Info Modal Logic ---
+  const customerInfoModal = document.getElementById('customer-info-modal');
+  function openCustomerInfoModal(customerId) {
+    const cObj = allCustomers.find(c => (c.userId || c.$id) === customerId);
+    
+    document.getElementById('ci-name').textContent = cObj ? `${cObj.firstName || ''} ${cObj.lastName || ''}`.trim() : 'Unknown Customer';
+    document.getElementById('ci-phone').textContent = cObj?.phone || 'Not provided';
+    document.getElementById('ci-email').textContent = cObj?.email || 'Not provided';
+    document.getElementById('ci-address').textContent = cObj?.address || 'Not provided';
+    document.getElementById('ci-plan').textContent = cObj?.planId || 'None';
+
+    customerInfoModal.classList.add('active');
+  }
+  
+  document.getElementById('close-customer-info-modal').addEventListener('click', () => customerInfoModal.classList.remove('active'));
+  document.getElementById('btn-close-customer-info').addEventListener('click', () => customerInfoModal.classList.remove('active'));
 
   // --- Notes Modal Logic ---
   const notesModal = document.getElementById('notes-modal');

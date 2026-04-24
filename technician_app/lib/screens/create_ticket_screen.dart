@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
@@ -123,7 +124,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       // Upload images first
       List<String> uploadedUrls = [];
       for (var img in _selectedImages) {
-        final url = await ticketService.uploadTicketImage(img.path, img.name);
+        final bytes = await img.readAsBytes();
+        final url = await ticketService.uploadTicketImageBytes(bytes, img.name);
         if (url != null) uploadedUrls.add(url);
       }
 
@@ -241,7 +243,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   image: DecorationImage(
-                                    image: FileImage(File(_selectedImages[i].path)),
+                                    image: kIsWeb ? NetworkImage(_selectedImages[i].path) : FileImage(File(_selectedImages[i].path)) as ImageProvider,
                                     fit: BoxFit.cover,
                                   ),
                                 ),

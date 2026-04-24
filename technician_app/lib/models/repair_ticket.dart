@@ -14,6 +14,7 @@ class RepairTicket {
   final double? latitude;
   final double? longitude;
   final List<String> imageUrls;
+  final List<String> proofUrls;
   final DateTime createdAt;
 
   RepairTicket({
@@ -32,6 +33,7 @@ class RepairTicket {
     this.latitude,
     this.longitude,
     this.imageUrls = const [],
+    this.proofUrls = const [],
     required this.createdAt,
   });
 
@@ -52,6 +54,7 @@ class RepairTicket {
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
       imageUrls: map['imageUrls'] != null ? List<String>.from(map['imageUrls']) : [],
+      proofUrls: map['proofUrls'] != null ? List<String>.from(map['proofUrls']) : [],
       createdAt: DateTime.tryParse(map[r'$createdAt'] ?? '') ?? DateTime.now(),
     );
   }

@@ -543,7 +543,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           _sheetSection('Issue', ticket.issue.isNotEmpty ? ticket.issue : 'No description'),
                           const SizedBox(height: 16),
                           if (ticket.imageUrls.isNotEmpty) ...[
-                            Text('Attachments', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                            Text('Initial Issue Photos', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                             const SizedBox(height: 8),
                             SizedBox(
                               height: 120,
@@ -559,6 +559,32 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                       border: Border.all(color: AppTheme.border),
                                       image: DecorationImage(
                                         image: NetworkImage(ticket.imageUrls[i]),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          if (ticket.proofUrls.isNotEmpty) ...[
+                            Text('Proof of Resolution', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 120,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: ticket.proofUrls.length,
+                                itemBuilder: (ctx, i) {
+                                  return Container(
+                                    width: 120,
+                                    margin: const EdgeInsets.only(right: 12),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: AppTheme.border),
+                                      image: DecorationImage(
+                                        image: NetworkImage(ticket.proofUrls[i]),
                                         fit: BoxFit.cover,
                                       ),
                                     ),
