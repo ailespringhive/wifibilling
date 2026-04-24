@@ -116,7 +116,6 @@ class TicketService {
       customerName: ticketData.customerName,
       customerAddress: ticketData.address || ticketData.customerAddress || '',
       issue: ticketData.issueDescription || ticketData.issue || '',
-      issueDescription: ticketData.issueDescription || ticketData.issue || '',
       priority: ticketData.priority || 'medium',
       status: 'pending',
       technicianId: ticketData.technicianId || '',

@@ -94,9 +94,30 @@ export function renderTicketsPage() {
           </div>
 
           <!-- Address / Location -->
-          <div id="ticket-address-container">
-            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Address / Location <span style="font-weight:400; text-transform:none;" id="ticket-address-hint"></span></div>
-            <textarea class="form-textarea" id="ticket-address" placeholder="Enter customer address..." style="min-height: 70px; border-radius: 12px; padding: 14px 16px; width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+          <div id="ticket-location-container">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Location <span style="font-weight:400; text-transform:none;" id="ticket-address-hint"></span></div>
+            
+            <!-- Flutter-style list tile button -->
+            <div id="ticket-location-btn" style="display: flex; align-items: center; background: var(--bg-secondary); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s;" onmouseover="this.style.borderColor='var(--accent-blue)'" onmouseout="this.style.borderColor='var(--border-color)'">
+              <div style="background: rgba(59,130,246,0.1); color: var(--accent-blue); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 14px;">
+                <span class="material-icons-outlined" style="font-size: 20px;">location_on</span>
+              </div>
+              <div style="flex: 1;">
+                <div style="font-weight: 500; font-size: 0.95rem; color: var(--text-primary);" id="ticket-location-text">Tap to pin location</div>
+              </div>
+              <span class="material-icons-outlined" style="color: var(--text-muted);">chevron_right</span>
+            </div>
+
+            <!-- Hidden Map & Address Input (expands on click) -->
+            <div id="ticket-location-editor" style="display: none; margin-top: 12px;">
+              <textarea class="form-textarea" id="ticket-address" placeholder="Enter full address..." style="min-height: 50px; border-radius: 12px; padding: 12px 16px; width: 100%; box-sizing: border-box; resize: vertical; margin-bottom: 12px; font-size: 0.9rem;"></textarea>
+              <div id="ticket-map-container" style="width:100%; height:200px; border-radius:12px; border:1px solid var(--border-color); overflow:hidden; position:relative; background:var(--bg-secondary);"></div>
+              <div style="display: none;">
+                <input type="number" step="any" id="ticket-latitude" readonly>
+                <input type="number" step="any" id="ticket-longitude" readonly>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-top:6px;"><span class="material-icons-outlined" style="font-size:12px; vertical-align:middle;">info</span> Click on the map to pin exact coordinates.</p>
+            </div>
           </div>
 
           <!-- Priority pill selector -->
@@ -589,22 +610,74 @@ export function initTicketsPage(services, navigateFn) {
     modal.classList.add('active');
   }
 
-  // Auto-fill address when a customer is selected
+  // Auto-fill address and location when a customer is selected
   document.getElementById('ticket-customer-input').addEventListener('input', (e) => {
     const val = e.target.value.trim();
     const parts = val.split(' - ');
     if (parts.length > 1) {
       const customerId = parts[parts.length - 1].trim();
       const existingCust = allCustomers.find(c => (c.userId || c.$id) === customerId);
-      if (existingCust && existingCust.address) {
-        document.getElementById('ticket-address').value = existingCust.address;
-        document.getElementById('ticket-address-hint').textContent = '(Auto-filled from customer)';
-        document.getElementById('ticket-address-hint').style.color = 'var(--accent-amber)';
+      if (existingCust) {
+        if (existingCust.address) {
+          document.getElementById('ticket-address').value = existingCust.address;
+          document.getElementById('ticket-address-hint').textContent = '(Auto-filled from customer)';
+          document.getElementById('ticket-address-hint').style.color = 'var(--accent-amber)';
+        }
+        if (existingCust.latitude !== undefined && existingCust.longitude !== undefined) {
+          document.getElementById('ticket-latitude').value = existingCust.latitude;
+          document.getElementById('ticket-longitude').value = existingCust.longitude;
+          if (ticketMarker) ticketMarker.setLatLng([existingCust.latitude, existingCust.longitude]);
+          if (ticketMap) ticketMap.setView([existingCust.latitude, existingCust.longitude], 15);
+        }
       }
     } else {
       document.getElementById('ticket-address-hint').textContent = '';
     }
   });
+
+  let ticketMap = null;
+  let ticketMarker = null;
+
+  document.getElementById('ticket-location-btn').addEventListener('click', () => {
+    const editor = document.getElementById('ticket-location-editor');
+    if (editor.style.display === 'none') {
+      editor.style.display = 'block';
+      document.getElementById('ticket-location-text').textContent = 'Hide location picker';
+      
+      setTimeout(() => {
+        const container = document.getElementById('ticket-map-container');
+        let lat = 14.5995, lng = 120.9842;
+        const existLat = parseFloat(document.getElementById('ticket-latitude').value);
+        const existLng = parseFloat(document.getElementById('ticket-longitude').value);
+        if (!isNaN(existLat) && !isNaN(existLng)) { lat = existLat; lng = existLng; }
+
+        if (!ticketMap) {
+          ticketMap = L.map(container).setView([lat, lng], 13);
+          L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(ticketMap);
+
+          ticketMap.on('click', (e) => {
+            const { lat, lng } = e.latlng;
+            if (ticketMarker) ticketMarker.setLatLng([lat, lng]);
+            else ticketMarker = L.marker([lat, lng]).addTo(ticketMap);
+            document.getElementById('ticket-latitude').value = lat.toFixed(6);
+            document.getElementById('ticket-longitude').value = lng.toFixed(6);
+          });
+        }
+        
+        if (!isNaN(existLat) && !isNaN(existLng)) {
+          if (ticketMarker) ticketMarker.setLatLng([lat, lng]);
+          else ticketMarker = L.marker([lat, lng]).addTo(ticketMap);
+          ticketMap.setView([lat, lng], 15);
+        }
+        
+        ticketMap.invalidateSize();
+      }, 200);
+    } else {
+      editor.style.display = 'none';
+      document.getElementById('ticket-location-text').textContent = 'Tap to pin location';
+    }
+  });
+
 
   function closeModal() {
     modal.classList.remove('active');
@@ -663,6 +736,14 @@ export function initTicketsPage(services, navigateFn) {
       } else if (existingCust && existingCust.address) {
         payload.address = existingCust.address;
       }
+
+      const manualLat = parseFloat(document.getElementById('ticket-latitude').value);
+      const manualLng = parseFloat(document.getElementById('ticket-longitude').value);
+      if (!isNaN(manualLat) && !isNaN(manualLng)) {
+        payload.latitude = manualLat;
+        payload.longitude = manualLng;
+      }
+
     } else {
       payload.issueDescription = issueInput.value.trim();
       payload.issue = issueInput.value.trim();
