@@ -203,7 +203,7 @@ export function renderTicketsPage() {
     <div class="modal-overlay" id="carousel-modal">
       <div class="modal" style="max-width: 800px; width: 90%; padding:0; overflow:hidden; background:var(--bg-secondary); border: 1px solid var(--border-color);">
         <div class="modal-header" style="position:absolute; top:0; left:0; right:0; z-index:10; background:linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); border:none; padding:16px;">
-          <h3 style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.5); font-size:1.1rem; margin:0;" id="carousel-title">Proof of Resolution (1 of 3)</h3>
+          <h3 style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.5); font-size:1.1rem; margin:0;" id="carousel-title">Proof Repaired (1 of 3)</h3>
           <button class="modal-close" id="close-carousel-modal" style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.5);">✕</button>
         </div>
         <div class="modal-body" style="padding:0; position:relative; min-height:400px; display:flex; align-items:center; justify-content:center; background: #000;">
@@ -859,7 +859,7 @@ export function initTicketsPage(services, navigateFn) {
       carouselMainImg.style.opacity = '1';
     }, 150);
 
-    const titlePrefix = currentCarouselType === 'proof' ? 'Proof of Resolution' : 'Initial Issue Photos';
+    const titlePrefix = currentCarouselType === 'proof' ? 'Proof Repaired' : 'Initial Issue Photos';
     carouselTitle.textContent = `${titlePrefix} (${currentCarouselIdx + 1} of ${carouselImages.length})`;
 
     // Connect prev/next visibility

@@ -560,7 +560,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                             const SizedBox(height: 16),
                           ],
                           if (ticket.proofUrls.isNotEmpty) ...[
-                            Text('Proof of Resolution', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                            Text('Proof Repaired', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                             const SizedBox(height: 8),
                             SizedBox(
                               height: 150,
@@ -631,7 +631,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           ),
                           if (selectedStatus == 'resolved' && ticket.status != 'resolved') ...[
                             const SizedBox(height: 20),
-                            Text('Proof of Resolution', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                            Text('Proof Repaired', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
                             const SizedBox(height: 8),
                             if (proofImageFiles.isNotEmpty)
                               Wrap(
@@ -826,7 +826,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 }
                                 if (selectedStatus == 'resolved' && ticket.status != 'resolved' && proofImageFiles.isEmpty) {
                                   setSheetState(() {
-                                    validationError = 'Proof of resolution photos are required to resolve a ticket.';
+                                    validationError = 'Proof Repaired photos are required to resolve a ticket.';
                                   });
                                   return;
                                 }
