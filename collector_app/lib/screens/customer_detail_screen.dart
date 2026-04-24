@@ -1148,7 +1148,7 @@ class _CustomerProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
-        title: Text('Customer Details', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 18)),
+        title: Text('Customer Details', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 20)),
         backgroundColor: AppTheme.bgDark,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -1191,39 +1191,60 @@ class _CustomerProfileScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.avatarGradient(customer.firstName),
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [
-                        BoxShadow(color: AppTheme.accentBlue.withValues(alpha: 0.2), blurRadius: 16),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        customer.initials,
-                        style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 96,
+                        height: 96,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppTheme.accentBlue.withValues(alpha: 0.15), width: 2),
+                        ),
                       ),
-                    ),
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.avatarGradient(customer.firstName),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: AppTheme.accentBlue.withValues(alpha: 0.25), blurRadius: 20, offset: const Offset(0, 8)),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            customer.initials,
+                            style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   Text(
                     '${customer.firstName} ${customer.middleName} ${customer.lastName}'.trim(),
-                    style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                    style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppTheme.accentBlue.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppTheme.accentBlue.withValues(alpha: 0.15)),
                     ),
-                    child: Text(
-                      customer.role.toUpperCase(),
-                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.accentBlue, letterSpacing: 1),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.verified_user_outlined, size: 14, color: AppTheme.accentBlue),
+                        const SizedBox(width: 6),
+                        Text(
+                          customer.role.toUpperCase(),
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.accentBlue, letterSpacing: 1),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -1237,8 +1258,8 @@ class _CustomerProfileScreen extends StatelessWidget {
               _detailRow('Phone', customer.phone.isNotEmpty ? customer.phone : '—'),
               _detailRow('Customer ID', customer.userId),
               _detailRow('Registered', _formatDate(customer.createdAt)),
-            ]),
-            const SizedBox(height: 12),
+            ], accentColor: AppTheme.accentBlue),
+            const SizedBox(height: 16),
 
             // Credentials
             _sectionCard('Credentials & WiFi', Icons.lock_outline, [
@@ -1248,15 +1269,15 @@ class _CustomerProfileScreen extends StatelessWidget {
               _detailRow('WiFi Name', _getField('wifiName')),
               _detailRow('WiFi Password', _getField('wifiPassword')),
               _detailRow('Billing Date', _getField('billingStartDate')),
-            ]),
-            const SizedBox(height: 12),
+            ], accentColor: AppTheme.accentPurple),
+            const SizedBox(height: 16),
 
             // Facility
             _sectionCard('Facility', Icons.router_outlined, [
               _detailRow('Napbox', _getField('napbox')),
               _detailRow('Port', _getField('wifiPort')),
-            ]),
-            const SizedBox(height: 12),
+            ], accentColor: AppTheme.accentEmerald),
+            const SizedBox(height: 16),
 
             // Address
             _sectionCard('Address', Icons.location_on_outlined, [
@@ -1264,7 +1285,7 @@ class _CustomerProfileScreen extends StatelessWidget {
               _detailRow('Barangay', customer.barangay.isNotEmpty ? customer.barangay : '—'),
               _detailRow('City', customer.city.isNotEmpty ? customer.city : '—'),
               _detailRow('Province', customer.province.isNotEmpty ? customer.province : '—'),
-            ]),
+            ], accentColor: AppTheme.accentAmber),
 
             // Location Photos
             if (customer.locationPhotos.isNotEmpty) ...[
@@ -1341,14 +1362,20 @@ class _CustomerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionCard(String title, IconData icon, List<Widget> children) {
+  Widget _sectionCard(String title, IconData icon, List<Widget> children, {Color? accentColor}) {
+    final color = accentColor ?? AppTheme.accentBlue;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.8)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: color.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Column(
@@ -1356,12 +1383,26 @@ class _CustomerProfileScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: AppTheme.textPrimary),
-              const SizedBox(width: 6),
-              Text(title, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 18, color: color),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 20),
           ...children,
         ],
       ),
@@ -1370,21 +1411,30 @@ class _CustomerProfileScreen extends StatelessWidget {
 
   Widget _detailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 120,
+          Expanded(
+            flex: 2,
             child: Text(
               label,
-              style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textMuted, fontWeight: FontWeight.w500),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           Expanded(
+            flex: 3,
             child: Text(
               value,
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textPrimary,
+              ),
               textAlign: TextAlign.right,
             ),
           ),
