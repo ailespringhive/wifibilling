@@ -159,11 +159,10 @@ export function renderTicketsPage() {
     <div class="modal-overlay" id="customer-info-modal">
       <div class="modal" style="max-width: 500px;">
         <div class="modal-header">
-          <h3 id="customer-info-title">Ticket & Customer Details</h3>
+          <h3 id="customer-info-title">Ticket Details</h3>
           <button class="modal-close" id="close-customer-info-modal">✕</button>
         </div>
         <div class="modal-body" style="line-height: 1.6; max-height: 70vh; overflow-y: auto;">
-          <h4 style="margin: 0 0 8px 0; color: var(--accent-blue);">Ticket Details</h4>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
             <div><span style="color:var(--text-muted);">Issue:</span> <strong id="ci-ticket-issue" style="white-space: pre-wrap;"></strong></div>
             <div><span style="color:var(--text-muted);">Notes:</span> <strong id="ci-ticket-notes" style="white-space: pre-wrap;"></strong></div>
@@ -172,13 +171,14 @@ export function renderTicketsPage() {
             <div><span style="color:var(--text-muted);">Technician:</span> <strong id="ci-ticket-tech"></strong></div>
           </div>
           
-          <h4 style="margin: 0 0 8px 0; color: var(--accent-blue);">Customer Details</h4>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div><span style="color:var(--text-muted);">Name:</span> <strong id="ci-name"></strong></div>
-            <div><span style="color:var(--text-muted);">Phone:</span> <strong id="ci-phone"></strong></div>
-            <div><span style="color:var(--text-muted);">Email:</span> <strong id="ci-email"></strong></div>
-            <div><span style="color:var(--text-muted);">Address:</span> <strong id="ci-address" style="white-space: pre-wrap;"></strong></div>
-            <div><span style="color:var(--text-muted);">Plan ID:</span> <strong id="ci-plan"></strong></div>
+          <div id="ci-initial-photos-container" style="display: none; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 8px 0; color: var(--text-secondary);">Initial Issue Photos</h4>
+            <div id="ci-initial-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+          </div>
+
+          <div id="ci-proof-photos-container" style="display: none;">
+            <h4 style="margin: 0 0 8px 0; color: var(--accent-emerald);">Proof of Resolution</h4>
+            <div id="ci-proof-photos" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
           </div>
         </div>
         <div class="modal-footer">
@@ -569,14 +569,30 @@ export function initTicketsPage(services, navigateFn) {
     document.getElementById('ci-ticket-status').textContent = ticket.status || 'pending';
     document.getElementById('ci-ticket-tech').textContent = ticket.technicianName || 'Unassigned';
 
-    // Populate customer info
-    const cObj = allCustomers.find(c => (c.userId || c.$id) === ticket.customerId);
-    
-    document.getElementById('ci-name').textContent = cObj ? `${cObj.firstName || ''} ${cObj.lastName || ''}`.trim() : (ticket.customerName || 'Unknown Customer');
-    document.getElementById('ci-phone').textContent = cObj?.phone || 'Not provided';
-    document.getElementById('ci-email').textContent = cObj?.email || 'Not provided';
-    document.getElementById('ci-address').textContent = cObj?.address || (ticket.customerAddress || 'Not provided');
-    document.getElementById('ci-plan').textContent = cObj?.planId || 'None';
+    // Populate photos
+    const initContainer = document.getElementById('ci-initial-photos-container');
+    const initDiv = document.getElementById('ci-initial-photos');
+    if (ticket.imageUrls && ticket.imageUrls.length > 0) {
+      initContainer.style.display = 'block';
+      initDiv.innerHTML = ticket.imageUrls.map(url => `
+        <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.open('${url}', '_blank')" />
+      `).join('');
+    } else {
+      initContainer.style.display = 'none';
+      initDiv.innerHTML = '';
+    }
+
+    const proofContainer = document.getElementById('ci-proof-photos-container');
+    const proofDiv = document.getElementById('ci-proof-photos');
+    if (ticket.proofUrls && ticket.proofUrls.length > 0) {
+      proofContainer.style.display = 'block';
+      proofDiv.innerHTML = ticket.proofUrls.map(url => `
+        <img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.open('${url}', '_blank')" />
+      `).join('');
+    } else {
+      proofContainer.style.display = 'none';
+      proofDiv.innerHTML = '';
+    }
 
     customerInfoModal.classList.add('active');
   }
