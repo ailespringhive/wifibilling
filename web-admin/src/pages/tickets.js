@@ -35,7 +35,7 @@ export function renderTicketsPage() {
         <table class="data-table" id="tickets-table">
           <thead>
             <tr>
-              <th style="width:40px;"><input type="checkbox" id="select-all-tickets" title="Select all" style="cursor:pointer; width:16px; height:16px;"></th>
+              <th id="select-all-th" style="width:40px; display:none;"><input type="checkbox" id="select-all-tickets" title="Select all" style="cursor:pointer; width:16px; height:16px;"></th>
               <th>Date</th>
               <th>Customer</th>
               <th>Issue</th>
@@ -288,8 +288,8 @@ export function initTicketsPage(services, navigateFn) {
         const pBadge = `<span style="color:${pColor}; font-weight:600; text-transform:capitalize;">${ticket.priority || 'medium'}</span>`;
 
         return `
-          <tr class="hover-row" data-id="${ticket.$id}">
-            <td style="text-align:center;"><input type="checkbox" class="ticket-row-checkbox" data-id="${ticket.$id}" style="cursor:pointer; width:16px; height:16px;"></td>
+          <tr class="hover-row" data-id="${ticket.$id}" style="cursor:pointer; user-select:none;">
+            <td class="row-select-cell" style="text-align:center; display:none;"><input type="checkbox" class="ticket-row-checkbox" data-id="${ticket.$id}" style="cursor:pointer; width:16px; height:16px;"></td>
             <td>${formatDate(ticket.$createdAt)}</td>
             <td>
               <div class="customer-info-trigger" data-ticket-id="${ticket.$id}" style="cursor:pointer; padding:4px; border-radius:4px; transition:0.2s;" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
@@ -335,22 +335,74 @@ export function initTicketsPage(services, navigateFn) {
         btn.addEventListener('click', () => openNotesModal(btn.dataset.notes));
       });
 
-      // Row checkbox change
+      // Long-press to enter selection mode
+      tbody.querySelectorAll('tr[data-id]').forEach(row => {
+        let pressTimer = null;
+
+        const startPress = () => {
+          pressTimer = setTimeout(() => {
+            enterSelectionMode();
+            const cb = row.querySelector('.ticket-row-checkbox');
+            if (cb) { cb.checked = true; updateBulkBar(); }
+          }, 600);
+        };
+
+        const cancelPress = () => clearTimeout(pressTimer);
+
+        row.addEventListener('mousedown', startPress);
+        row.addEventListener('mouseup', cancelPress);
+        row.addEventListener('mouseleave', cancelPress);
+        row.addEventListener('touchstart', startPress, { passive: true });
+        row.addEventListener('touchend', cancelPress);
+
+        // Click row to toggle when already in selection mode
+        row.addEventListener('click', (e) => {
+          if (!isSelectionMode) return;
+          if (e.target.closest('[data-edit],[data-delete],[data-notes],.customer-info-trigger,.open-carousel-btn')) return;
+          const cb = row.querySelector('.ticket-row-checkbox');
+          if (cb) { cb.checked = !cb.checked; updateBulkBar(); }
+        });
+      });
+
+      // Row checkbox direct change
       tbody.querySelectorAll('.ticket-row-checkbox').forEach(cb => {
         cb.addEventListener('change', updateBulkBar);
       });
     }
 
-    // Reset select-all when table reloads
+    // Reset selection state when table reloads
+    exitSelectionMode();
     const selectAll = document.getElementById('select-all-tickets');
     if (selectAll) selectAll.checked = false;
-    updateBulkBar();
 
     // Pagination controls
     infoStr.textContent = `Page ${currentPage}`;
     prevBtn.disabled = currentPage === 1;
     nextBtn.disabled = !hasMore;
   }
+
+  // Selection mode state
+  let isSelectionMode = false;
+
+  function enterSelectionMode() {
+    if (isSelectionMode) return;
+    isSelectionMode = true;
+    document.querySelectorAll('.row-select-cell').forEach(td => td.style.display = 'table-cell');
+    const th = document.getElementById('select-all-th');
+    if (th) th.style.display = 'table-cell';
+  }
+
+  function exitSelectionMode() {
+    isSelectionMode = false;
+    document.querySelectorAll('.row-select-cell').forEach(td => td.style.display = 'none');
+    document.querySelectorAll('.ticket-row-checkbox').forEach(cb => cb.checked = false);
+    const th = document.getElementById('select-all-th');
+    if (th) th.style.display = 'none';
+    const selectAll = document.getElementById('select-all-tickets');
+    if (selectAll) selectAll.checked = false;
+    updateBulkBar();
+  }
+
 
   // Handle pagination
   prevBtn.addEventListener('click', () => hasMore ? loadTickets(currentPage - 1) : loadTickets(currentPage - 1));
@@ -381,10 +433,7 @@ export function initTicketsPage(services, navigateFn) {
   }
 
   document.getElementById('bulk-cancel-btn').addEventListener('click', () => {
-    document.querySelectorAll('.ticket-row-checkbox').forEach(cb => cb.checked = false);
-    const selectAll = document.getElementById('select-all-tickets');
-    if (selectAll) selectAll.checked = false;
-    updateBulkBar();
+    exitSelectionMode();
   });
 
   document.getElementById('bulk-delete-btn').addEventListener('click', async () => {
@@ -400,6 +449,7 @@ export function initTicketsPage(services, navigateFn) {
       } catch { failed++; }
     }
     showToast(`${success} ticket(s) deleted${failed ? `, ${failed} failed` : ''}.`, failed ? 'warning' : 'success');
+    exitSelectionMode();
     loadTickets(currentPage);
   });
 
