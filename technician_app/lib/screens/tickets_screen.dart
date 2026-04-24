@@ -824,6 +824,12 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                   });
                                   return;
                                 }
+                                if (selectedStatus == 'resolved' && ticket.status != 'resolved' && proofImageFiles.isEmpty) {
+                                  setSheetState(() {
+                                    validationError = 'Proof of resolution photos are required to resolve a ticket.';
+                                  });
+                                  return;
+                                }
 
                           setSheetState(() => isUploadingProof = true);
                           bool changed = false;
