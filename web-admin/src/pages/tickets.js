@@ -615,21 +615,7 @@ export function initTicketsPage(services, navigateFn) {
     if (isNew) {
       payload.customerId = customerId;
       payload.customerName = customerName;
-      payload.issueDescription = issueInput.value.trim();
       payload.issue = issueInput.value.trim();
-      // Upload photos if any
-      if (selectedPhotoFiles.length > 0) {
-        showToast('Uploading photos...', 'info');
-        try {
-          const { ticketService: ts } = await import('../services/ticket.service.js');
-          const urls = [];
-          for (const f of selectedPhotoFiles) {
-            const url = await ticketService.uploadTicketImage(f);
-            if (url) urls.push(url);
-          }
-          payload.imageUrls = urls;
-        } catch { /* ignore upload errors */ }
-      }
     } else {
       payload.issueDescription = issueInput.value.trim();
       payload.issue = issueInput.value.trim();

@@ -116,11 +116,18 @@ class TicketService {
       customerName: ticketData.customerName,
       customerAddress: ticketData.address || ticketData.customerAddress || '',
       issue: ticketData.issueDescription || ticketData.issue || '',
+      issueDescription: ticketData.issueDescription || ticketData.issue || '',
       priority: ticketData.priority || 'medium',
       status: 'pending',
       technicianId: ticketData.technicianId || '',
-      technicianName: ticketData.technicianName || ''
+      technicianName: ticketData.technicianName || '',
+      notes: ticketData.notes || '',
     };
+
+    // Only include imageUrls if provided
+    if (ticketData.imageUrls && ticketData.imageUrls.length > 0) {
+      payload.imageUrls = ticketData.imageUrls;
+    }
 
     let res;
     try {
