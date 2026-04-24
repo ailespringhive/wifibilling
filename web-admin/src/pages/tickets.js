@@ -155,14 +155,24 @@ export function renderTicketsPage() {
       </div>
     </div>
 
-    <!-- Customer Info Modal -->
+    <!-- Ticket & Customer Info Modal -->
     <div class="modal-overlay" id="customer-info-modal">
       <div class="modal" style="max-width: 500px;">
         <div class="modal-header">
-          <h3 id="customer-info-title">Customer Info</h3>
+          <h3 id="customer-info-title">Ticket & Customer Details</h3>
           <button class="modal-close" id="close-customer-info-modal">✕</button>
         </div>
-        <div class="modal-body" style="line-height: 1.6;">
+        <div class="modal-body" style="line-height: 1.6; max-height: 70vh; overflow-y: auto;">
+          <h4 style="margin: 0 0 8px 0; color: var(--accent-blue);">Ticket Details</h4>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+            <div><span style="color:var(--text-muted);">Issue:</span> <strong id="ci-ticket-issue" style="white-space: pre-wrap;"></strong></div>
+            <div><span style="color:var(--text-muted);">Notes:</span> <strong id="ci-ticket-notes" style="white-space: pre-wrap;"></strong></div>
+            <div><span style="color:var(--text-muted);">Priority:</span> <strong id="ci-ticket-priority" style="text-transform: capitalize;"></strong></div>
+            <div><span style="color:var(--text-muted);">Status:</span> <strong id="ci-ticket-status" style="text-transform: capitalize;"></strong></div>
+            <div><span style="color:var(--text-muted);">Technician:</span> <strong id="ci-ticket-tech"></strong></div>
+          </div>
+          
+          <h4 style="margin: 0 0 8px 0; color: var(--accent-blue);">Customer Details</h4>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div><span style="color:var(--text-muted);">Name:</span> <strong id="ci-name"></strong></div>
             <div><span style="color:var(--text-muted);">Phone:</span> <strong id="ci-phone"></strong></div>
@@ -285,7 +295,7 @@ export function initTicketsPage(services, navigateFn) {
           <tr class="hover-row">
             <td>${formatDate(ticket.$createdAt)}</td>
             <td>
-              <div class="customer-info-trigger" data-customer-id="${ticket.customerId}" style="cursor:pointer; padding:4px; border-radius:4px; transition:0.2s;" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
+              <div class="customer-info-trigger" data-ticket-id="${ticket.$id}" style="cursor:pointer; padding:4px; border-radius:4px; transition:0.2s;" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
                 <div style="font-weight: 500; color:var(--accent-blue);">${ticket.customerName || 'Unknown'}</div>
                 <div style="font-size:0.75rem; color:var(--text-muted);">${ticket.customerId}</div>
               </div>
@@ -538,20 +548,31 @@ export function initTicketsPage(services, navigateFn) {
     
     const customerTrigger = e.target.closest('.customer-info-trigger');
     if (customerTrigger) {
-      openCustomerInfoModal(customerTrigger.dataset.customerId);
+      openCustomerInfoModal(customerTrigger.dataset.ticketId);
       return;
     }
   });
 
   // --- Customer Info Modal Logic ---
   const customerInfoModal = document.getElementById('customer-info-modal');
-  function openCustomerInfoModal(customerId) {
-    const cObj = allCustomers.find(c => (c.userId || c.$id) === customerId);
+  function openCustomerInfoModal(ticketId) {
+    const ticket = allTickets.find(t => t.$id === ticketId);
+    if (!ticket) return;
+
+    // Populate ticket info
+    document.getElementById('ci-ticket-issue').textContent = ticket.issueDescription || ticket.issue || 'No description';
+    document.getElementById('ci-ticket-notes').textContent = ticket.notes || 'No notes';
+    document.getElementById('ci-ticket-priority').textContent = ticket.priority || 'medium';
+    document.getElementById('ci-ticket-status').textContent = ticket.status || 'pending';
+    document.getElementById('ci-ticket-tech').textContent = ticket.technicianName || 'Unassigned';
+
+    // Populate customer info
+    const cObj = allCustomers.find(c => (c.userId || c.$id) === ticket.customerId);
     
-    document.getElementById('ci-name').textContent = cObj ? `${cObj.firstName || ''} ${cObj.lastName || ''}`.trim() : 'Unknown Customer';
+    document.getElementById('ci-name').textContent = cObj ? `${cObj.firstName || ''} ${cObj.lastName || ''}`.trim() : (ticket.customerName || 'Unknown Customer');
     document.getElementById('ci-phone').textContent = cObj?.phone || 'Not provided';
     document.getElementById('ci-email').textContent = cObj?.email || 'Not provided';
-    document.getElementById('ci-address').textContent = cObj?.address || 'Not provided';
+    document.getElementById('ci-address').textContent = cObj?.address || (ticket.customerAddress || 'Not provided');
     document.getElementById('ci-plan').textContent = cObj?.planId || 'None';
 
     customerInfoModal.classList.add('active');
