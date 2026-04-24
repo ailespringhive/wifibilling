@@ -35,6 +35,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   final List<XFile> _selectedImages = [];
   LatLng? _selectedLocation;
   TextEditingController? _autoCompleteCtrl;
+  final _addressCtrl = TextEditingController();
   
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   void dispose() {
     _issueCtrl.dispose();
     _notesCtrl.dispose();
+    _addressCtrl.dispose();
     super.dispose();
   }
 
@@ -138,11 +140,11 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       if (_selectedCustomer != null) {
         customerIdToSave = _selectedCustomer!.userId.isNotEmpty ? _selectedCustomer!.userId : _selectedCustomer!.id;
         customerNameToSave = _selectedCustomer!.fullName;
-        customerAddressToSave = _selectedCustomer!.address;
+        customerAddressToSave = _addressCtrl.text.trim().isNotEmpty ? _addressCtrl.text.trim() : _selectedCustomer!.address;
       } else {
         customerIdToSave = 'CUST-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
         customerNameToSave = customerInputText;
-        customerAddressToSave = 'Not provided';
+        customerAddressToSave = _addressCtrl.text.trim().isNotEmpty ? _addressCtrl.text.trim() : 'Not provided';
       }
 
       final data = {
@@ -209,7 +211,12 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                       });
                     },
                     onSelected: (UserProfile selection) {
-                      setState(() => _selectedCustomer = selection);
+                      setState(() {
+                        _selectedCustomer = selection;
+                        if (selection.address.isNotEmpty) {
+                          _addressCtrl.text = selection.address;
+                        }
+                      });
                     },
                     fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
                       _autoCompleteCtrl = textEditingController;
@@ -338,6 +345,15 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                         ],
                       ),
                     ),
+
+                  const SizedBox(height: 20),
+                  _buildLabel('Address (Optional)'),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _addressCtrl,
+                    style: GoogleFonts.inter(fontSize: 14),
+                    decoration: _inputDecoration('Enter customer address...'),
+                  ),
 
                   const SizedBox(height: 20),
                   _buildLabel('Location (Optional)'),
