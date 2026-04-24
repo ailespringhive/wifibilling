@@ -793,6 +793,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 content: Text('Please assign a technician before setting status to ${selectedStatus == 'in_progress' ? 'In Progress' : 'Resolved'}.', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                                 backgroundColor: AppTheme.accentAmber,
                                 behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.only(
+                                  bottom: MediaQuery.of(context).size.height - 150,
+                                  left: 20,
+                                  right: 20,
+                                ),
                               ),
                             );
                             return;
