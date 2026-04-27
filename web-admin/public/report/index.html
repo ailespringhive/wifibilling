@@ -1601,6 +1601,14 @@
     });
   }
 
+  /* 8. Handle Iframe Embed */
+  if (window.location.search.includes('embed=true')) {
+    const topbar = document.querySelector('.topbar');
+    if (topbar) topbar.style.display = 'none';
+    const mainContainer = document.querySelector('.container');
+    if (mainContainer) mainContainer.style.marginTop = '0';
+  }
+
 </script>
 </body>
 </html>
