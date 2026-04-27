@@ -6,59 +6,33 @@ export const BillingService = {
    * Get all billing records with optional status filter
    */
   async getAll(status = null, limit = 50, offset = 0) {
-    const buildQueries = (withOrder = true) => {
-      const q = [Query.limit(limit), Query.offset(offset)];
-      if (withOrder) q.push(Query.orderDesc('$createdAt'));
-      if (status) q.push(Query.equal('paymentStatus', status));
-      return q;
-    };
-    const buildQueryStrings = (withOrder = true) => {
-      const q = [`limit(${limit})`, `offset(${offset})`];
-      if (withOrder) q.push(`orderDesc("$createdAt")`);
-      if (status) q.push(`equal("paymentStatus", ["${status}"])`);
-      return q;
-    };
-
-    // Attempt 1: Client SDK with ordering
+    // Attempt 1: Client SDK
     try {
-      const response = await databases.listDocuments(DATABASE_ID, COLLECTIONS.BILLINGS, buildQueries(true));
+      const queries = [Query.limit(limit), Query.offset(offset)];
+      if (status) queries.push(Query.equal('paymentStatus', status));
+      const response = await databases.listDocuments(DATABASE_ID, COLLECTIONS.BILLINGS, queries);
       if (response.documents) response.documents = this._autoCheckOverdue(response.documents);
       return response;
     } catch (err1) {
       console.warn('Client SDK billing list failed:', err1.message);
     }
 
-    // Attempt 2: Client SDK without ordering (in case index is missing)
+    // Attempt 2: API bypass (handles query format conversion + raw fallback internally)
     try {
-      const response = await databases.listDocuments(DATABASE_ID, COLLECTIONS.BILLINGS, buildQueries(false));
-      if (response.documents) response.documents = this._autoCheckOverdue(response.documents);
-      // Sort client-side as fallback
-      response.documents.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
-      return response;
-    } catch (err2) {
-      console.warn('Client SDK billing list (no order) failed:', err2.message);
-    }
-
-    // Attempt 3: API bypass with ordering
-    try {
-      const response = await apiBypass.listDocuments(COLLECTIONS.BILLINGS, buildQueryStrings(true));
-      if (response.documents) response.documents = this._autoCheckOverdue(response.documents);
-      return response;
-    } catch (err3) {
-      console.warn('API bypass billing list failed:', err3.message);
-    }
-
-    // Attempt 4: API bypass without ordering
-    try {
-      const response = await apiBypass.listDocuments(COLLECTIONS.BILLINGS, buildQueryStrings(false));
+      const queryStrings = [`limit(${limit})`, `offset(${offset})`];
+      if (status) queryStrings.push(`equal("paymentStatus", ["${status}"])`);
+      const response = await apiBypass.listDocuments(COLLECTIONS.BILLINGS, queryStrings);
       if (response.documents) {
-        response.documents = this._autoCheckOverdue(response.documents);
-        response.documents.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
+        let docs = response.documents;
+        if (status) docs = docs.filter(d => d.paymentStatus === status);
+        docs = this._autoCheckOverdue(docs);
+        docs.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
+        return { documents: docs.slice(offset, offset + limit), total: docs.length };
       }
       return response;
-    } catch (err4) {
-      console.warn('API bypass billing list (no order) failed:', err4.message);
-      throw err4; // All attempts failed
+    } catch (err2) {
+      console.warn('API bypass billing list failed:', err2.message);
+      throw err2;
     }
   },
 

@@ -5,48 +5,28 @@ export const CollectorService = {
    * Get all collectors
    */
   async getAll(limit = 50, offset = 0) {
-    const buildQueries = (withOrder = true) => {
-      const q = [Query.equal('role', ['collector', 'technician']), Query.limit(limit), Query.offset(offset)];
-      if (withOrder) q.push(Query.orderDesc('$createdAt'));
-      return q;
-    };
-    const buildQueryStrings = (withOrder = true) => {
-      const q = [`equal("role", ["collector", "technician"])`, `limit(${limit})`, `offset(${offset})`];
-      if (withOrder) q.push(`orderDesc("$createdAt")`);
-      return q;
-    };
-
-    // Attempt 1: Client SDK with ordering
+    // Attempt 1: Client SDK
     try {
-      return await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS_PROFILE, buildQueries(true));
+      const queries = [Query.equal('role', ['collector', 'technician']), Query.limit(limit), Query.offset(offset)];
+      return await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS_PROFILE, queries);
     } catch (e1) {
-      console.warn('Collector getAll (SDK+order) failed:', e1.message);
+      console.warn('Collector getAll (SDK) failed:', e1.message);
     }
 
-    // Attempt 2: Client SDK without ordering
+    // Attempt 2: API bypass (handles query format conversion + raw fallback internally)
     try {
-      const response = await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS_PROFILE, buildQueries(false));
-      response.documents.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
+      const queryStrings = [`equal("role", ["collector", "technician"])`, `limit(${limit})`, `offset(${offset})`];
+      const response = await apiBypass.listDocuments(COLLECTIONS.USERS_PROFILE, queryStrings);
+      // If raw fallback was used, it returns ALL docs — filter client-side
+      if (response.documents) {
+        let docs = response.documents.filter(d => d.role === 'collector' || d.role === 'technician');
+        docs.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
+        return { documents: docs.slice(offset, offset + limit), total: docs.length };
+      }
       return response;
     } catch (e2) {
-      console.warn('Collector getAll (SDK) failed:', e2.message);
-    }
-
-    // Attempt 3: API bypass with ordering
-    try {
-      return await apiBypass.listDocuments(COLLECTIONS.USERS_PROFILE, buildQueryStrings(true));
-    } catch (e3) {
-      console.warn('Collector getAll (bypass+order) failed:', e3.message);
-    }
-
-    // Attempt 4: API bypass without ordering
-    try {
-      const response = await apiBypass.listDocuments(COLLECTIONS.USERS_PROFILE, buildQueryStrings(false));
-      if (response.documents) response.documents.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
-      return response;
-    } catch (e4) {
-      console.warn('Collector getAll (bypass) failed:', e4.message);
-      throw e4;
+      console.warn('Collector getAll (bypass) failed:', e2.message);
+      throw e2;
     }
   },
 
