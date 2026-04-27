@@ -12,11 +12,6 @@ export function renderLoginPage() {
       </div>
       
       <div class="login-form-side">
-        <!-- Public Ticket Portal Link -->
-        <a href="/report/" class="login-public-ticket-btn" title="Submit a Repair Ticket">
-          <span class="material-icons-outlined">confirmation_number</span>
-        </a>
-        
         <div class="login-card-inner">
           <div class="login-brand" style="text-align: left;">
             <div class="brand-icon" style="margin: 0 0 24px 0;">
@@ -58,10 +53,6 @@ export function renderLoginPage() {
               Login
             </button>
           </form>
-
-          <div style="text-align: center; margin-top: 32px; font-size: 0.85rem; color: #64748b;">
-            Admins & Collectors use the same login
-          </div>
         </div>
       </div>
       </div>
