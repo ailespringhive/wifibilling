@@ -127,6 +127,44 @@
     .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; line-height: 1.5; }
     .btn-start { display: inline-block; background: white; color: var(--bg-base); padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; }
 
+    /* Metrics Grid */
+    .metrics-grid {
+      position: absolute;
+      bottom: 80px;
+      right: 40px;
+      display: flex;
+      gap: 20px;
+      z-index: 10;
+    }
+    
+    .metric-card {
+      background: rgba(15, 20, 40, 0.4);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 24px;
+      min-width: 220px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .metric-card::before {
+      content: ''; position: absolute;
+      width: 120px; height: 120px;
+      background: rgba(59, 130, 246, 0.15);
+      filter: blur(40px); border-radius: 50%;
+      bottom: -30px; right: -30px; z-index: -1;
+    }
+    .metric-card:nth-child(2)::before { background: rgba(168, 85, 247, 0.15); }
+    
+    .metric-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .metric-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .metric-icon.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .metric-icon.purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+    .metric-title { font-size: 0.95rem; color: #cbd5e1; font-weight: 500; }
+    .metric-value { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: white; letter-spacing: -0.02em; }
+
     /* Layout Split */
     .layout-grid {
       display: flex;
@@ -230,6 +268,7 @@
         WiFi Billing
       </a>
       <div class="nav-links">
+        <a href="#plans">Plans</a>
         <a href="#support-section">Ticket</a>
         <a href="/" class="btn-login">Login</a>
       </div>
@@ -241,6 +280,31 @@
       <p>Reliable WiFi billing solutions for a connected world.</p>
       <a href="/report/" class="btn-start">Get Started Now</a>
     </header>
+
+    <!-- Metrics Cards Bottom Right -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">groups</span></div>
+          <div class="metric-title">Total Customers</div>
+        </div>
+        <div class="metric-value">35,066</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-icon purple"><span class="material-icons-outlined" style="font-size:20px;">warning_amber</span></div>
+          <div class="metric-title">Active Tickets</div>
+        </div>
+        <div class="metric-value">126</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">payments</span></div>
+          <div class="metric-title">Monthly Revenue</div>
+        </div>
+        <div class="metric-value">$2677.77</div>
+      </div>
+    </div>
   </div>
 
   <section id="support-section" style="max-width: 1400px; margin: 0 auto; padding: 40px; min-height: 100vh; position: relative; z-index: 10;">
