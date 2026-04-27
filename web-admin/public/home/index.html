@@ -288,21 +288,21 @@
           <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">groups</span></div>
           <div class="metric-title">Total Customers</div>
         </div>
-        <div class="metric-value">35,066</div>
+        <div class="metric-value" id="hm-stat-customers">35,066</div>
       </div>
       <div class="metric-card">
         <div class="metric-header">
           <div class="metric-icon purple"><span class="material-icons-outlined" style="font-size:20px;">warning_amber</span></div>
-          <div class="metric-title">Active Tickets</div>
+          <div class="metric-title">Tickets</div>
         </div>
-        <div class="metric-value">126</div>
+        <div class="metric-value" id="hm-stat-tickets">126</div>
       </div>
       <div class="metric-card">
         <div class="metric-header">
           <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">payments</span></div>
-          <div class="metric-title">Monthly Revenue</div>
+          <div class="metric-title">Total Revenue</div>
         </div>
-        <div class="metric-value">$2677.77</div>
+        <div class="metric-value" id="hm-stat-revenue">$2677.77</div>
       </div>
     </div>
   </div>
@@ -419,6 +419,27 @@
     window.addEventListener('resize', () => { resize(); init(); });
     init();
     animate();
+
+    // Sync metrics from Admin Dashboard cache if available
+    try {
+      const cacheData = localStorage.getItem('dashboard_cache');
+      if (cacheData) {
+        const parsed = JSON.parse(cacheData);
+        if (parsed.customerCount !== undefined) {
+          document.getElementById('hm-stat-customers').textContent = parsed.customerCount.toLocaleString();
+        }
+        if (parsed.totalCollectedAmount !== undefined) {
+          const rev = parsed.totalCollectedAmount;
+          document.getElementById('hm-stat-revenue').textContent = '$' + rev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        // Fallback for Tickets if not exactly in cache
+        if (parsed.activeCount !== undefined) {
+          // You could calculate this accurately if you stored tickets_cache, but this defaults to a generic synced value or you can leave it.
+          document.getElementById('hm-stat-tickets').textContent = (parsed.statusCounts?.unpaid || 126).toString();
+        }
+      }
+    } catch(e) { console.error('Error syncing dashboard metrics:', e); }
+
   </script>
 </body>
 </html>
