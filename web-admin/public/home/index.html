@@ -39,36 +39,13 @@
       background: radial-gradient(circle at top right, #0a403a 0%, var(--bg-base) 70%);
     }
 
-    /* SVG Waves matching the image */
+    /* SVG Waves */
     .svg-waves {
       position: absolute;
-      top: -10%; left: -10%;
-      width: 120%; height: 120%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       opacity: 0.8;
       pointer-events: none;
-    }
-
-    .wave {
-      position: absolute;
-      width: 150%; height: 100%;
-      background-repeat: no-repeat;
-      background-position: center top;
-      background-size: 100% 100%;
-    }
-
-    .wave-1 {
-      top: -10%; left: -10%;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23083636' fill-opacity='1' d='M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,106.7C672,96,768,128,864,154.7C960,181,1056,203,1152,192C1248,181,1344,139,1392,117.3L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E");
-    }
-
-    .wave-2 {
-      top: 5%; left: -5%;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%230d524d' fill-opacity='0.8' d='M0,64L48,96C96,128,192,192,288,218.7C384,245,480,235,576,197.3C672,160,768,96,864,80C960,64,1056,96,1152,122.7C1248,149,1344,171,1392,181.3L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E");
-    }
-
-    .wave-3 {
-      top: 30%; left: 0%;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23128a7e' fill-opacity='0.6' d='M0,256L48,229.3C96,203,192,149,288,154.7C384,160,480,224,576,218.7C672,213,768,139,864,122.7C960,107,1056,149,1152,154.7C1248,160,1344,128,1392,112L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E");
     }
 
     .dotted-texture {
@@ -82,13 +59,13 @@
       z-index: 0;
     }
 
-    /* Particles Canvas */
+    /* Particles Canvas explicitly restricted to the red box */
     #particle-canvas {
       position: absolute;
-      top: 0; right: 0;
-      width: 70%; height: 800px;
+      top: 100px; right: 5%;
+      width: 55%; height: 380px;
       pointer-events: none;
-      opacity: 0.8;
+      opacity: 0.9;
       z-index: 1;
     }
 
@@ -205,11 +182,11 @@
 
   <!-- Backgrounds -->
   <div class="bg-layer">
-    <div class="svg-waves">
-      <div class="wave wave-1"></div>
-      <div class="wave wave-2"></div>
-      <div class="wave wave-3"></div>
-    </div>
+    <svg class="svg-waves" viewBox="0 0 1440 800" preserveAspectRatio="none">
+      <path fill="#083a35" d="M0,400 C300,600 600,200 1440,300 L1440,0 L0,0 Z"></path>
+      <path fill="#0c5a50" fill-opacity="0.6" d="M0,500 C400,600 700,100 1440,400 L1440,0 L0,0 Z"></path>
+      <path fill="#118070" fill-opacity="0.3" d="M0,600 C500,700 800,200 1440,500 L1440,0 L0,0 Z"></path>
+    </svg>
     <div class="dotted-texture"></div>
     <canvas id="particle-canvas"></canvas>
   </div>
