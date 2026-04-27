@@ -87,7 +87,25 @@
       color: white; text-decoration: none;
       font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 700;
     }
-    .brand-icon { color: white; font-size: 36px; }
+    .brand-icon {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    
+    .wifi-animated { position: relative; width: 32px; height: 32px; }
+    .wifi-arc {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      border: 3px solid transparent; border-top-color: white; border-radius: 50%;
+      opacity: 0; animation: wifi-fade 1.5s infinite;
+    }
+    .wifi-arc1 { width: 32px; height: 32px; top: 2px; animation-delay: 0s; }
+    .wifi-arc2 { width: 22px; height: 22px; top: 7px; animation-delay: 0.3s; }
+    .wifi-arc3 { width: 12px; height: 12px; top: 12px; animation-delay: 0.6s; }
+    .wifi-dot {
+      position: absolute; width: 6px; height: 6px; background: white;
+      border-radius: 50%; left: 50%; transform: translateX(-50%); top: 17px;
+    }
+    @keyframes wifi-fade { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
     
     .nav-links { display: flex; gap: 30px; align-items: center; }
     .nav-links a { color: var(--text-main); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
@@ -198,7 +216,14 @@
     <!-- Navbar -->
     <nav class="navbar">
       <a href="#" class="brand">
-        <span class="material-icons-outlined brand-icon">wifi</span>
+        <div class="brand-icon">
+          <div class="wifi-animated">
+            <div class="wifi-arc wifi-arc1"></div>
+            <div class="wifi-arc wifi-arc2"></div>
+            <div class="wifi-arc wifi-arc3"></div>
+            <div class="wifi-dot"></div>
+          </div>
+        </div>
         WiFi Billing
       </a>
       <div class="nav-links">
