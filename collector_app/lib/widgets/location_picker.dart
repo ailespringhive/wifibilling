@@ -9,7 +9,7 @@ class LocationPicker extends StatefulWidget {
   const LocationPicker({super.key, required this.initialLocation});
 
   @override
-  _LocationPickerState createState() => _LocationPickerState();
+  State<LocationPicker> createState() => _LocationPickerState();
 }
 
 class _LocationPickerState extends State<LocationPicker> {
