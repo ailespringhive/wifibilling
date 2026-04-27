@@ -423,18 +423,6 @@ export function initTicketsPage(services, navigateFn) {
         `;
       }).join('');
 
-      // Attach actions
-      tbody.querySelectorAll('[data-edit]').forEach(btn => {
-        btn.addEventListener('click', () => openTicketModal(btn.dataset.edit));
-      });
-      
-      tbody.querySelectorAll('[data-delete]').forEach(btn => {
-        btn.addEventListener('click', () => deleteTicket(btn.dataset.delete));
-      });
-      
-      tbody.querySelectorAll('[data-notes]').forEach(btn => {
-        btn.addEventListener('click', () => openNotesModal(btn.dataset.notes));
-      });
 
       // Long-press to enter selection mode
       tbody.querySelectorAll('tr[data-id]').forEach(row => {
@@ -916,6 +904,24 @@ export function initTicketsPage(services, navigateFn) {
     const customerTrigger = e.target.closest('.customer-info-trigger');
     if (customerTrigger) {
       openCustomerInfoModal(customerTrigger.dataset.ticketId);
+      return;
+    }
+
+    const notesBtn = e.target.closest('[data-notes]');
+    if (notesBtn) {
+      openNotesModal(notesBtn.dataset.notes);
+      return;
+    }
+
+    const editBtn = e.target.closest('[data-edit]');
+    if (editBtn) {
+      openTicketModal(editBtn.dataset.edit);
+      return;
+    }
+
+    const deleteBtn = e.target.closest('[data-delete]');
+    if (deleteBtn) {
+      deleteTicket(deleteBtn.dataset.delete);
       return;
     }
   });
