@@ -165,6 +165,102 @@
     .metric-title { font-size: 0.95rem; color: #cbd5e1; font-weight: 500; }
     .metric-value { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: white; letter-spacing: -0.02em; }
 
+    /* Public Pricing Cards */
+    .public-pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+
+    .public-pricing-card {
+      background: rgba(15, 20, 40, 0.4);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .public-pricing-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      border-color: rgba(45, 212, 191, 0.3);
+    }
+    
+    .public-pricing-recommended {
+      border-color: rgba(45, 212, 191, 0.5);
+      background: linear-gradient(180deg, rgba(45, 212, 191, 0.1) 0%, rgba(15, 20, 40, 0.4) 100%);
+    }
+
+    .public-pricing-badge {
+      position: absolute;
+      top: 0; right: 32px;
+      background: var(--accent-emerald);
+      color: var(--bg-base);
+      font-size: 0.75rem; font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .public-pricing-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: white;
+    }
+
+    .public-pricing-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    .public-pricing-price {
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .public-pricing-amount {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.5rem; font-weight: 700; color: white;
+    }
+
+    .public-pricing-period {
+      color: var(--text-muted); font-size: 1rem;
+    }
+
+    .public-pricing-features {
+      list-style: none; padding: 0; margin: 0 0 32px 0;
+    }
+
+    .public-pricing-feature {
+      display: flex; align-items: flex-start; gap: 12px;
+      margin-bottom: 12px; color: #cbd5e1; font-size: 0.95rem;
+    }
+
+    .public-pricing-btn {
+      display: block; width: 100%; text-align: center;
+      padding: 14px; border-radius: 12px;
+      font-weight: 600; text-decoration: none;
+      transition: all 0.2s;
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.05); color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    
+    .btn-primary {
+      background: var(--accent-emerald); color: var(--bg-base);
+    }
+    .btn-primary:hover { filter: brightness(1.1); }
+
     /* Layout Split */
     .layout-grid {
       display: flex;
@@ -306,6 +402,18 @@
       </div>
     </div>
   </div>
+
+  <section id="plans" style="max-width: 1400px; margin: 0 auto; padding: 100px 40px 40px; position: relative; z-index: 10;">
+    <div style="text-align: center; margin-bottom: 60px;">
+      <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 700; color: white;">Internet Plans</h2>
+      <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px;">Choose the perfect speed for your connected lifestyle.</p>
+    </div>
+    
+    <div id="hm-plans-grid" class="public-pricing-grid">
+      <!-- Loader inside grid -->
+      <div style="text-align:center; width:100%; color: var(--text-muted); grid-column: 1 / -1;">Loading plans...</div>
+    </div>
+  </section>
 
   <section id="support-section" style="max-width: 1400px; margin: 0 auto; padding: 40px; min-height: 100vh; position: relative; z-index: 10;">
     <div style="text-align: center; margin-bottom: 40px;">
@@ -450,6 +558,55 @@
         }
       })
       .catch(err => console.error('Error fetching tickets:', err));
+    } catch(e) {}
+
+    // Live fetch for Plans
+    try {
+      fetch('https://appwrite.springhive.co/v1/databases/wifi_billing_db/collections/wifi_plans/documents?queries[]={"method":"equal","attribute":"isActive","values":[true]}', {
+        headers: {
+          'X-Appwrite-Project': '69c4840a0022d6824d83',
+          'X-Appwrite-Key': 'standard_b650468f4a776eac08a7d0f31aea79b5de528e970e85714564a8d0480a9cffc6d0c947aaeaecc2a2011b98c97f90515cbf5f9e16d3cd6230d259d1e91d885a1de14d5c1cb20da10930d49bcc3f3cb7d3f4a5011619cba4e42d533abefbc60435de9ab782c82e59704a44ea08b88f9babd5a6edb83fb50e2bc6f4cb33e1069b6c'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const grid = document.getElementById('hm-plans-grid');
+        if (data.documents && data.documents.length > 0) {
+          const sorted = data.documents.sort((a,b) => a.monthlyRate - b.monthlyRate);
+          const recId = sorted.length >= 2 ? sorted[Math.floor(sorted.length / 2)].$id : null;
+          
+          grid.innerHTML = sorted.map(p => {
+             const isRec = p.$id === recId;
+             let feats = [];
+             try { feats = p.features ? JSON.parse(p.features) : []; } catch(e){}
+             if (!Array.isArray(feats) || feats.length === 0) {
+               feats = [
+                 {text: 'Up to ' + (p.speed || '25 Mbps') + ' speed', included: true},
+                 {text: 'Unlimited Data Allocation', included: true},
+                 {text: 'Priority support', included: true}
+               ];
+             }
+             const fHTML = feats.map(f => `<li class="public-pricing-feature"><span class="material-icons-outlined" style="font-size:16px; color:${f.included ? 'var(--accent-emerald)' : 'var(--text-muted)'};">${f.included ? 'check_circle' : 'cancel'}</span><span ${!f.included?'style="opacity:0.5"':''}>${f.text}</span></li>`).join('');
+
+             return `<div class="public-pricing-card ${isRec ? 'public-pricing-recommended' : ''}">
+                ${isRec ? '<div class="public-pricing-badge">Most Popular</div>' : ''}
+                <div class="public-pricing-name">${p.name}</div>
+                <div class="public-pricing-desc">${p.description || p.speed + ' connection'}</div>
+                <div class="public-pricing-price">
+                  <span class="public-pricing-amount">₱${Number(p.monthlyRate).toLocaleString('en-PH')}</span>
+                  <span class="public-pricing-period">/month</span>
+                </div>
+                <ul class="public-pricing-features">${fHTML}</ul>
+                <a href="#support-section" class="public-pricing-btn ${isRec ? 'btn-primary' : 'btn-secondary'}">Select Plan</a>
+             </div>`;
+          }).join('');
+        } else {
+          grid.innerHTML = '<div style="text-align:center; width:100%; color: var(--text-muted); grid-column: 1 / -1;">No plans currently available.</div>';
+        }
+      })
+      .catch(err => {
+         document.getElementById('hm-plans-grid').innerHTML = '<div style="text-align:center; width:100%; color: var(--text-muted); grid-column: 1 / -1;">Failed to load plans.</div>';
+      });
     } catch(e) {}
 
   </script>
