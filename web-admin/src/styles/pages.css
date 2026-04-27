@@ -364,23 +364,43 @@
 
 
 .metric-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.2) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-xl);
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
   overflow: hidden;
 }
 
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border-color);
+  opacity: 0.8;
+}
+
+/* Individual card top-border gradients */
+.metric-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent-blue), transparent); }
+.metric-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent-emerald), transparent); }
+.metric-card:nth-child(3)::before { background: linear-gradient(90deg, #F97316, transparent); }
+.metric-card:nth-child(4)::before { background: linear-gradient(90deg, #8B5CF6, transparent); }
+
 .metric-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .metric-card {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
 
 .metric-title {
