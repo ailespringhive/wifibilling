@@ -3,575 +3,541 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WiFi Billing — Green Network</title>
+  <title>WiFi Billing — Connected World</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
   
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     
     :root {
-      --bg-dark: #0a1628;
-      --bg-lighter: #0f2038;
-      --teal: #0d9488;
+      --bg-dark: #02161b;
+      --card-bg: #061c22;
+      --teal-light: #16b49e;
+      --teal-dark: #0d7065;
+      --text-main: #ffffff;
+      --text-muted: #b0caca;
       --emerald: #10b981;
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
     }
 
     body {
       font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
       color: var(--text-main);
-      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-lighter) 100%);
-      min-height: 100vh;
       overflow-x: hidden;
+      min-height: 100vh;
       position: relative;
     }
 
-    /* Canvas Background */
-    #network-canvas {
-      position: fixed;
+    /* Wavy Backgrounds */
+    .bg-waves {
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
+      height: 100vh;
+      z-index: -1;
+      overflow: hidden;
+      background: var(--bg-dark);
+    }
+    
+    .wave {
+      position: absolute;
+      width: 150%;
       height: 100%;
-      z-index: 0;
-      pointer-events: none;
+      background-repeat: no-repeat;
+      background-position: center top;
+      background-size: 100% 100%;
     }
 
-    .content-wrapper {
+    .wave-1 {
+      top: -10%;
+      left: -10%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23083636' fill-opacity='1' d='M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,106.7C672,96,768,128,864,154.7C960,181,1056,203,1152,192C1248,181,1344,139,1392,117.3L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E");
+    }
+
+    .wave-2 {
+      top: 5%;
+      left: -5%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%230d524d' fill-opacity='0.8' d='M0,64L48,96C96,128,192,192,288,218.7C384,245,480,235,576,197.3C672,160,768,96,864,80C960,64,1056,96,1152,122.7C1248,149,1344,171,1392,181.3L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E");
+    }
+
+    .wave-3 {
+      top: 30%;
+      left: 0%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23128a7e' fill-opacity='0.6' d='M0,256L48,229.3C96,203,192,149,288,154.7C384,160,480,224,576,218.7C672,213,768,139,864,122.7C960,107,1056,149,1152,154.7C1248,160,1344,128,1392,112L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E");
+    }
+
+    .particles {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: radial-gradient(circle at center, rgba(22, 180, 158, 0.4) 1px, transparent 1px);
+      background-size: 30px 30px;
+      opacity: 0.3;
+      mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 30px;
       position: relative;
-      z-index: 1;
     }
 
     /* Navbar */
     .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: 20px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(10, 22, 40, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      z-index: 100;
+      padding: 30px 0;
     }
-    
-    .brand {
+
+    .logo {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
       text-decoration: none;
     }
 
-    .brand-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, var(--teal), var(--emerald));
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
-
-    .brand-text {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: white;
-      letter-spacing: 0.5px;
+    .logo-icon {
+      color: var(--teal-light);
     }
 
     .nav-links {
       display: flex;
-      gap: 20px;
+      gap: 30px;
       align-items: center;
     }
 
-    .nav-btn {
+    .nav-links a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--teal-light);
+    }
+
+    .btn-login {
+      background: white;
+      color: var(--bg-dark);
       padding: 10px 24px;
       border-radius: 8px;
       font-weight: 600;
       text-decoration: none;
-      transition: all 0.3s ease;
-      font-size: 0.95rem;
+      margin-left: 20px;
+      transition: transform 0.2s;
     }
-
-    .btn-ghost {
-      color: var(--text-main);
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .btn-ghost:hover {
-      background: rgba(255,255,255,0.1);
-      transform: translateY(-2px);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--teal), var(--emerald));
-      color: white;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-    }
-    .btn-primary:hover {
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    
+    .btn-login:hover {
       transform: translateY(-2px);
     }
 
     /* Hero Section */
     .hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 120px 20px 60px;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 8px 16px;
-      border-radius: 30px;
-      color: var(--emerald);
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin-bottom: 24px;
-      animation: fadeInDown 0.8s ease-out;
+      padding: 80px 0 100px;
+      max-width: 500px;
+      animation: fadeInLeft 1s ease-out;
     }
 
     .hero h1 {
       font-family: 'Outfit', sans-serif;
-      font-size: 4.5rem;
-      font-weight: 900;
+      font-size: 4rem;
+      font-weight: 700;
       line-height: 1.1;
-      margin-bottom: 24px;
-      background: linear-gradient(to right, #fff, #a7f3d0);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: fadeInUp 0.8s ease-out 0.2s both;
+      margin-bottom: 20px;
     }
 
     .hero p {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       color: var(--text-muted);
-      max-width: 600px;
       margin-bottom: 40px;
-      line-height: 1.6;
-      animation: fadeInUp 0.8s ease-out 0.4s both;
+      line-height: 1.5;
     }
 
-    .hero-actions {
-      display: flex;
-      gap: 16px;
-      animation: fadeInUp 0.8s ease-out 0.6s both;
+    .btn-start {
+      background: white;
+      color: var(--bg-dark);
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    /* Wave Separator */
-    .wave-container {
-      width: 100%;
-      overflow: hidden;
-      line-height: 0;
-      background: var(--bg-dark);
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
 
-    .wave-container svg {
+    /* Main Card */
+    .main-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 60px;
+      margin-top: -40px;
+      margin-bottom: 50px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
       position: relative;
-      display: block;
-      width: calc(100% + 1.3px);
-      height: 120px;
-    }
-
-    .wave-container .shape-fill {
-      fill: rgba(13, 148, 136, 0.1);
+      z-index: 10;
+      border: 1px solid rgba(255,255,255,0.03);
+      animation: fadeInUp 1s ease-out 0.3s backwards;
     }
 
     /* About Section */
-    .about {
-      padding: 100px 20px;
-      background: rgba(13, 148, 136, 0.05);
-      position: relative;
-      border-top: 1px solid rgba(13, 148, 136, 0.1);
-      border-bottom: 1px solid rgba(13, 148, 136, 0.1);
+    .about-header {
+      text-align: center;
+      margin-bottom: 60px;
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
+    .about-subtitle {
+      color: var(--teal-light);
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: block;
     }
 
-    .section-title {
+    .about-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 2.5rem;
-      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 600;
       margin-bottom: 20px;
-      color: white;
     }
 
-    .about-text {
-      text-align: center;
-      font-size: 1.15rem;
+    .about-desc {
+      font-size: 1.3rem;
       color: var(--text-muted);
-      max-width: 800px;
-      margin: 0 auto 60px;
-      line-height: 1.8;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
     }
 
-    .about-text strong {
-      color: var(--emerald);
+    /* Team Section */
+    .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
     }
 
-    /* Features Grid */
-    .features {
-      padding: 100px 20px;
+    .team-title {
+      font-size: 1.4rem;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .team-nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    .team-nav-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .team-nav-btn:hover { background: rgba(255,255,255,0.1); }
+
+    .team-carousel {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 20px;
+      scrollbar-width: none; /* Firefox */
+      margin-bottom: 60px;
+    }
+    .team-carousel::-webkit-scrollbar { display: none; } /* Chrome */
+
+    .team-card {
+      background: white;
+      color: #1a1a1a;
+      border-radius: 16px;
+      padding: 30px 20px;
+      min-width: 200px;
+      text-align: center;
+      flex-shrink: 0;
+      transition: transform 0.3s;
+    }
+    
+    .team-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .team-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #f0f0f0;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    .team-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .team-role {
+      font-size: 0.8rem;
+      color: #666;
+      font-weight: 600;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .team-desc {
+      font-size: 0.75rem;
+      color: #888;
+      line-height: 1.4;
+    }
+
+    /* Features Section */
+    .features-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .features-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
     }
 
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 30px;
-      margin-top: 60px;
+      margin-bottom: 60px;
     }
 
-    .feature-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 40px 30px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      opacity: 0;
-      transform: translateY(40px);
-    }
-
-    .feature-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .feature-card:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: var(--emerald);
-      transform: translateY(-10px) !important;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    .feature-item {
+      text-align: center;
     }
 
     .feature-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, rgba(13,148,136,0.2), rgba(16,185,129,0.2));
-      border: 1px solid rgba(16,185,129,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 24px;
-      color: var(--emerald);
+      color: var(--teal-light);
+      font-size: 48px;
+      margin-bottom: 16px;
     }
 
-    .feature-icon .material-icons-outlined {
-      font-size: 32px;
+    .feature-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
     }
 
-    .feature-card h3 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.4rem;
-      margin-bottom: 12px;
-      color: white;
-    }
-
-    .feature-card p {
+    .feature-desc {
+      font-size: 0.85rem;
       color: var(--text-muted);
-      line-height: 1.6;
-      font-size: 0.95rem;
+      line-height: 1.4;
     }
 
     /* Footer */
-    footer {
-      padding: 40px 20px;
-      text-align: center;
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 30px;
       border-top: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.85rem;
       color: var(--text-muted);
-      font-size: 0.9rem;
+    }
+
+    .socials {
+      display: flex;
+      gap: 15px;
+    }
+
+    .socials span {
+      font-size: 18px;
+      color: white;
+      cursor: pointer;
     }
 
     /* Animations */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
     }
     
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Spring bounce is handled by cubic-bezier in feature-card transition */
-
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
       .hero h1 { font-size: 3rem; }
-      .navbar { padding: 15px 20px; }
-      .nav-links { display: none; } /* Simplified mobile nav */
+      .main-card { padding: 40px 20px; }
+      .nav-links { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Particle Network Background -->
-  <canvas id="network-canvas"></canvas>
+  <!-- Wavy Background -->
+  <div class="bg-waves">
+    <div class="wave wave-1"></div>
+    <div class="wave wave-2"></div>
+    <div class="wave wave-3"></div>
+    <div class="particles"></div>
+  </div>
 
-  <div class="content-wrapper">
+  <div class="container">
     <!-- Navbar -->
     <nav class="navbar">
-      <a href="#" class="brand">
-        <div class="brand-icon">
-          <span class="material-icons-outlined">wifi</span>
-        </div>
-        <div class="brand-text">WiFi Billing</div>
+      <a href="#" class="logo">
+        <span class="material-icons-outlined logo-icon">insights</span>
+        WiFi Billing
       </a>
       <div class="nav-links">
-        <a href="/report/" class="nav-btn btn-ghost">Report Portal</a>
-        <a href="/" class="nav-btn btn-primary">Admin Login</a>
+        <a href="#features">Features</a>
+        <a href="#about">About Us</a>
+        <a href="/report/">Support</a>
+        <a href="/" class="btn-login">Login / Sign Up</a>
       </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero -->
     <header class="hero">
-      <div class="hero-badge">
-        <span class="material-icons-outlined" style="font-size: 18px;">eco</span>
-        Sustainable Network Operations
-      </div>
-      <h1>Connecting Communities<br>With Care.</h1>
-      <p>A unified platform for Internet Service Providers to seamlessly manage customers, automate billing cycles, and resolve network issues efficiently.</p>
-      <div class="hero-actions">
-        <a href="/report/" class="nav-btn btn-ghost" style="padding: 14px 32px; font-size: 1.05rem;">Report an Issue</a>
-        <a href="/" class="nav-btn btn-primary" style="padding: 14px 32px; font-size: 1.05rem;">Access Dashboard</a>
-      </div>
+      <h1>Connecting<br>Communities</h1>
+      <p>Reliable WiFi billing solutions for a connected world.</p>
+      <a href="/report/" class="btn-start">Get Started Now</a>
     </header>
 
-    <!-- Animated Wave Separator -->
-    <div class="wave-container">
-      <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
-      </svg>
-    </div>
-
-    <!-- About Section -->
-    <section class="about" id="about">
-      <div class="container">
-        <h2 class="section-title">Powering Modern ISPs</h2>
-        <p class="about-text">
-          We built this platform to simplify the complex workflows of modern Internet Service Providers. By uniting <strong>customer management</strong>, automated <strong>invoice generation</strong>, and real-time <strong>field operations</strong> into a single ecosystem, we help you focus on what truly matters: providing reliable, uninterrupted connectivity to your community.
-        </p>
+    <!-- Main Card overlay -->
+    <div class="main-card">
+      
+      <!-- About / Platform Info -->
+      <div class="about-header" id="about">
+        <span class="about-subtitle">About System</span>
+        <h2 class="about-title">Our Platform</h2>
+        <p class="about-desc">Empowering ISPs through accessible and manageable WiFi networks</p>
       </div>
-    </section>
 
-    <!-- Features Section -->
-    <section class="features" id="features">
-      <div class="container">
-        <h2 class="section-title" style="margin-bottom: 10px;">Platform Capabilities</h2>
-        <p style="text-align: center; color: var(--text-muted); margin-bottom: 40px;">Everything you need to run your network smoothly.</p>
-        
-        <div class="features-grid">
-          
-          <div class="feature-card">
-            <div class="feature-icon">
-              <span class="material-icons-outlined">people</span>
-            </div>
-            <h3>Customer Management</h3>
-            <p>Maintain detailed profiles, track subscription plans, and monitor payment histories for all your subscribers in a centralized, searchable database.</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">
-              <span class="material-icons-outlined">receipt_long</span>
-            </div>
-            <h3>Automated Billing</h3>
-            <p>Generate precise monthly invoices automatically. Track pending payments, issue electronic receipts, and streamline your entire revenue collection process.</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">
-              <span class="material-icons-outlined">build</span>
-            </div>
-            <h3>Repair Ticketing</h3>
-            <p>Empower customers to report issues directly. Dispatch field technicians instantly, track resolution progress, and verify repairs with proof-of-work photos.</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">
-              <span class="material-icons-outlined">map</span>
-            </div>
-            <h3>Field Operations</h3>
-            <p>Equip your collectors and technicians with dedicated mobile apps. Map customer locations, work offline in remote areas, and sync data instantly.</p>
-          </div>
-
+      <!-- Team / Avatars -->
+      <div class="team-header">
+        <h3 class="team-title">Team</h3>
+        <div class="team-nav">
+          <button class="team-nav-btn" onclick="scrollTeam(-1)"><span class="material-icons-outlined" style="font-size:16px;">chevron_left</span></button>
+          <button class="team-nav-btn" onclick="scrollTeam(1)"><span class="material-icons-outlined" style="font-size:16px;">chevron_right</span></button>
         </div>
       </div>
-    </section>
+      
+      <div class="team-carousel" id="team-track">
+        
+        <div class="team-card">
+          <div class="team-avatar" style="background: #e0f2fe;">👨🏽‍💼</div>
+          <div class="team-name">Alex Johnson</div>
+          <div class="team-role">CEO</div>
+          <div class="team-desc">Driving the vision for community connectivity.</div>
+        </div>
 
-    <!-- Footer -->
-    <footer>
-      <div class="container">
-        <p>&copy; 2026 WiFi Billing System. All rights reserved.</p>
+        <div class="team-card">
+          <div class="team-avatar" style="background: #fce7f3;">👩🏻‍💻</div>
+          <div class="team-name">Sarah Lee</div>
+          <div class="team-role">Lead Developer</div>
+          <div class="team-desc">Architecting robust billing and network solutions.</div>
+        </div>
+
+        <div class="team-card">
+          <div class="team-avatar" style="background: #dcfce7;">👨🏼‍🔧</div>
+          <div class="team-name">Marcus Smith</div>
+          <div class="team-role">Field Operations</div>
+          <div class="team-desc">Ensuring network reliability and quick repairs.</div>
+        </div>
+
+        <div class="team-card">
+          <div class="team-avatar" style="background: #fef08a;">👨🏿‍💼</div>
+          <div class="team-name">David Chen</div>
+          <div class="team-role">Support Lead</div>
+          <div class="team-desc">Empowering communities through top-tier service.</div>
+        </div>
+
+        <div class="team-card">
+          <div class="team-avatar" style="background: #e0e7ff;">👩🏽‍🎨</div>
+          <div class="team-name">Elena Rodriguez</div>
+          <div class="team-role">Product Designer</div>
+          <div class="team-desc">Creating intuitive experiences for everyone.</div>
+        </div>
+
       </div>
-    </footer>
+
+      <!-- Features -->
+      <div class="features-header" id="features">
+        <h3 class="features-title">Service Features</h3>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="material-icons-outlined feature-icon">signal_cellular_alt</div>
+          <div class="feature-name">Signal Bars</div>
+          <div class="feature-desc">Reliable Connectivity and Performance</div>
+        </div>
+        <div class="feature-item">
+          <div class="material-icons-outlined feature-icon">receipt_long</div>
+          <div class="feature-name">Invoice</div>
+          <div class="feature-desc">Simplified Billing and Invoicing</div>
+        </div>
+        <div class="feature-item">
+          <div class="material-icons-outlined feature-icon">build</div>
+          <div class="feature-name">Wrench</div>
+          <div class="feature-desc">Efficient Network Management and Support</div>
+        </div>
+        <div class="feature-item">
+          <div class="material-icons-outlined feature-icon">location_on</div>
+          <div class="feature-name">Map Pin</div>
+          <div class="feature-desc">Coverage Area and User Location Services</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div>Copyright WiFi Billing System</div>
+        <div class="socials">
+          <span class="material-icons-outlined">facebook</span>
+          <span class="material-icons-outlined">share</span>
+          <span class="material-icons-outlined">ondemand_video</span>
+        </div>
+        <div>© 2026. All Rights reserved.</div>
+      </div>
+
+    </div>
   </div>
 
   <script>
-    // --- 1. Particle Network Animation ---
-    const canvas = document.getElementById('network-canvas');
-    const ctx = canvas.getContext('2d');
-    
-    let width, height;
-    let particles = [];
-    const connectionDistance = 150;
-    
-    let mouse = {
-      x: null,
-      y: null,
-      radius: 200
-    };
-
-    window.addEventListener('mousemove', (e) => {
-      mouse.x = e.x;
-      mouse.y = e.y;
-    });
-
-    window.addEventListener('mouseout', () => {
-      mouse.x = null;
-      mouse.y = null;
-    });
-
-    function resize() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-      initParticles();
+    function scrollTeam(direction) {
+      const track = document.getElementById('team-track');
+      const cardWidth = 220; // card + gap
+      track.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
     }
-
-    class Particle {
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.size = Math.random() * 2 + 1;
-        this.baseX = this.x;
-        this.baseY = this.y;
-        this.density = (Math.random() * 20) + 1;
-        
-        // Slower drifting movement
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
-      }
-
-      update() {
-        // Drift
-        this.x += this.vx;
-        this.y += this.vy;
-
-        // Bounce off edges
-        if (this.x < 0 || this.x > width) this.vx *= -1;
-        if (this.y < 0 || this.y > height) this.vy *= -1;
-
-        // Mouse interaction
-        if (mouse.x != null) {
-          let dx = mouse.x - this.x;
-          let dy = mouse.y - this.y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < mouse.radius) {
-            // Push away gently
-            const forceDirectionX = dx / distance;
-            const forceDirectionY = dy / distance;
-            const force = (mouse.radius - distance) / mouse.radius;
-            
-            this.x -= forceDirectionX * force * 2;
-            this.y -= forceDirectionY * force * 2;
-          }
-        }
-      }
-
-      draw() {
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.4)'; // Emerald color
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-      }
-    }
-
-    function initParticles() {
-      particles = [];
-      const numParticles = Math.min((width * height) / 12000, 150); // Responsive amount
-      for (let i = 0; i < numParticles; i++) {
-        particles.push(new Particle());
-      }
-    }
-
-    function animate() {
-      ctx.clearRect(0, 0, width, height);
-      
-      for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-        
-        // Connect nearby particles
-        for (let j = i; j < particles.length; j++) {
-          let dx = particles[i].x - particles[j].x;
-          let dy = particles[i].y - particles[j].y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < connectionDistance) {
-            ctx.beginPath();
-            ctx.strokeStyle = \`rgba(13, 148, 136, \${1 - (distance/connectionDistance)})\`; // Teal color fade
-            ctx.lineWidth = 1;
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-            ctx.closePath();
-          }
-        }
-      }
-      requestAnimationFrame(animate);
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-    animate();
-
-    // --- 2. Scroll Animation (Intersection Observer for Spring Bounce) ---
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-          // Add delay based on index for staggered effect
-          setTimeout(() => {
-            entry.target.classList.add('visible');
-          }, index * 100);
-          observer.unobserve(entry.target);
-        }
-      });
-    }, observerOptions);
-
-    document.querySelectorAll('.feature-card').forEach(card => {
-      observer.observe(card);
-    });
-
   </script>
 </body>
 </html>
