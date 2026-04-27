@@ -263,28 +263,41 @@ export async function initDashboardPage(services, navigateFn) {
       const container = document.getElementById('recent-billing');
       container.innerHTML = `<div style="padding:24px; text-align:center; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 12px;"></div>Loading...</div>`;
 
-      const offset = (page - 1) * PAGE_SIZE;
-      const result = await services.billing.getAll(null, PAGE_SIZE, offset);
-      totalCount = result.total || result.documents.length;
-      currentPage = page;
+      try {
+        const offset = (page - 1) * PAGE_SIZE;
+        const result = await services.billing.getAll(null, PAGE_SIZE, offset);
+        totalCount = result.total || result.documents.length;
+        currentPage = page;
 
-      // Sync customer plan based on subscription
-      if (plansList && subsList && result.documents) {
-        result.documents.forEach(bill => {
-          if (bill.subscriptionId) {
-            const sub = subsList.documents.find(s => s.$id === bill.subscriptionId);
-            if (sub && sub.planId) {
-              const plan = plansList.documents.find(p => p.$id === sub.planId);
-              if (plan) {
-                bill.planName = (plan.name || '').replace('[ARCHIVED] ', '').trim();
+        // Sync customer plan based on subscription
+        if (plansList && subsList && result.documents) {
+          result.documents.forEach(bill => {
+            if (bill.subscriptionId) {
+              const sub = subsList.documents.find(s => s.$id === bill.subscriptionId);
+              if (sub && sub.planId) {
+                const plan = plansList.documents.find(p => p.$id === sub.planId);
+                if (plan) {
+                  bill.planName = (plan.name || '').replace('[ARCHIVED] ', '').trim();
+                }
               }
             }
-          }
-        });
-      }
+          });
+        }
 
-      renderRecentBilling(result.documents);
-      renderBillingPagination(currentPage, totalCount, loadBillingPage);
+        renderRecentBilling(result.documents);
+        renderBillingPagination(currentPage, totalCount, loadBillingPage);
+      } catch (billingErr) {
+        console.error('[Dashboard] Failed to load billing page:', billingErr);
+        container.innerHTML = `
+          <div style="padding:24px; text-align:center;">
+            <span class="material-icons-outlined" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:8px; display:block;">cloud_off</span>
+            <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Unable to load transactions</div>
+            <button id="retry-billing-btn" style="padding:6px 18px; border-radius:8px; background:var(--accent-blue); color:#fff; border:none; cursor:pointer; font-size:0.8rem; font-weight:600;">Retry</button>
+          </div>
+        `;
+        const retryBtn = document.getElementById('retry-billing-btn');
+        if (retryBtn) retryBtn.addEventListener('click', () => loadBillingPage(page));
+      }
     }
 
     await loadBillingPage(1);
@@ -340,9 +353,18 @@ export async function initDashboardPage(services, navigateFn) {
     });
 
   } catch (error) {
-    console.error('[DEBUG] Failed to load dashboard data FATAL ERROR:', error);
+    console.error('[DEBUG] Failed to load dashboard data:', error);
+    // Only show error in billing area if it hasn't already loaded content
     const tbl = document.getElementById('recent-billing');
-    if(tbl) tbl.innerHTML = `<div style="padding:24px; text-align:center; color:var(--accent-rose);"><b>System Error:</b> Could not connect to database.<br><small>${error.message}</small></div>`;
+    if(tbl && (!tbl.innerHTML || tbl.innerHTML.includes('Loading'))) {
+      tbl.innerHTML = `
+        <div style="padding:24px; text-align:center;">
+          <span class="material-icons-outlined" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:8px; display:block;">cloud_off</span>
+          <div style="color:var(--text-muted); font-size:0.85rem;">Unable to load transactions</div>
+          <div style="color:var(--text-muted); font-size:0.7rem; margin-top:4px;">${error.message || 'Connection error'}</div>
+        </div>
+      `;
+    }
   }
 }
 
