@@ -763,6 +763,90 @@
   </div>
 </div>
 
+<!-- ── Ticket Details Modal ── -->
+<div class="modal-overlay" id="ticket-details-overlay" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:580px; padding:0; overflow:hidden;">
+    <!-- Header -->
+    <div style="padding:24px 28px; border-bottom:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.025); display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(245,158,11,.3); flex-shrink:0;">
+          <span class="material-icons-outlined" style="font-size:24px;">construction</span>
+        </div>
+        <div>
+          <h3 style="margin:0; font-size:1.2rem; font-weight:800; color:#f1f5f9;">Ticket Details</h3>
+          <div id="td-customer-name" style="font-size:.88rem; color:#94a3b8; margin-top:3px; font-weight:500;"></div>
+        </div>
+      </div>
+      <button class="modal-close" id="close-ticket-details" aria-label="Close">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:28px; max-height:72vh; overflow-y:auto; line-height:1.6;">
+
+      <!-- Status + Priority + Technician -->
+      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:14px; padding:20px; margin-bottom:24px;">
+        <div style="display:flex; gap:24px; margin-bottom:16px;">
+          <div style="flex:1;">
+            <div style="font-size:.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px;">Status</div>
+            <span id="td-status" style="display:inline-flex; align-items:center; padding:5px 14px; border-radius:30px; font-size:.84rem; font-weight:700;"></span>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px;">Priority</div>
+            <span id="td-priority" style="display:inline-flex; align-items:center; padding:5px 14px; border-radius:30px; font-size:.84rem; font-weight:700;"></span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px;">Assigned Technician</div>
+          <div id="td-tech" style="display:flex; align-items:center; gap:8px; font-size:.95rem; color:#f1f5f9; font-weight:500;">
+            <span class="material-icons-outlined" style="font-size:17px; color:#3b82f6;">engineering</span>
+            <span id="td-tech-text"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issue Description -->
+      <div style="margin-bottom:24px;">
+        <div style="font-size:.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <span class="material-icons-outlined" style="font-size:14px;">report_problem</span> Issue Description
+        </div>
+        <div id="td-issue" style="font-size:.95rem; color:#f1f5f9; white-space:pre-wrap; background:rgba(255,255,255,.04); padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,.09);"></div>
+      </div>
+
+      <!-- Notes -->
+      <div style="margin-bottom:24px;">
+        <div style="font-size:.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <span class="material-icons-outlined" style="font-size:14px;">speaker_notes</span> Notes &amp; Progress
+        </div>
+        <div id="td-notes" style="font-size:.9rem; color:#94a3b8; white-space:pre-wrap; background:rgba(0,0,0,.15); padding:16px; border-radius:12px; border:1px dashed rgba(255,255,255,.1);"></div>
+      </div>
+
+      <!-- Address -->
+      <div style="margin-bottom:24px;">
+        <div style="font-size:.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <span class="material-icons-outlined" style="font-size:14px;">location_on</span> Customer Address
+        </div>
+        <div id="td-address" style="font-size:.95rem; color:#f1f5f9; margin-bottom:12px; padding:0 4px;"></div>
+        <div id="td-map-container" style="display:none;">
+          <div id="td-map" style="width:100%; height:220px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.09); box-shadow:0 4px 20px rgba(0,0,0,.3);"></div>
+        </div>
+      </div>
+
+      <!-- Photos -->
+      <div id="td-photos-container" style="display:none; margin-bottom:8px;">
+        <div style="font-size:.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.07em; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+          <span class="material-icons-outlined" style="font-size:14px;">image</span> Issue Photos
+        </div>
+        <div id="td-photos" style="position:relative; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.09); box-shadow:0 4px 12px rgba(0,0,0,.2);"></div>
+      </div>
+
+    </div><!-- /body -->
+
+    <div style="padding:16px 28px; border-top:1px solid rgba(255,255,255,.07); display:flex; justify-content:flex-end;">
+      <button class="btn btn-ghost" id="close-ticket-details-footer">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Delete Confirm ── -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -892,7 +976,7 @@
           const accent   = pAccent[t.priority] || '#f59e0b';
           const isNew    = arrivals.includes(t.$id);
           return `
-            <tr class="${isNew ? 'row-new' : ''}">
+            <tr data-row-id="${t.$id}" class="${isNew ? 'row-new' : ''}" style="cursor:pointer;">
               <td style="color:#64748b;font-size:.78rem;white-space:nowrap;">${formatDate(t.$createdAt)}</td>
               <td>
                 <div style="display:flex;align-items:center;gap:10px;">
@@ -1243,6 +1327,111 @@
     window.location.href = hasSession ? '/admin/' : '/admin/?force_login=1';
   }
 
+  /* ══ Ticket Details Modal ══ */
+  function openTicketDetails(ticketId) {
+    const t = cachedDocs.find(d => d.$id === ticketId);
+    if (!t) return;
+
+    // Header
+    document.getElementById('td-customer-name').textContent = t.customerName || t.customerId || 'Unknown Customer';
+
+    // Status pill
+    const statusPill = document.getElementById('td-status');
+    const s = t.status || 'pending';
+    statusPill.textContent = s.replace('_', ' ');
+    const statusStyles = {
+      resolved:    { bg:'rgba(16,185,129,.15)',  color:'#34d399', border:'1px solid #10b981' },
+      in_progress: { bg:'rgba(59,130,246,.15)',  color:'#60a5fa', border:'1px solid #3b82f6' },
+      cancelled:   { bg:'rgba(107,114,128,.15)', color:'#94a3b8', border:'1px solid rgba(255,255,255,.2)' },
+      pending:     { bg:'rgba(245,158,11,.15)',  color:'#fbbf24', border:'1px solid #f59e0b' },
+    };
+    const ss = statusStyles[s] || statusStyles.pending;
+    Object.assign(statusPill.style, { background: ss.bg, color: ss.color, border: ss.border });
+
+    // Priority pill
+    const prioPill = document.getElementById('td-priority');
+    const p = t.priority || 'medium';
+    prioPill.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+    const prioStyles = {
+      critical: { bg:'rgba(239,68,68,.15)',   color:'#fb7185', border:'1px solid #f43f5e' },
+      high:     { bg:'rgba(239,68,68,.1)',    color:'#fb7185', border:'1px solid rgba(244,63,94,.5)' },
+      medium:   { bg:'rgba(245,158,11,.15)',  color:'#fbbf24', border:'1px solid #f59e0b' },
+      low:      { bg:'transparent',           color:'#94a3b8', border:'1px solid rgba(255,255,255,.2)' },
+    };
+    const ps = prioStyles[p] || prioStyles.medium;
+    Object.assign(prioPill.style, { background: ps.bg, color: ps.color, border: ps.border });
+
+    // Technician
+    document.getElementById('td-tech-text').textContent = t.technicianName || 'Unassigned';
+
+    // Issue / Notes / Address
+    document.getElementById('td-issue').textContent   = t.issueDescription || t.issue || 'No description provided.';
+    document.getElementById('td-notes').textContent   = (t.notes && t.notes !== 'null' && t.notes.trim()) ? t.notes.trim() : 'No notes from technician yet.';
+    document.getElementById('td-address').textContent = t.customerAddress || 'Not provided';
+
+    // Map
+    const mapContainer = document.getElementById('td-map-container');
+    const mapEl = document.getElementById('td-map');
+    if (t.latitude && t.longitude) {
+      mapContainer.style.display = 'block';
+      mapEl.innerHTML = `<iframe width="100%" height="220" frameborder="0" scrolling="no" style="border:0;border-radius:12px;" src="https://www.openstreetmap.org/export/embed.html?bbox=${t.longitude-0.005}%2C${t.latitude-0.003}%2C${t.longitude+0.005}%2C${t.latitude+0.003}&layer=mapnik&marker=${t.latitude}%2C${t.longitude}"></iframe>`;
+    } else {
+      mapContainer.style.display = 'none';
+      mapEl.innerHTML = '';
+    }
+
+    // Photos
+    const photosContainer = document.getElementById('td-photos-container');
+    const photosEl = document.getElementById('td-photos');
+    if (t.imageUrls && t.imageUrls.length > 0) {
+      photosContainer.style.display = 'block';
+      let photoIdx = 0;
+      const imgs = t.imageUrls;
+      photosEl.innerHTML = `
+        <div id="td-carousel-track" style="display:flex; overflow-x:hidden; scroll-behavior:smooth; width:100%;">
+          ${imgs.map(url => `<img src="${url}" style="flex:0 0 100%; width:100%; height:240px; object-fit:cover; cursor:pointer;" />`).join('')}
+        </div>
+        ${imgs.length > 1 ? `
+          <button id="td-prev" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:.2s;" onmouseover="this.style.background='rgba(0,0,0,.85)'" onmouseout="this.style.background='rgba(0,0,0,.55)'">
+            <span class="material-icons-outlined" style="font-size:18px;">chevron_left</span>
+          </button>
+          <button id="td-next" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:.2s;" onmouseover="this.style.background='rgba(0,0,0,.85)'" onmouseout="this.style.background='rgba(0,0,0,.55)'">
+            <span class="material-icons-outlined" style="font-size:18px;">chevron_right</span>
+          </button>` : ''}
+      `;
+      photosEl.style.position = 'relative';
+      const track = document.getElementById('td-carousel-track');
+      const prevBtn = document.getElementById('td-prev');
+      const nextBtn = document.getElementById('td-next');
+      if (prevBtn) prevBtn.onclick = () => { if (photoIdx > 0) { photoIdx--; track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' }); } };
+      if (nextBtn) nextBtn.onclick = () => { if (photoIdx < imgs.length-1) { photoIdx++; track.scrollBy({ left:  track.clientWidth, behavior: 'smooth' }); } };
+      // clicking an image opens main carousel
+      photosEl.querySelectorAll('img').forEach((img, i) => {
+        img.onclick = () => { openImageCarousel(t.$id); };
+      });
+    } else {
+      photosContainer.style.display = 'none';
+      photosEl.innerHTML = '';
+    }
+
+    document.getElementById('ticket-details-overlay').classList.add('open');
+    stopPolling();
+  }
+
+  const _closeTD = () => { document.getElementById('ticket-details-overlay').classList.remove('open'); startPolling(); };
+  document.getElementById('close-ticket-details').addEventListener('click', _closeTD);
+  document.getElementById('close-ticket-details-footer').addEventListener('click', _closeTD);
+  document.getElementById('ticket-details-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('ticket-details-overlay')) _closeTD();
+  });
+
+  // Make table rows clickable (but not when clicking action buttons)
+  document.getElementById('tbody').addEventListener('click', e => {
+    if (e.target.closest('.act-btn, .open-carousel-btn, .proof-link')) return;
+    const row = e.target.closest('tr[data-row-id]');
+    if (row) openTicketDetails(row.dataset.rowId);
+  });
+
   /* ═══════════════════════════════════════════
      ANIMATION ENGINE — mirrors admin dashboard
      ═══════════════════════════════════════════ */
@@ -1347,7 +1536,7 @@
       }
     }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
   }
-  ['modal-overlay','edit-overlay','notes-overlay','confirm-overlay','carousel-modal'].forEach(patchModalToggle);
+  ['modal-overlay','edit-overlay','notes-overlay','confirm-overlay','carousel-modal','ticket-details-overlay'].forEach(patchModalToggle);
 
   /* 6. Card header shimmer on initial load */
   (function shimmerCardHeader() {
