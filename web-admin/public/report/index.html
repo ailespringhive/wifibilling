@@ -779,7 +779,8 @@
     </div>
 
     <!-- Body -->
-    <div style="padding:28px; flex:1; overflow-y:auto; line-height:1.6;">
+    <div style="padding:28px; flex:1; overflow-y:auto; line-height:1.6; scrollbar-width:none; -ms-overflow-style:none;" id="td-body-scroll">
+    <style>#td-body-scroll::-webkit-scrollbar{display:none;}</style>
 
       <!-- Status + Priority + Technician -->
       <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:14px; padding:20px; margin-bottom:24px;">
@@ -1441,7 +1442,7 @@
      ═══════════════════════════════════════════ */
 
   /* 0. Boot */
-  loadTickets(1).then(() => { startPolling(); animateRows(); });
+  loadTickets(1).then(startPolling);
 
   /* 1. Floating ambient orbs */
   (function spawnOrbs() {
@@ -1474,11 +1475,20 @@
     });
   }
 
-  /* Hook into loadTickets — patch the original so rows animate after every render */
+  /* Hook into loadTickets — only animate rows on non-silent loads to prevent snap on background polls */
   const _origLoad = loadTickets;
   loadTickets = async function(...args) {
     await _origLoad.apply(this, args);
-    animateRows();
+    const isSilent = args[1] === true;
+    if (!isSilent) {
+      animateRows();
+      // Animate ticket count from the element (after loadTickets sets it)
+      setTimeout(() => {
+        const countEl = document.getElementById('ticket-count');
+        const match = (countEl.textContent || '').match(/(\d+)/);
+        if (match) animateCount(countEl, parseInt(match[1], 10));
+      }, 50);
+    }
   };
 
   /* 3. Ripple effect on all buttons */
@@ -1513,19 +1523,7 @@
     requestAnimationFrame(step);
   }
 
-  /* Patch the ticket-count update inside loadTickets */
-  const ticketCountEl = document.getElementById('ticket-count');
-  const origTextContentDesc = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
-  // Instead, observe mutation:
-  const countObserver = new MutationObserver(() => {
-    const raw = ticketCountEl.textContent;
-    const match = raw.match(/(\d+)/);
-    if (match) {
-      const num = parseInt(match[1], 10);
-      animateCount(ticketCountEl, num);
-    }
-  });
-  countObserver.observe(ticketCountEl, { childList: true, characterData: true, subtree: true });
+  /* ticket-count animation: driven by patched loadTickets above — no MutationObserver needed */
 
   /* 5. Modal open/close spring — overlay fade */
   function patchModalToggle(overlayId) {
