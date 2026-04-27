@@ -448,6 +448,73 @@
     }
     .row-new { animation: rowFlash 2s ease forwards; }
 
+    /* ── Page entrance ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* ── Shimmer skeleton ── */
+    @keyframes shimmer {
+      0%   { background-position: -600px 0; }
+      100% { background-position:  600px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.04) 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite linear;
+      border-radius: 6px;
+    }
+
+    /* ── Floating orbs ── */
+    .orb {
+      position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+      filter: blur(80px); opacity: 0.18;
+    }
+    @keyframes floatOrb {
+      0%,100% { transform: translateY(0)   scale(1); }
+      50%      { transform: translateY(-30px) scale(1.06); }
+    }
+
+    /* ── Row entrance stagger ── */
+    tbody tr { opacity: 0; }
+    tbody tr.row-visible {
+      animation: fadeInUp 0.4s cubic-bezier(.22,1,.36,1) both;
+      opacity: 1;
+    }
+
+    /* ── Modal spring entrance ── */
+    .modal-overlay.open .modal,
+    .modal-overlay.open .confirm-box { animation: modalIn .36s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes modalIn {
+      from { opacity:0; transform: translateY(28px) scale(.95); }
+      to   { opacity:1; transform: none; }
+    }
+
+    /* ── Ripple ── */
+    .ripple-host { position: relative; overflow: hidden; }
+    .ripple-wave {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,.22);
+      transform: scale(0); animation: rippleAnim .55s linear;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* ── Topbar entrance ── */
+    .topbar { animation: fadeInDown .5s cubic-bezier(.22,1,.36,1) both; }
+    .card   { animation: scaleIn   .55s cubic-bezier(.22,1,.36,1) .1s both; }
+
     @media (max-width: 680px) {
       .page-body { padding: 12px; }
       .topbar    { padding: 0 14px; }
@@ -1176,8 +1243,131 @@
     window.location.href = hasSession ? '/admin/' : '/admin/?force_login=1';
   }
 
-  /* ── Boot ── */
+  /* ═══════════════════════════════════════════
+     ANIMATION ENGINE — mirrors admin dashboard
+     ═══════════════════════════════════════════ */
+
+  /* 0. Boot */
   loadTickets(1).then(startPolling);
+
+  /* 1. Floating ambient orbs */
+  (function spawnOrbs() {
+    const orbs = [
+      { w: 500, h: 500, x: '10%',  y: '5%',  c: 'rgba(59,130,246,.55)',  dur: '14s' },
+      { w: 380, h: 380, x: '75%',  y: '60%', c: 'rgba(99,102,241,.5)',   dur: '18s' },
+      { w: 260, h: 260, x: '50%',  y: '40%', c: 'rgba(16,185,129,.35)',  dur: '22s' },
+    ];
+    orbs.forEach((o, i) => {
+      const el = document.createElement('div');
+      el.className = 'orb';
+      Object.assign(el.style, {
+        width: o.w + 'px', height: o.h + 'px',
+        left: o.x, top: o.y,
+        background: o.c,
+        animation: `floatOrb ${o.dur} ease-in-out ${i * 3}s infinite`,
+      });
+      document.body.appendChild(el);
+    });
+  })();
+
+  /* 2. Stagger table rows on render */
+  function animateRows() {
+    const rows = document.querySelectorAll('#tbody tr');
+    rows.forEach((row, i) => {
+      row.classList.remove('row-visible');
+      row.style.animationDelay = (i * 60) + 'ms';
+      // Force reflow then add class
+      requestAnimationFrame(() => requestAnimationFrame(() => row.classList.add('row-visible')));
+    });
+  }
+
+  /* Hook into loadTickets — patch the original so rows animate after every render */
+  const _origLoad = loadTickets;
+  loadTickets = async function(...args) {
+    await _origLoad.apply(this, args);
+    animateRows();
+  };
+
+  /* 3. Ripple effect on all buttons */
+  function addRipple(el) {
+    el.classList.add('ripple-host');
+    el.addEventListener('click', function(e) {
+      const rect = el.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top  - size / 2;
+      const wave = document.createElement('span');
+      wave.className = 'ripple-wave';
+      Object.assign(wave.style, { width: size + 'px', height: size + 'px', left: x + 'px', top: y + 'px' });
+      el.appendChild(wave);
+      wave.addEventListener('animationend', () => wave.remove());
+    });
+  }
+  document.querySelectorAll('.btn, .btn-primary, .btn-ghost, .btn-submit, .btn-login').forEach(addRipple);
+
+  /* 4. Animated counter for ticket count badge */
+  function animateCount(el, target) {
+    if (!el || isNaN(target)) return;
+    let start = 0;
+    const dur = 600;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const prog = Math.min((ts - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - prog, 3);
+      el.textContent = `(${Math.round(ease * target)} total)`;
+      if (prog < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  /* Patch the ticket-count update inside loadTickets */
+  const ticketCountEl = document.getElementById('ticket-count');
+  const origTextContentDesc = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
+  // Instead, observe mutation:
+  const countObserver = new MutationObserver(() => {
+    const raw = ticketCountEl.textContent;
+    const match = raw.match(/(\d+)/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      animateCount(ticketCountEl, num);
+    }
+  });
+  countObserver.observe(ticketCountEl, { childList: true, characterData: true, subtree: true });
+
+  /* 5. Modal open/close spring — overlay fade */
+  function patchModalToggle(overlayId) {
+    const overlay = document.getElementById(overlayId);
+    if (!overlay) return;
+    // watch for class changes
+    new MutationObserver(() => {
+      if (overlay.classList.contains('open')) {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity .25s ease';
+        requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+      }
+    }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+  }
+  ['modal-overlay','edit-overlay','notes-overlay','confirm-overlay','carousel-modal'].forEach(patchModalToggle);
+
+  /* 6. Card header shimmer on initial load */
+  (function shimmerCardHeader() {
+    const header = document.querySelector('.card-header');
+    if (!header) return;
+    header.style.animation = 'fadeInUp .45s cubic-bezier(.22,1,.36,1) .05s both';
+  })();
+
+  /* 7. Refresh button 360° spin */
+  const refreshBtn = document.getElementById('refresh-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      const icon = refreshBtn.querySelector('.material-icons-outlined');
+      if (!icon) return;
+      icon.style.transition = 'transform .55s cubic-bezier(.22,1,.36,1)';
+      icon.style.transform  = 'rotate(360deg)';
+      setTimeout(() => { icon.style.transition = ''; icon.style.transform = ''; }, 600);
+    });
+  }
+
 </script>
 </body>
 </html>
