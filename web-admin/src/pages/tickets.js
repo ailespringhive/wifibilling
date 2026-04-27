@@ -1040,17 +1040,22 @@ export function initTicketsPage(services, navigateFn) {
 
   function openNotesModal(ticketId) {
     try {
-      alert("openNotesModal called with: " + ticketId);
-      const ticket = allTickets.find(t => t.$id === ticketId);
+      const ticket = allTickets.find(t => String(t.$id) === String(ticketId));
       if (!ticket) {
         console.error('Ticket not found for notes:', ticketId);
         return;
       }
-      notesIdInput.value = ticket.$id;
-      notesTextArea.value = ticket.notes || '';
+
+      const m = document.getElementById('notes-modal');
+      const inputId = document.getElementById('notes-ticket-id');
+      const textArea = document.getElementById('ticket-notes-text');
+      const label = document.getElementById('notes-modal-label');
+
+      if (inputId) inputId.value = ticket.$id;
+      if (textArea) textArea.value = ticket.notes || '';
       
       const techName = ticket.technicianName || 'Unassigned Technician';
-      document.getElementById('notes-modal-label').textContent = `${techName} & Admin Exchange`;
+      if (label) label.textContent = `${techName} & Admin Exchange`;
       
       if (typeof ticket.notes === 'string' && ticket.notes !== 'null') {
         localStorage.setItem('ticket_note_read_' + ticket.$id, ticket.notes);
@@ -1064,28 +1069,32 @@ export function initTicketsPage(services, navigateFn) {
         });
       }
       
-      if (notesModal) {
-        alert("About to open modal!");
-        notesModal.classList.add('active');
+      if (m) {
+        m.style.zIndex = '9999';
+        m.classList.add('active');
       } else {
-        alert("notesModal is null!");
         console.error('notesModal element not found!');
       }
     } catch (error) {
-      alert("Error: " + error.message);
       console.error('Error opening notes modal:', error);
     }
   }
 
   function closeNotesModal() {
-    notesModal.classList.remove('active');
+    const m = document.getElementById('notes-modal');
+    if (m) m.classList.remove('active');
   }
 
-  document.getElementById('close-notes-modal').addEventListener('click', closeNotesModal);
-  document.getElementById('cancel-notes-btn').addEventListener('click', (e) => {
-    e.preventDefault();
-    closeNotesModal();
-  });
+  const btnCloseNotes = document.getElementById('close-notes-modal');
+  if (btnCloseNotes) btnCloseNotes.addEventListener('click', closeNotesModal);
+
+  const btnCancelNotes = document.getElementById('cancel-notes-btn');
+  if (btnCancelNotes) {
+    btnCancelNotes.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeNotesModal();
+    });
+  }
 
   document.getElementById('save-notes-btn').addEventListener('click', async (e) => {
     e.preventDefault();
