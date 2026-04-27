@@ -51,9 +51,10 @@
     #particle-canvas {
       position: absolute;
       top: 0; right: 0;
-      width: 60%; height: 70%;
+      width: 60%; height: 60%; /* Occupies top right area */
       pointer-events: none;
-      opacity: 0.6;
+      opacity: 0.9; /* Increased opacity to match image */
+      z-index: 1; /* Ensure it is above the base waves but behind content */
     }
 
     .dotted-texture {
@@ -138,7 +139,7 @@
     .split-layout {
       display: flex;
       gap: 50px;
-      margin-top: 60px;
+      margin-top: 20px;
       align-items: flex-start;
       padding-bottom: 80px;
     }
@@ -146,9 +147,10 @@
     /* Left Hero */
     .hero-col {
       flex: 1;
-      padding-top: 40px;
+      padding-top: 80px;
       position: sticky;
       top: 150px;
+      z-index: 10;
     }
 
     .hero-col h1 {
@@ -195,6 +197,7 @@
       border: 1px solid rgba(255,255,255,0.03);
       position: relative;
       z-index: 5;
+      margin-top: 250px; /* Pushed down to reveal the particle network above it */
     }
 
     /* Inside Card - About */
@@ -479,17 +482,19 @@
     let particles = [];
     
     function resize() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      // Use bounding client rect to ensure exact pixel size
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
     }
     
     class Node {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.3;
-        this.vy = (Math.random() - 0.5) * 0.3;
-        this.radius = Math.random() * 2 + 1;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.radius = Math.random() * 3 + 1.5; // Slightly larger dots
       }
       update() {
         this.x += this.vx; this.y += this.vy;
@@ -499,15 +504,20 @@
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-        ctx.fillStyle = '#1abc9c';
+        ctx.fillStyle = '#2dd4bf'; // Brighter teal for the dots
+        // Add glow effect
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#2dd4bf';
         ctx.fill();
+        ctx.shadowBlur = 0; // reset for lines
       }
     }
 
     function init() {
       resize();
       particles = [];
-      for(let i=0; i<60; i++) particles.push(new Node());
+      const numParticles = Math.min((canvas.width * canvas.height) / 10000, 80); // Responsive density
+      for(let i=0; i<numParticles; i++) particles.push(new Node());
     }
 
     function animate() {
@@ -519,10 +529,10 @@
           let dx = particles[i].x - particles[j].x;
           let dy = particles[i].y - particles[j].y;
           let dist = Math.sqrt(dx*dx + dy*dy);
-          if (dist < 120) {
+          if (dist < 150) { // Increased connection distance
             ctx.beginPath();
-            ctx.strokeStyle = \`rgba(26, 188, 156, \${1 - dist/120})\`;
-            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = \`rgba(45, 212, 191, \${(1 - dist/150) * 0.8})\`; // Glowing teal lines
+            ctx.lineWidth = 1;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
