@@ -485,10 +485,8 @@
     }
 
     /* ── Row entrance stagger ── */
-    tbody tr { opacity: 0; }
     tbody tr.row-visible {
       animation: fadeInUp 0.4s cubic-bezier(.22,1,.36,1) both;
-      opacity: 1;
     }
 
     /* ── Modal spring entrance ── */
@@ -1437,7 +1435,7 @@
      ═══════════════════════════════════════════ */
 
   /* 0. Boot */
-  loadTickets(1).then(startPolling);
+  loadTickets(1).then(() => { startPolling(); animateRows(); });
 
   /* 1. Floating ambient orbs */
   (function spawnOrbs() {
