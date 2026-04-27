@@ -994,10 +994,10 @@
                   ? `<div class="tech-chip"><div class="tech-chip-icon"><span class="material-icons-outlined">engineering</span></div>${t.technicianName}</div>`
                   : '<span style="color:#64748b;font-style:italic;font-size:.82rem;">Unassigned</span>'}
               </td>
-              <td>${(t.imageUrls && t.imageUrls.length > 0)
-                  ? `<button class="proof-link open-carousel-btn" data-ticket-id="${t.$id}" style="background:transparent; border:1px solid rgba(59, 130, 246, 0.15); border-radius:6px; cursor:pointer; font-family:inherit; color:#3b82f6; display:inline-flex; align-items:center; gap:4px; padding:4px 8px; font-weight:600; text-decoration:none;" type="button">
+              <td>${(t.proofUrls && t.proofUrls.length > 0)
+                  ? `<button class="proof-link open-carousel-btn" data-ticket-id="${t.$id}" data-type="proof" style="background:transparent; border:1px solid rgba(59, 130, 246, 0.15); border-radius:6px; cursor:pointer; font-family:inherit; color:#3b82f6; display:inline-flex; align-items:center; gap:4px; padding:4px 8px; font-weight:600; text-decoration:none;" type="button">
                        <span class="material-icons-outlined" style="font-size:16px;">image</span>
-                       View${t.imageUrls.length > 1 ? ` (${t.imageUrls.length})` : ''}
+                       View${t.proofUrls.length > 1 ? ` (${t.proofUrls.length})` : ''}
                      </button>`
                   : `<span style="color:#475569;font-size:.85rem;">—</span>`}
               </td>
@@ -1264,6 +1264,8 @@
   let carouselImages = [];
   let currentCarouselIdx = 0;
 
+  let currentCarouselType = 'proof';
+
   function updateCarouselView() {
     if (carouselImages.length === 0) return;
     carouselMainImg.style.opacity = '0';
@@ -1272,7 +1274,8 @@
       carouselMainImg.style.opacity = '1';
     }, 150);
 
-    carouselTitle.textContent = `Proof of Resolution (${currentCarouselIdx + 1} of ${carouselImages.length})`;
+    const titlePrefix = currentCarouselType === 'proof' ? 'Repair Proof Photos' : 'Initial Issue Photos';
+    carouselTitle.textContent = `${titlePrefix} (${currentCarouselIdx + 1} of ${carouselImages.length})`;
 
     carouselPrevBtn.style.display = currentCarouselIdx > 0 ? 'flex' : 'none';
     carouselNextBtn.style.display = currentCarouselIdx < carouselImages.length - 1 ? 'flex' : 'none';
@@ -1287,11 +1290,13 @@
     });
   }
 
-  function openImageCarousel(ticketId) {
+  function openImageCarousel(ticketId, type) {
     const ticket = cachedDocs.find(t => t.$id === ticketId);
-    if (!ticket || !ticket.imageUrls || ticket.imageUrls.length === 0) return;
-    
-    carouselImages = ticket.imageUrls;
+    if (!ticket) return;
+    const urls = type === 'proof' ? ticket.proofUrls : ticket.imageUrls;
+    if (!urls || urls.length === 0) return;
+    currentCarouselType = type || 'proof';
+    carouselImages = urls;
     currentCarouselIdx = 0;
     carouselModal.classList.add('open');
     updateCarouselView();
@@ -1311,7 +1316,7 @@
   document.getElementById('tbody').addEventListener('click', (e) => {
     // Carousel
     const carouselBtn = e.target.closest('.open-carousel-btn');
-    if (carouselBtn) { openImageCarousel(carouselBtn.dataset.ticketId); return; }
+    if (carouselBtn) { openImageCarousel(carouselBtn.dataset.ticketId, carouselBtn.dataset.type || 'proof'); return; }
     // Notes
     const notesBtn = e.target.closest('[data-notes]');
     if (notesBtn) { openNotesModal(notesBtn.dataset.notes); return; }
@@ -1389,7 +1394,7 @@
       mapEl.innerHTML = '';
     }
 
-    // Photos
+    // Issue Photos (initial — imageUrls)
     const photosContainer = document.getElementById('td-photos-container');
     const photosEl = document.getElementById('td-photos');
     if (t.imageUrls && t.imageUrls.length > 0) {
@@ -1410,17 +1415,54 @@
       `;
       photosEl.style.position = 'relative';
       const track = document.getElementById('td-carousel-track');
-      const prevBtn = document.getElementById('td-prev');
-      const nextBtn = document.getElementById('td-next');
-      if (prevBtn) prevBtn.onclick = () => { if (photoIdx > 0) { photoIdx--; track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' }); } };
-      if (nextBtn) nextBtn.onclick = () => { if (photoIdx < imgs.length-1) { photoIdx++; track.scrollBy({ left:  track.clientWidth, behavior: 'smooth' }); } };
-      // clicking an image opens main carousel
-      photosEl.querySelectorAll('img').forEach((img, i) => {
-        img.onclick = () => { openImageCarousel(t.$id); };
-      });
+      const prevBtn2 = document.getElementById('td-prev');
+      const nextBtn2 = document.getElementById('td-next');
+      if (prevBtn2) prevBtn2.onclick = () => { if (photoIdx > 0) { photoIdx--; track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' }); } };
+      if (nextBtn2) nextBtn2.onclick = () => { if (photoIdx < imgs.length-1) { photoIdx++; track.scrollBy({ left:  track.clientWidth, behavior: 'smooth' }); } };
+      photosEl.querySelectorAll('img').forEach(() => { /* click opens full carousel with type=initial */ });
+      photosEl.querySelectorAll('img').forEach(img => { img.onclick = () => openImageCarousel(t.$id, 'initial'); });
     } else {
       photosContainer.style.display = 'none';
       photosEl.innerHTML = '';
+    }
+
+    // Repair Proof Photos (proofUrls)
+    let proofContainer = document.getElementById('td-proof-container');
+    if (!proofContainer) {
+      proofContainer = document.createElement('div');
+      proofContainer.id = 'td-proof-container';
+      proofContainer.style.marginBottom = '8px';
+      photosContainer.parentNode.insertBefore(proofContainer, photosContainer.nextSibling);
+    }
+    if (t.proofUrls && t.proofUrls.length > 0) {
+      proofContainer.style.display = 'block';
+      proofContainer.innerHTML = `
+        <div style="font-size:.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.07em; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+          <span class="material-icons-outlined" style="font-size:14px;">verified</span> Repair Proof Photos
+        </div>
+        <div id="td-proof-photos" style="position:relative; border-radius:12px; overflow:hidden; border:1px solid rgba(16,185,129,.25); box-shadow:0 4px 12px rgba(0,0,0,.2);">
+          <div id="td-proof-track" style="display:flex; overflow-x:hidden; scroll-behavior:smooth; width:100%;">
+            ${t.proofUrls.map(url => `<img src="${url}" style="flex:0 0 100%; width:100%; height:240px; object-fit:cover; cursor:pointer;" />`).join('')}
+          </div>
+          ${t.proofUrls.length > 1 ? `
+            <button id="td-proof-prev" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;" >
+              <span class="material-icons-outlined" style="font-size:18px;">chevron_left</span>
+            </button>
+            <button id="td-proof-next" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
+              <span class="material-icons-outlined" style="font-size:18px;">chevron_right</span>
+            </button>` : ''}
+        </div>
+      `;
+      const proofTrack = document.getElementById('td-proof-track');
+      let proofIdx = 0;
+      const pp = document.getElementById('td-proof-prev');
+      const pn = document.getElementById('td-proof-next');
+      if (pp) pp.onclick = () => { if (proofIdx > 0) { proofIdx--; proofTrack.scrollBy({ left: -proofTrack.clientWidth, behavior: 'smooth' }); } };
+      if (pn) pn.onclick = () => { if (proofIdx < t.proofUrls.length-1) { proofIdx++; proofTrack.scrollBy({ left: proofTrack.clientWidth, behavior: 'smooth' }); } };
+      document.querySelectorAll('#td-proof-photos img').forEach(img => { img.onclick = () => openImageCarousel(t.$id, 'proof'); });
+    } else {
+      proofContainer.style.display = 'none';
+      proofContainer.innerHTML = '';
     }
 
     document.getElementById('ticket-details-overlay').classList.add('open');
