@@ -10,49 +10,49 @@ export function renderDashboardPage() {
       
       <!-- Top Metrics Row -->
       <div class="metrics-grid">
-        <div class="metric-card pop-in-active">
-          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Total Revenue</span>
-            <span class="material-icons-outlined" style="font-size:2rem; width:48px; height:48px; display:flex; align-items:center; justify-content:center; color:var(--accent-blue); border-radius:12px;">account_balance_wallet</span>
+        <div class="metric-card pop-in-active" style="display:flex; align-items:center; gap:20px; padding:16px 20px;">
+          <span class="material-icons-outlined" style="font-size:2.8rem; color:var(--accent-blue);">account_balance_wallet</span>
+          <div style="flex:1;">
+            <div class="metric-title" style="margin-bottom:4px;">Total Revenue</div>
+            <div class="metric-value font-bold" id="stat-collected" style="font-size:1.6rem; margin-bottom:2px;">—</div>
+            <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+12.4% <span style="color: var(--text-muted);">this month</span></div>
           </div>
-          <div class="metric-value font-bold" id="stat-collected">—</div>
-          <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+12.4% <span style="color: var(--text-muted);">this month</span></div>
         </div>
         
-        <div class="metric-card pop-in-active" style="animation-delay: 0.1s;">
-          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Active Customers</span>
-            <span class="material-icons-outlined" style="font-size:2rem; width:48px; height:48px; display:flex; align-items:center; justify-content:center; color:var(--accent-emerald); border-radius:12px;">groups</span>
+        <div class="metric-card pop-in-active" style="animation-delay: 0.1s; display:flex; align-items:center; gap:20px; padding:16px 20px;">
+          <span class="material-icons-outlined" style="font-size:2.8rem; color:var(--accent-emerald);">groups</span>
+          <div style="flex:1;">
+            <div class="metric-title" style="margin-bottom:4px;">Active Customers</div>
+            <div class="metric-value-wrapper" style="margin:0 0 2px 0;">
+              <div class="metric-value font-bold" id="stat-active" style="font-size:1.6rem;">—</div>
+              <div class="metric-denominator">/ <span id="stat-customers">—</span> Total</div>
+            </div>
+            <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+4.1% <span style="color: var(--text-muted);">this month</span></div>
           </div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-active">—</div>
-            <div class="metric-denominator">/ <span id="stat-customers">—</span> Total</div>
-          </div>
-          <div class="metric-sub text-xs" style="color: var(--accent-emerald);">+4.1% <span style="color: var(--text-muted);">this month</span></div>
         </div>
         
-        <div class="metric-card pop-in-active" style="animation-delay: 0.2s;">
-          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Unpaid Bills</span>
-            <span class="material-icons-outlined" style="font-size:2rem; width:48px; height:48px; display:flex; align-items:center; justify-content:center; color:#F97316; border-radius:12px;">receipt_long</span>
+        <div class="metric-card pop-in-active" style="animation-delay: 0.2s; display:flex; align-items:center; gap:20px; padding:16px 20px;">
+          <span class="material-icons-outlined" style="font-size:2.8rem; color:#F97316;">receipt_long</span>
+          <div style="flex:1;">
+            <div class="metric-title" style="margin-bottom:4px;">Unpaid Bills</div>
+            <div class="metric-value-wrapper" style="margin:0 0 2px 0;">
+              <div class="metric-value font-bold" id="stat-unpaid" style="font-size:1.6rem;">—</div>
+              <div class="metric-denominator">/ <span id="stat-overdue">—</span> Overdue</div>
+            </div>
+            <div class="metric-sub text-xs" style="color: var(--accent-blue);">Unpaid Collections</div>
           </div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-unpaid">—</div>
-            <div class="metric-denominator">/ <span id="stat-overdue">—</span> Overdue</div>
-          </div>
-          <div class="metric-sub text-xs" style="color: var(--accent-blue);">Unpaid Collections</div>
         </div>
 
-        <div class="metric-card pop-in-active" style="animation-delay: 0.3s;">
-          <div class="metric-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Staff Overview</span>
-            <span class="material-icons-outlined" style="font-size:2rem; width:48px; height:48px; display:flex; align-items:center; justify-content:center; color:#8B5CF6; border-radius:12px;">engineering</span>
+        <div class="metric-card pop-in-active" style="animation-delay: 0.3s; display:flex; align-items:center; gap:20px; padding:16px 20px;">
+          <span class="material-icons-outlined" style="font-size:2.8rem; color:#8B5CF6;">engineering</span>
+          <div style="flex:1;">
+            <div class="metric-title" style="margin-bottom:4px;">Staff Overview</div>
+            <div class="metric-value-wrapper" style="margin:0 0 2px 0;">
+              <div class="metric-value font-bold" id="stat-collectors" style="font-size:1.6rem;">—</div>
+              <div class="metric-denominator">Collectors <span style="margin:0 4px">•</span> <span id="stat-technicians">—</span> Techs</div>
+            </div>
+            <div class="metric-sub text-xs" style="color: var(--text-muted);">Field Operations</div>
           </div>
-          <div class="metric-value-wrapper">
-            <div class="metric-value font-bold" id="stat-collectors">—</div>
-            <div class="metric-denominator">Collectors <span style="margin:0 4px">•</span> <span id="stat-technicians">—</span> Techs</div>
-          </div>
-          <div class="metric-sub text-xs" style="color: var(--text-muted);">Field Operations</div>
         </div>
       </div>
 
