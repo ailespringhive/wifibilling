@@ -1016,10 +1016,7 @@
             </tr>`;
         }).join('');
 
-        // Re-attach action listeners after every render
-        tbody.querySelectorAll('[data-notes]').forEach(b => b.addEventListener('click', () => openNotesModal(b.dataset.notes)));
-        tbody.querySelectorAll('[data-edit]').forEach(b  => b.addEventListener('click', () => openEditModal(b.dataset.edit)));
-        tbody.querySelectorAll('[data-del]').forEach(b   => b.addEventListener('click', () => confirmDelete(b.dataset.del)));
+        // Action listeners are handled via event delegation below (no per-button listeners needed)
       }
 
       // notify about new arrivals (silent poll only)
@@ -1309,12 +1306,25 @@
   carouselPrevBtn.addEventListener('click', () => { if (currentCarouselIdx > 0) { currentCarouselIdx--; updateCarouselView(); } });
   carouselNextBtn.addEventListener('click', () => { if (currentCarouselIdx < carouselImages.length - 1) { currentCarouselIdx++; updateCarouselView(); } });
 
-  // Attach dynamic clicks to the newly created buttons inside the table body!
+  // Unified tbody event delegation — handles carousel, notes, edit, delete, and row click for ticket details
   document.getElementById('tbody').addEventListener('click', (e) => {
-    const btn = e.target.closest('.open-carousel-btn');
-    if (btn) {
-      openImageCarousel(btn.dataset.ticketId);
-    }
+    // Carousel
+    const carouselBtn = e.target.closest('.open-carousel-btn');
+    if (carouselBtn) { openImageCarousel(carouselBtn.dataset.ticketId); return; }
+    // Notes
+    const notesBtn = e.target.closest('[data-notes]');
+    if (notesBtn) { openNotesModal(notesBtn.dataset.notes); return; }
+    // Edit
+    const editBtn = e.target.closest('[data-edit]');
+    if (editBtn) { openEditModal(editBtn.dataset.edit); return; }
+    // Delete
+    const delBtn = e.target.closest('[data-del]');
+    if (delBtn) { confirmDelete(delBtn.dataset.del); return; }
+    // Proof link (do nothing, let it bubble naturally)
+    if (e.target.closest('.proof-link')) return;
+    // Row click → Ticket Details
+    const row = e.target.closest('tr[data-row-id]');
+    if (row) openTicketDetails(row.dataset.rowId);
   });
 
   /* ── Admin Login button — smart redirect ── */
@@ -1421,13 +1431,6 @@
   document.getElementById('close-ticket-details-footer').addEventListener('click', _closeTD);
   document.getElementById('ticket-details-overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('ticket-details-overlay')) _closeTD();
-  });
-
-  // Make table rows clickable (but not when clicking action buttons)
-  document.getElementById('tbody').addEventListener('click', e => {
-    if (e.target.closest('.act-btn, .open-carousel-btn, .proof-link')) return;
-    const row = e.target.closest('tr[data-row-id]');
-    if (row) openTicketDetails(row.dataset.rowId);
   });
 
   /* ═══════════════════════════════════════════
