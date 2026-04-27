@@ -1037,23 +1037,38 @@ export function initTicketsPage(services, navigateFn) {
   const notesIdInput = document.getElementById('notes-ticket-id');
 
   function openNotesModal(ticketId) {
-    const ticket = allTickets.find(t => t.$id === ticketId);
-    if (!ticket) return;
-    notesIdInput.value = ticket.$id;
-    notesTextArea.value = ticket.notes || '';
-    
-    // Update label to feature the specific technician's name
-    const techName = ticket.technicianName || 'Unassigned Technician';
-    document.getElementById('notes-modal-label').textContent = `${techName} & Admin Exchange`;
-    
-    // Mark as read in Local Storage immediately upon opening
-    if (typeof ticket.notes === 'string' && ticket.notes !== 'null') {
-      localStorage.setItem('ticket_note_read_' + ticket.$id, ticket.notes);
-      const dot = document.querySelector(`button[data-notes="${ticket.$id}"] .red-dot-indicator`);
-      if (dot) dot.remove();
+    try {
+      const ticket = allTickets.find(t => t.$id === ticketId);
+      if (!ticket) {
+        console.error('Ticket not found for notes:', ticketId);
+        return;
+      }
+      notesIdInput.value = ticket.$id;
+      notesTextArea.value = ticket.notes || '';
+      
+      const techName = ticket.technicianName || 'Unassigned Technician';
+      document.getElementById('notes-modal-label').textContent = `${techName} & Admin Exchange`;
+      
+      if (typeof ticket.notes === 'string' && ticket.notes !== 'null') {
+        localStorage.setItem('ticket_note_read_' + ticket.$id, ticket.notes);
+        // Safe dot removal
+        const btns = document.querySelectorAll('button[data-notes]');
+        btns.forEach(btn => {
+          if (btn.dataset.notes === ticket.$id) {
+            const dot = btn.querySelector('.red-dot-indicator');
+            if (dot) dot.remove();
+          }
+        });
+      }
+      
+      if (notesModal) {
+        notesModal.classList.add('active');
+      } else {
+        console.error('notesModal element not found!');
+      }
+    } catch (error) {
+      console.error('Error opening notes modal:', error);
     }
-    
-    notesModal.classList.add('active');
   }
 
   function closeNotesModal() {
