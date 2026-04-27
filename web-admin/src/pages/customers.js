@@ -307,10 +307,8 @@ export function initCustomersPage(services, navigateFn) {
       const response = await services.collector.getAll(50, 0);
       allCollectors = response.documents || [];
     } catch (e) {
-      allCollectors = [
-        { $id: 'col1', id: 'col1', firstName: 'Ricardo', lastName: 'Mendoza', userId: 'col_usr1', role: 'collector' },
-        { $id: 'col2', id: 'col2', firstName: 'Fernando', lastName: 'Aquino', userId: 'col_usr2', role: 'technician' },
-      ];
+      console.error('Failed to load collectors:', e);
+      allCollectors = [];
     }
 
     const technicians = allCollectors.filter(c => c.role === 'technician');

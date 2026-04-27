@@ -298,7 +298,8 @@ export function initCollectorsPage(services, navigateFn) {
       allCollectors = response.documents.filter(c => c.role === 'collector');
       renderCollectorTable(allCollectors);
     } catch (error) {
-      allCollectors = getDemoCollectors();
+      console.error('Failed to load collectors:', error);
+      allCollectors = [];
       renderCollectorTable(allCollectors);
     }
   }
@@ -430,11 +431,4 @@ function hashCode(str) {
   return Math.abs(hash % 360);
 }
 
-function getDemoCollectors() {
-  return [
-    { id: 'c1', $id: 'c1', firstName: 'Ricardo', lastName: 'Mendoza', phone: '09171112233', email: 'rico@email.com', address: '100 Ayala Ave', barangay: 'Brgy. San Lorenzo', city: 'Makati', province: 'Metro Manila', createdAt: '2026-01-05', assignedCount: 8 },
-    { id: 'c2', $id: 'c2', firstName: 'Fernando', lastName: 'Aquino', phone: '09182223344', email: 'fernando@email.com', address: '200 Ortigas Blvd', barangay: 'Brgy. Ugong', city: 'Pasig', province: 'Metro Manila', createdAt: '2026-01-20', assignedCount: 6 },
-    { id: 'c3', $id: 'c3', firstName: 'Lorna', lastName: 'Bautista', phone: '09193334455', email: '', address: '300 Shaw Blvd', barangay: 'Brgy. Wack-Wack', city: 'Mandaluyong', province: 'Metro Manila', createdAt: '2026-02-15', assignedCount: 10 },
-    { id: 'c4', $id: 'c4', firstName: 'Dennis', lastName: 'Torres', phone: '09204445566', email: 'dennis.t@email.com', address: '400 Taft Ave', barangay: 'Brgy. Paco', city: 'Manila', province: 'Metro Manila', createdAt: '2026-03-01', assignedCount: 5 },
-  ];
-}
+// Demo data removed — always use real Appwrite data

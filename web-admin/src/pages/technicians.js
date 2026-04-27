@@ -297,7 +297,8 @@ export function initTechniciansPage(services, navigateFn) {
       allTechnicians = response.documents.filter(c => c.role === 'technician');
       renderTechnicianTable(allTechnicians);
     } catch (error) {
-      allTechnicians = getDemoTechnicians();
+      console.error('Failed to load technicians:', error);
+      allTechnicians = [];
       renderTechnicianTable(allTechnicians);
     }
   }
@@ -430,8 +431,4 @@ function hashCode(str) {
   return Math.abs(hash % 360);
 }
 
-function getDemoTechnicians() {
-  return [
-    { id: 't1', $id: 't1', firstName: 'Juan', lastName: 'Tech', phone: '09121112233', email: 'tech1@email.com', address: '100 Repair Ave', barangay: 'Brgy. Fix', city: 'Makati', province: 'Metro Manila', createdAt: '2026-02-05', role: 'technician' },
-  ];
-}
+// Demo data removed — always use real Appwrite data

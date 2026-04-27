@@ -5,34 +5,50 @@ export const CustomerService = {
    * Get all customers
    */
   async getAll(limit = 50, offset = 0, search = '') {
-    const queryStrings = [
-      `equal("role", ["customer"])`,
-      `limit(${limit})`,
-      `offset(${offset})`,
-      `orderDesc("$createdAt")`,
-    ];
-    if (search) {
-      queryStrings.push(`search("firstName", "${search}")`);
-    }
+    const buildQueries = (withOrder = true) => {
+      const q = [Query.equal('role', 'customer'), Query.limit(limit), Query.offset(offset)];
+      if (withOrder) q.push(Query.orderDesc('$createdAt'));
+      if (search) q.push(Query.search('firstName', search));
+      return q;
+    };
+    const buildQueryStrings = (withOrder = true) => {
+      const q = [`equal("role", ["customer"])`, `limit(${limit})`, `offset(${offset})`];
+      if (withOrder) q.push(`orderDesc("$createdAt")`);
+      if (search) q.push(`search("firstName", "${search}")`);
+      return q;
+    };
+
+    // Attempt 1: Client SDK with ordering
     try {
-      const queries = [
-        Query.equal('role', 'customer'),
-        Query.limit(limit),
-        Query.offset(offset),
-        Query.orderDesc('$createdAt'),
-      ];
-      if (search) {
-        queries.push(Query.search('firstName', search));
-      }
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        COLLECTIONS.USERS_PROFILE,
-        queries
-      );
+      return await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS_PROFILE, buildQueries(true));
+    } catch (e1) {
+      console.warn('Customer getAll (SDK+order) failed:', e1.message);
+    }
+
+    // Attempt 2: Client SDK without ordering (missing index fallback)
+    try {
+      const response = await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS_PROFILE, buildQueries(false));
+      response.documents.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
       return response;
-    } catch (error) {
-      console.warn('Client SDK listDocuments failed, using API bypass:', error.message);
-      return await apiBypass.listDocuments(COLLECTIONS.USERS_PROFILE, queryStrings);
+    } catch (e2) {
+      console.warn('Customer getAll (SDK) failed:', e2.message);
+    }
+
+    // Attempt 3: API bypass with ordering
+    try {
+      return await apiBypass.listDocuments(COLLECTIONS.USERS_PROFILE, buildQueryStrings(true));
+    } catch (e3) {
+      console.warn('Customer getAll (bypass+order) failed:', e3.message);
+    }
+
+    // Attempt 4: API bypass without ordering
+    try {
+      const response = await apiBypass.listDocuments(COLLECTIONS.USERS_PROFILE, buildQueryStrings(false));
+      if (response.documents) response.documents.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
+      return response;
+    } catch (e4) {
+      console.warn('Customer getAll (bypass) failed:', e4.message);
+      throw e4;
     }
   },
 
