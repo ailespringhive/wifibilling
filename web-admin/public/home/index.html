@@ -130,7 +130,7 @@
     /* Metrics Grid */
     .metrics-grid {
       position: absolute;
-      bottom: 80px;
+      bottom: 220px;
       right: 40px;
       display: flex;
       gap: 20px;
@@ -432,13 +432,25 @@
           const rev = parsed.totalCollectedAmount;
           document.getElementById('hm-stat-revenue').textContent = '$' + rev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
-        // Fallback for Tickets if not exactly in cache
-        if (parsed.activeCount !== undefined) {
-          // You could calculate this accurately if you stored tickets_cache, but this defaults to a generic synced value or you can leave it.
-          document.getElementById('hm-stat-tickets').textContent = (parsed.statusCounts?.unpaid || 126).toString();
-        }
       }
-    } catch(e) { console.error('Error syncing dashboard metrics:', e); }
+    } catch(e) { console.error('Error syncing dashboard cache:', e); }
+
+    // Live fetch for tickets
+    try {
+      fetch('https://appwrite.springhive.co/v1/databases/wifi_billing_db/collections/repair_tickets/documents?queries[]={"method":"limit","values":[1]}', {
+        headers: {
+          'X-Appwrite-Project': '69c4840a0022d6824d83',
+          'X-Appwrite-Key': 'standard_b650468f4a776eac08a7d0f31aea79b5de528e970e85714564a8d0480a9cffc6d0c947aaeaecc2a2011b98c97f90515cbf5f9e16d3cd6230d259d1e91d885a1de14d5c1cb20da10930d49bcc3f3cb7d3f4a5011619cba4e42d533abefbc60435de9ab782c82e59704a44ea08b88f9babd5a6edb83fb50e2bc6f4cb33e1069b6c'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.total !== undefined) {
+          document.getElementById('hm-stat-tickets').textContent = data.total.toLocaleString();
+        }
+      })
+      .catch(err => console.error('Error fetching tickets:', err));
+    } catch(e) {}
 
   </script>
 </body>
