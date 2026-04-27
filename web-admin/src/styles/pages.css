@@ -388,23 +388,6 @@
   pointer-events: none;
 }
 
-.metric-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--border-color);
-  opacity: 0.9;
-}
-
-/* Individual card top-border gradients */
-.metric-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent-blue), transparent); }
-.metric-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent-emerald), transparent); }
-.metric-card:nth-child(3)::before { background: linear-gradient(90deg, #F97316, transparent); }
-.metric-card:nth-child(4)::before { background: linear-gradient(90deg, #8B5CF6, transparent); }
-
 .metric-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
