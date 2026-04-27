@@ -909,6 +909,8 @@ export function initTicketsPage(services, navigateFn) {
 
     const notesBtn = e.target.closest('[data-notes]');
     if (notesBtn) {
+      e.preventDefault();
+      e.stopPropagation();
       openNotesModal(notesBtn.dataset.notes);
       return;
     }
@@ -1038,6 +1040,7 @@ export function initTicketsPage(services, navigateFn) {
 
   function openNotesModal(ticketId) {
     try {
+      alert("openNotesModal called with: " + ticketId);
       const ticket = allTickets.find(t => t.$id === ticketId);
       if (!ticket) {
         console.error('Ticket not found for notes:', ticketId);
@@ -1062,11 +1065,14 @@ export function initTicketsPage(services, navigateFn) {
       }
       
       if (notesModal) {
+        alert("About to open modal!");
         notesModal.classList.add('active');
       } else {
+        alert("notesModal is null!");
         console.error('notesModal element not found!');
       }
     } catch (error) {
+      alert("Error: " + error.message);
       console.error('Error opening notes modal:', error);
     }
   }
