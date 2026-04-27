@@ -87,12 +87,13 @@
       color: white; text-decoration: none;
       font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 700;
     }
-    .brand-icon { width: 32px; height: 32px; }
+    .brand-icon { color: white; font-size: 36px; }
     
     .nav-links { display: flex; gap: 30px; align-items: center; }
     .nav-links a { color: var(--text-main); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
     .nav-links a:hover { color: var(--teal-light); }
-    .btn-login { background: white; color: var(--bg-base); padding: 10px 24px; border-radius: 8px; font-weight: 700; margin-left: 10px; }
+    a.btn-login { background: white; color: #04161a; padding: 10px 24px; border-radius: 8px; font-weight: 700; margin-left: 10px; transition: transform 0.2s; }
+    a.btn-login:hover { color: #04161a; transform: translateY(-2px); }
 
     /* Hero */
     .hero {
@@ -197,12 +198,12 @@
     <!-- Navbar -->
     <nav class="navbar">
       <a href="#" class="brand">
-        <img src="/favicon.svg" alt="Logo" class="brand-icon">
+        <span class="material-icons-outlined brand-icon">wifi</span>
         WiFi Billing
       </a>
       <div class="nav-links">
         <a href="/report/">Support</a>
-        <a href="/" class="btn-login">Login / Sign Up</a>
+        <a href="/" class="btn-login">Login</a>
       </div>
     </nav>
 
