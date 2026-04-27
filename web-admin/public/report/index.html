@@ -1607,6 +1607,15 @@
     if (topbar) topbar.style.display = 'none';
     const mainContainer = document.querySelector('.container');
     if (mainContainer) mainContainer.style.marginTop = '0';
+    
+    // Make backgrounds transparent so it blends with homepage
+    const style = document.createElement('style');
+    style.innerHTML = `
+      html, body { background: transparent !important; }
+      body::before { display: none !important; }
+      .card { background: rgba(15, 20, 40, 0.4) !important; backdrop-filter: blur(12px); border-color: rgba(255,255,255,0.08) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important; }
+    `;
+    document.head.appendChild(style);
   }
 
 </script>
