@@ -3,79 +3,71 @@
    ============================================================ */
 
 /* ====================== LOGIN PAGE ====================== */
-.login-page {
+.login-split-page {
+  display: flex;
   min-height: 100vh;
+  background: #0f172a; /* Deep dark background for the right side */
+}
+
+/* Left Side Illustration */
+.login-illustration {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 40px;
+}
+
+.login-illustration::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.8) 100%);
+}
+
+.login-quote {
+  position: relative;
+  z-index: 10;
+  color: white;
+  max-width: 500px;
+}
+
+.login-quote p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  font-weight: 500;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+/* Right Side Form */
+.login-form-side {
+  flex: 0 0 500px; /* Fixed width for the form side */
+  background: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
-  padding: var(--space-md);
   position: relative;
-  overflow: hidden;
 }
 
-/* Animated gradient orbs */
-.login-page::before {
-  content: '';
-  position: absolute;
-  width: 700px;
-  height: 700px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
-  top: -300px;
-  right: -200px;
-  pointer-events: none;
-  animation: floatOrb 8s ease-in-out infinite;
-}
-
-.login-page::after {
-  content: '';
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
-  bottom: -250px;
-  left: -200px;
-  pointer-events: none;
-  animation: floatOrb 10s ease-in-out infinite reverse;
-}
-
-@keyframes floatOrb {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-40px) scale(1.05); }
-}
-
-/* Animated dot grid background */
-.login-page .login-bg-dots {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, var(--border-color) 1px, transparent 1px);
-  background-size: 32px 32px;
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.login-card {
+.login-card-inner {
   width: 100%;
-  max-width: 420px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: var(--space-2xl) var(--space-xl);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
-  position: relative;
-  z-index: 1;
+  max-width: 380px;
+  padding: 40px;
   animation: loginCardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-[data-theme="dark"] .login-card {
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+@keyframes loginCardEntrance {
+  0% { transform: translateX(30px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
 }
 
-@keyframes loginCardEntrance {
-  0% { transform: translateY(30px) scale(0.95); opacity: 0; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+@media (max-width: 900px) {
+  .login-illustration { display: none; }
+  .login-form-side { flex: 1; }
 }
 
 /* Staggered field animation */

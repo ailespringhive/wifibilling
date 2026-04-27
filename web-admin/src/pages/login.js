@@ -3,71 +3,64 @@
  */
 export function renderLoginPage() {
   return `
-    <div class="login-page">
-      <div class="login-bg-dots"></div>
-      <div class="login-card">
+    <div class="login-split-page">
+      <div class="login-illustration" style="background-image: url('/login-bg.png');">
+        <div class="login-quote">
+          <p>"Connecting communities with reliable, fast internet—one installation at a time."</p>
+        </div>
+      </div>
+      
+      <div class="login-form-side">
         <!-- Public Ticket Portal Link -->
         <a href="/report/" class="login-public-ticket-btn" title="Submit a Repair Ticket">
           <span class="material-icons-outlined">confirmation_number</span>
         </a>
-        <style>
-          .login-public-ticket-btn {
-            position: absolute; top: 16px; right: 18px;
-            color: var(--text-muted); opacity: 0.6;
-            transition: all 0.25s ease; text-decoration: none;
-            display: flex; align-items: center; justify-content: center;
-            width: 44px; height: 44px; border-radius: 8px;
-            background: rgba(255,255,255,0.02); border: 1px solid transparent;
-          }
-          .login-public-ticket-btn .material-icons-outlined {
-            font-size: 28px !important;
-          }
-          .login-public-ticket-btn:hover {
-            opacity: 1; color: var(--blue);
-            background: rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.3);
-            transform: translateY(-1px);
-          }
-        </style>
-        <div class="login-brand">
-          <div class="brand-icon">
-            <div class="wifi-animated">
-              <div class="wifi-arc wifi-arc1"></div>
-              <div class="wifi-arc wifi-arc2"></div>
-              <div class="wifi-arc wifi-arc3"></div>
-              <div class="wifi-dot"></div>
+        
+        <div class="login-card-inner">
+          <div class="login-brand" style="text-align: left;">
+            <div class="brand-icon" style="margin: 0 0 24px 0;">
+              <div class="wifi-animated">
+                <div class="wifi-arc wifi-arc1"></div>
+                <div class="wifi-arc wifi-arc2"></div>
+                <div class="wifi-arc wifi-arc3"></div>
+                <div class="wifi-dot"></div>
+              </div>
             </div>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #f8fafc; margin-bottom: 8px;">Login to WiFi Billing</h2>
+            <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 32px;">Please provide your credentials to log in to your account.</p>
           </div>
-          <div class="login-3d-wrapper">
-            <div class="login-3d-text">
-              WiFi Billing
-              <div class="login-3d-layer">WiFi Billing</div>
-              <div class="login-3d-layer">WiFi Billing</div>
-              <div class="login-3d-layer">WiFi Billing</div>
-              <div class="login-3d-layer">WiFi Billing</div>
+
+          <div class="login-error" id="login-error"></div>
+
+          <form class="login-form" id="login-form">
+            <div class="form-group">
+              <label class="form-label" style="color:#cbd5e1; font-weight:500;">Email</label>
+              <input type="email" class="form-input" id="login-email" placeholder="name@example.com" required autocomplete="email" style="background:#1e293b; border-color:#334155; color:#f8fafc; padding:12px 16px;">
             </div>
-          </div>
-          <p>Sign in to your account</p>
-        </div>
+            
+            <div class="form-group">
+              <label class="form-label" style="color:#cbd5e1; font-weight:500;">Password</label>
+              <div class="password-input-wrapper" style="position:relative;">
+                <input type="password" class="form-input" id="login-password" placeholder="••••••••" required autocomplete="current-password" style="background:#1e293b; border-color:#334155; color:#f8fafc; padding:12px 16px; padding-right:40px;">
+                <span class="material-icons-outlined" id="toggle-password" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#64748b; font-size:20px;">visibility_off</span>
+              </div>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 32px; font-size: 0.85rem;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#94a3b8;">
+                <input type="checkbox" style="accent-color: #4f46e5; width:16px; height:16px; border-radius:4px; border:1px solid #334155;"> Remember me
+              </label>
+              <a href="#" style="color:#94a3b8; text-decoration:none;">Forgot password?</a>
+            </div>
 
-        <div class="login-error" id="login-error"></div>
+            <button type="submit" class="btn" id="login-submit" style="width: 100%; padding: 14px; font-size: 1rem; border-radius: 8px; font-weight:600; background:#4f46e5; color:white; border:none; transition:0.2s;">
+              Login
+            </button>
+          </form>
 
-        <form class="login-form" id="login-form">
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <input type="email" class="form-input" id="login-email" placeholder="Enter your email" required autocomplete="email">
+          <div style="text-align: center; margin-top: 32px; font-size: 0.85rem; color: #64748b;">
+            Admins & Collectors use the same login
           </div>
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-input" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
-          </div>
-          <button type="submit" class="btn btn-primary" id="login-submit">
-            Sign In
-          </button>
-        </form>
-
-        <div style="text-align: center; margin-top: 24px; font-size: 0.75rem; color: var(--text-muted);">
-          Admins & Collectors use the same login
         </div>
       </div>
     </div>
@@ -82,10 +75,25 @@ export function initLoginPage(onLogin) {
   const errorEl = document.getElementById('login-error');
   const submitBtn = document.getElementById('login-submit');
 
+  const togglePassword = document.getElementById('toggle-password');
+  const passwordInput = document.getElementById('login-password');
+  
+  if (togglePassword) {
+    togglePassword.addEventListener('click', () => {
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        togglePassword.textContent = 'visibility';
+      } else {
+        passwordInput.type = 'password';
+        togglePassword.textContent = 'visibility_off';
+      }
+    });
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
+    const password = passwordInput.value;
 
     if (!email || !password) {
       errorEl.textContent = 'Please fill in all fields.';
@@ -94,7 +102,7 @@ export function initLoginPage(onLogin) {
     }
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner" style="width:18px;height:18px;border-width:2px;"></span> Signing in...';
+    submitBtn.innerHTML = '<span class="spinner" style="width:18px;height:18px;border-width:2px;"></span> Logging in...';
     errorEl.classList.remove('show');
 
     try {
@@ -103,7 +111,7 @@ export function initLoginPage(onLogin) {
       errorEl.textContent = error.message || 'Login failed. Please try again.';
       errorEl.classList.add('show');
       submitBtn.disabled = false;
-      submitBtn.innerHTML = 'Sign In';
+      submitBtn.innerHTML = 'Login';
     }
   });
 }
