@@ -4,7 +4,8 @@
 export function renderLoginPage() {
   return `
     <div class="login-split-page">
-      <div class="login-illustration" style="background-image: url('/login-bg.png');">
+      <div class="login-split-container">
+        <div class="login-illustration" style="background-image: url('/login-bg.png');">
         <div class="login-quote">
           <p>"Connecting communities with reliable, fast internet—one installation at a time."</p>
         </div>
@@ -62,6 +63,7 @@ export function renderLoginPage() {
             Admins & Collectors use the same login
           </div>
         </div>
+      </div>
       </div>
     </div>
   `;

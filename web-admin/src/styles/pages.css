@@ -2,11 +2,25 @@
    Page-Specific Styles v2.0 — Premium Pages & Animations
    ============================================================ */
 
-/* ====================== LOGIN PAGE ====================== */
 .login-split-page {
   display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 100vh;
-  background: #0f172a; /* Deep dark background for the right side */
+  background: var(--bg-primary); /* Use the main theme background */
+  padding: 40px;
+}
+
+.login-split-container {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  height: 600px;
+  background: #0f172a;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 /* Left Side Illustration */
@@ -45,7 +59,7 @@
 
 /* Right Side Form */
 .login-form-side {
-  flex: 0 0 500px; /* Fixed width for the form side */
+  flex: 0 0 400px; /* Adjusted to fit the 900px total width (500px left, 400px right) */
   background: #0f172a;
   display: flex;
   align-items: center;
@@ -55,8 +69,8 @@
 
 .login-card-inner {
   width: 100%;
-  max-width: 380px;
-  padding: 40px;
+  max-width: 360px;
+  padding: 32px;
   animation: loginCardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
