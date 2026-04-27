@@ -763,7 +763,7 @@
 
 <!-- ── Ticket Details Modal ── -->
 <div class="modal-overlay" id="ticket-details-overlay" role="dialog" aria-modal="true">
-  <div class="modal" style="max-width:580px; padding:0; overflow:hidden;">
+  <div class="modal" style="max-width:580px; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:90vh;">
     <!-- Header -->
     <div style="padding:24px 28px; border-bottom:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.025); display:flex; align-items:center; justify-content:space-between;">
       <div style="display:flex; align-items:center; gap:16px;">
@@ -779,7 +779,7 @@
     </div>
 
     <!-- Body -->
-    <div style="padding:28px; max-height:72vh; overflow-y:auto; line-height:1.6;">
+    <div style="padding:28px; flex:1; overflow-y:auto; line-height:1.6;">
 
       <!-- Status + Priority + Technician -->
       <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:14px; padding:20px; margin-bottom:24px;">
@@ -1430,8 +1430,11 @@
   document.getElementById('close-ticket-details').addEventListener('click', _closeTD);
   document.getElementById('close-ticket-details-footer').addEventListener('click', _closeTD);
   document.getElementById('ticket-details-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('ticket-details-overlay')) _closeTD();
+    // Only close if click is on the dark backdrop, not inside the modal itself
+    if (!e.target.closest('.modal')) _closeTD();
   });
+  // Prevent clicks inside the modal from reaching the overlay
+  document.querySelector('#ticket-details-overlay .modal').addEventListener('click', e => e.stopPropagation());
 
   /* ═══════════════════════════════════════════
      ANIMATION ENGINE — mirrors admin dashboard
