@@ -15,12 +15,16 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     
     :root {
-      --bg-base: #031518;
-      --card-bg: #061c21;
-      --teal-light: #16b49e;
-      --teal-dark: #094741;
-      --text-main: #ffffff;
-      --text-muted: #9dbbbb;
+      --bg-base: #f8f7f4;
+      --card-bg: #ffffff;
+      --teal-light: #4f46e5;
+      --teal-dark: #3730a3;
+      --text-main: #111827;
+      --text-muted: #4b5563;
+      --accent-blue: #4f46e5;
+      --accent-emerald: #4f46e5;
+      --accent-rose: #f43f5e;
+      --border-color: rgba(0, 0, 0, 0.08);
     }
 
     body {
@@ -36,7 +40,7 @@
       top: 0; left: 0; width: 100%; height: 100vh;
       z-index: -1;
       overflow: hidden;
-      background: radial-gradient(circle at top right, #0a403a 0%, var(--bg-base) 70%);
+      background: radial-gradient(circle at top right, #ffffff 0%, var(--bg-base) 70%);
     }
 
     /* SVG Waves */
@@ -51,7 +55,7 @@
     .dotted-texture {
       position: absolute;
       top: 0; right: 0; width: 60%; height: 800px;
-      background-image: radial-gradient(rgba(26, 188, 156, 0.4) 1px, transparent 1px);
+      background-image: radial-gradient(rgba(79, 70, 229, 0.15) 1px, transparent 1px);
       background-size: 15px 15px;
       mask-image: radial-gradient(ellipse at center right, black 0%, transparent 60%);
       -webkit-mask-image: radial-gradient(ellipse at center right, black 0%, transparent 60%);
@@ -98,23 +102,23 @@
     .wifi-animated { position: relative; width: 32px; height: 32px; }
     .wifi-arc {
       position: absolute; left: 50%; transform: translateX(-50%);
-      border: 3px solid transparent; border-top-color: white; border-radius: 50%;
+      border: 3px solid transparent; border-top-color: var(--teal-light); border-radius: 50%;
       opacity: 0; animation: wifi-fade 1.5s infinite;
     }
     .wifi-arc1 { width: 32px; height: 32px; top: 2px; animation-delay: 0s; }
     .wifi-arc2 { width: 22px; height: 22px; top: 7px; animation-delay: 0.3s; }
     .wifi-arc3 { width: 12px; height: 12px; top: 12px; animation-delay: 0.6s; }
     .wifi-dot {
-      position: absolute; width: 6px; height: 6px; background: white;
+      position: absolute; width: 6px; height: 6px; background: var(--teal-light);
       border-radius: 50%; left: 50%; transform: translateX(-50%); top: 17px;
     }
     @keyframes wifi-fade { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
     
     .nav-links { display: flex; gap: 30px; align-items: center; }
-    .nav-links a { color: var(--text-main); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a { color: var(--text-main); text-decoration: none; font-size: 0.95rem; font-weight: 600; transition: color 0.2s; }
     .nav-links a:hover { color: var(--teal-light); }
-    a.btn-login { background: white; color: #04161a; padding: 10px 24px; border-radius: 8px; font-weight: 700; margin-left: 10px; transition: transform 0.2s; }
-    a.btn-login:hover { color: #04161a; transform: translateY(-2px); }
+    a.btn-login { background: var(--text-main); color: white; padding: 10px 24px; border-radius: 8px; font-weight: 700; margin-left: 10px; transition: transform 0.2s; }
+    a.btn-login:hover { color: white; transform: translateY(-2px); background: #000; }
 
     /* Hero */
     .hero {
@@ -123,9 +127,10 @@
       position: relative;
       z-index: 10;
     }
-    .hero h1 { font-family: 'Outfit', sans-serif; font-size: 4.2rem; font-weight: 700; line-height: 1.1; margin-bottom: 24px; }
-    .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; line-height: 1.5; }
-    .btn-start { display: inline-block; background: white; color: var(--bg-base); padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; }
+    .hero h1 { font-family: 'Outfit', sans-serif; font-size: 4.2rem; font-weight: 800; line-height: 1.1; margin-bottom: 24px; color: var(--text-main); letter-spacing: -0.03em; }
+    .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; line-height: 1.5; font-weight: 500; }
+    .btn-start { display: inline-block; background: var(--teal-light); color: white; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
+    .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6); }
 
     /* Metrics Grid */
     .metrics-grid {
@@ -138,13 +143,13 @@
     }
     
     .metric-card {
-      background: rgba(15, 20, 40, 0.4);
+      background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(0, 0, 0, 0.05);
       border-radius: 16px;
       padding: 24px;
       min-width: 220px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
       position: relative;
       overflow: hidden;
     }
@@ -160,10 +165,10 @@
     
     .metric-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .metric-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    .metric-icon.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-    .metric-icon.purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
-    .metric-title { font-size: 0.95rem; color: #cbd5e1; font-weight: 500; }
-    .metric-value { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: white; letter-spacing: -0.02em; }
+    .metric-icon.blue { background: rgba(79, 70, 229, 0.15); color: var(--teal-light); }
+    .metric-icon.purple { background: rgba(79, 70, 229, 0.15); color: var(--teal-light); }
+    .metric-title { font-size: 0.95rem; color: var(--text-muted); font-weight: 600; }
+    .metric-value { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
 
     /* Public Pricing Cards */
     .public-pricing-grid {
@@ -173,32 +178,33 @@
     }
 
     .public-pricing-card {
-      background: rgba(15, 20, 40, 0.4);
+      background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(0,0,0,0.05);
       border-radius: 24px;
       padding: 32px;
       position: relative;
       overflow: hidden;
       transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
     }
     
     .public-pricing-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-      border-color: rgba(45, 212, 191, 0.3);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      border-color: rgba(79, 70, 229, 0.3);
     }
     
     .public-pricing-recommended {
-      border-color: rgba(45, 212, 191, 0.5);
-      background: linear-gradient(180deg, rgba(45, 212, 191, 0.1) 0%, rgba(15, 20, 40, 0.4) 100%);
+      border-color: rgba(79, 70, 229, 0.4);
+      background: linear-gradient(180deg, rgba(79, 70, 229, 0.05) 0%, rgba(255, 255, 255, 0.8) 100%);
     }
 
     .public-pricing-badge {
       position: absolute;
       top: 0; right: 32px;
-      background: var(--accent-emerald);
-      color: var(--bg-base);
+      background: var(--teal-light);
+      color: white;
       font-size: 0.75rem; font-weight: 700;
       padding: 6px 16px;
       border-radius: 0 0 8px 8px;
@@ -207,9 +213,9 @@
     .public-pricing-name {
       font-family: 'Outfit', sans-serif;
       font-size: 1.5rem;
-      font-weight: 600;
+      font-weight: 700;
       margin-bottom: 8px;
-      color: white;
+      color: var(--text-main);
     }
 
     .public-pricing-desc {
@@ -222,12 +228,12 @@
     .public-pricing-price {
       margin-bottom: 24px;
       padding-bottom: 24px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
     }
 
     .public-pricing-amount {
       font-family: 'Outfit', sans-serif;
-      font-size: 2.5rem; font-weight: 700; color: white;
+      font-size: 2.5rem; font-weight: 800; color: var(--text-main);
     }
 
     .public-pricing-period {
@@ -240,26 +246,27 @@
 
     .public-pricing-feature {
       display: flex; align-items: flex-start; gap: 12px;
-      margin-bottom: 12px; color: #cbd5e1; font-size: 0.95rem;
+      margin-bottom: 12px; color: var(--text-main); font-size: 0.95rem; font-weight: 500;
     }
 
     .public-pricing-btn {
       display: block; width: 100%; text-align: center;
       padding: 14px; border-radius: 12px;
-      font-weight: 600; text-decoration: none;
+      font-weight: 700; text-decoration: none;
       transition: all 0.2s;
     }
     
     .btn-secondary {
-      background: rgba(255,255,255,0.05); color: white;
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.03); color: var(--text-main);
+      border: 1px solid rgba(0,0,0,0.1);
     }
-    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    .btn-secondary:hover { background: rgba(0,0,0,0.06); }
     
     .btn-primary {
-      background: var(--accent-emerald); color: var(--bg-base);
+      background: var(--teal-light); color: white;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
     }
-    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5); }
 
     /* Layout Split */
     .layout-grid {
@@ -341,9 +348,9 @@
   <!-- Backgrounds -->
   <div class="bg-layer">
     <svg class="svg-waves" viewBox="0 0 1440 800" preserveAspectRatio="none">
-      <path fill="#083a35" d="M0,400 C300,600 600,200 1440,300 L1440,0 L0,0 Z"></path>
-      <path fill="#0c5a50" fill-opacity="0.6" d="M0,500 C400,600 700,100 1440,400 L1440,0 L0,0 Z"></path>
-      <path fill="#118070" fill-opacity="0.3" d="M0,600 C500,700 800,200 1440,500 L1440,0 L0,0 Z"></path>
+      <path fill="#e0e7ff" fill-opacity="0.5" d="M0,400 C300,600 600,200 1440,300 L1440,0 L0,0 Z"></path>
+      <path fill="#c7d2fe" fill-opacity="0.4" d="M0,500 C400,600 700,100 1440,400 L1440,0 L0,0 Z"></path>
+      <path fill="#a5b4fc" fill-opacity="0.2" d="M0,600 C500,700 800,200 1440,500 L1440,0 L0,0 Z"></path>
     </svg>
     <div class="dotted-texture"></div>
     <canvas id="particle-canvas"></canvas>
@@ -352,7 +359,7 @@
   <div class="container">
     <!-- Navbar -->
     <nav class="navbar">
-      <a href="#" class="brand">
+      <a href="#" class="brand" style="color: var(--text-main);">
         <div class="brand-icon">
           <div class="wifi-animated">
             <div class="wifi-arc wifi-arc1"></div>
@@ -405,8 +412,8 @@
 
   <section id="plans" style="max-width: 1400px; margin: 0 auto; padding: 100px 40px 40px; position: relative; z-index: 10;">
     <div style="text-align: center; margin-bottom: 60px;">
-      <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 700; color: white;">Internet Plans</h2>
-      <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px;">Choose the perfect speed for your connected lifestyle.</p>
+      <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">Internet Plans</h2>
+      <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px; font-weight: 500;">Choose the perfect speed for your connected lifestyle.</p>
     </div>
     
     <div id="hm-plans-grid" class="public-pricing-grid">
@@ -417,8 +424,8 @@
 
   <section id="support-section" style="max-width: 1400px; margin: 0 auto; padding: 40px; min-height: 100vh; position: relative; z-index: 10;">
     <div style="text-align: center; margin-bottom: 40px;">
-      <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 700;">Ticket Report</h2>
-      <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px;">Submit a ticket to report an issue or request an installation.</p>
+      <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">Ticket Report</h2>
+      <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px; font-weight: 500;">Submit a ticket to report an issue or request an installation.</p>
     </div>
     <iframe src="/report/?embed=true" style="width: 100%; height: 85vh; border: none; border-radius: 24px;"></iframe>
   </section>
@@ -470,9 +477,9 @@
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-        ctx.fillStyle = '#2dd4bf'; 
+        ctx.fillStyle = '#4f46e5'; 
         ctx.shadowBlur = 15;
-        ctx.shadowColor = '#2dd4bf';
+        ctx.shadowColor = '#4f46e5';
         ctx.fill();
         ctx.shadowBlur = 0; 
       }
@@ -498,7 +505,7 @@
           let dist = Math.sqrt(dx*dx + dy*dy);
           if (dist < mouse.radius) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(45, 212, 191, ${(1 - dist/mouse.radius) * 1})`;
+            ctx.strokeStyle = `rgba(79, 70, 229, ${(1 - dist/mouse.radius) * 1})`;
             ctx.lineWidth = 1.5;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(mouse.x, mouse.y);
@@ -513,7 +520,7 @@
           let dist = Math.sqrt(dx*dx + dy*dy);
           if (dist < 150) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(45, 212, 191, ${(1 - dist/150) * 0.8})`;
+            ctx.strokeStyle = `rgba(79, 70, 229, ${(1 - dist/150) * 0.8})`;
             ctx.lineWidth = 1;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
@@ -586,7 +593,7 @@
                  {text: 'Priority support', included: true}
                ];
              }
-             const fHTML = feats.map(f => `<li class="public-pricing-feature"><span class="material-icons-outlined" style="font-size:16px; color:${f.included ? 'var(--accent-emerald)' : 'var(--text-muted)'};">${f.included ? 'check_circle' : 'cancel'}</span><span ${!f.included?'style="opacity:0.5"':''}>${f.text}</span></li>`).join('');
+             const fHTML = feats.map(f => `<li class="public-pricing-feature"><span class="material-icons-outlined" style="font-size:16px; color:${f.included ? 'var(--teal-light)' : 'var(--text-muted)'};">${f.included ? 'check_circle' : 'cancel'}</span><span ${!f.included?'style="opacity:0.5"':''}>${f.text}</span></li>`).join('');
 
              return `<div class="public-pricing-card ${isRec ? 'public-pricing-recommended' : ''}">
                 ${isRec ? '<div class="public-pricing-badge">Most Popular</div>' : ''}
