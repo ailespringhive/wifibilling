@@ -708,7 +708,7 @@ export function initCustomersPage(services, navigateFn) {
   function renderCustomerTable(customers) {
     const tbody = document.getElementById('customers-tbody');
     if (!customers || customers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5">
+      tbody.innerHTML = `<tr><td colspan="6">
         <div class="empty-state">
           <div class="empty-icon"><span class="material-icons-outlined" style="font-size:3rem;">people</span></div>
           <div class="empty-title">No customers yet</div>
