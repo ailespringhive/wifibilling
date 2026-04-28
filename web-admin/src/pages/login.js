@@ -20,8 +20,8 @@ export function renderLoginPage() {
                 <div class="wifi-dot"></div>
               </div>
             </div>
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #111827; margin-bottom: 8px;">Welcome WiFi Billing</h2>
-            <p style="color: #4b5563; font-size: 0.95rem; margin-bottom: 32px;">Please provide your credentials to log in to your account.</p>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; color: #ffffff; margin-bottom: 8px; font-weight: 800;">Welcome WiFi Billing</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 32px;">Please provide your credentials to log in to your account.</p>
           </div>
 
           <div class="login-error" id="login-error"></div>

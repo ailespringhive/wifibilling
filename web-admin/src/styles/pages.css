@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: var(--bg-primary); /* Use the main theme background */
+  background: #0a0e1a !important; /* Fixed dark — never follows theme toggle */
   padding: 40px;
 }
 
