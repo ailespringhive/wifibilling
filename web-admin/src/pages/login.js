@@ -6,9 +6,7 @@ export function renderLoginPage() {
     <div class="login-split-page">
       <div class="login-split-container">
         <div class="login-illustration" style="background-image: url('/login-bg.png');">
-        <div class="login-quote">
-          <p>"Connecting communities with reliable, fast internet—one installation at a time."</p>
-        </div>
+
       </div>
       
       <div class="login-form-side">
@@ -22,31 +20,31 @@ export function renderLoginPage() {
                 <div class="wifi-dot"></div>
               </div>
             </div>
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #f8fafc; margin-bottom: 8px;">Login to WiFi Billing</h2>
-            <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 32px;">Please provide your credentials to log in to your account.</p>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #111827; margin-bottom: 8px;">Login to WiFi Billing</h2>
+            <p style="color: #4b5563; font-size: 0.95rem; margin-bottom: 32px;">Please provide your credentials to log in to your account.</p>
           </div>
 
           <div class="login-error" id="login-error"></div>
 
           <form class="login-form" id="login-form">
             <div class="form-group">
-              <label class="form-label" style="color:#cbd5e1; font-weight:500;">Email</label>
-              <input type="email" class="form-input" id="login-email" placeholder="name@example.com" required autocomplete="email" style="background:#1e293b; border-color:#334155; color:#f8fafc; padding:12px 16px;">
+              <label class="form-label" style="color:#4b5563; font-weight:500;">Email</label>
+              <input type="email" class="form-input" id="login-email" placeholder="name@example.com" required autocomplete="email" style="background:#ffffff; border-color:rgba(0,0,0,0.1); color:#111827; padding:12px 16px;">
             </div>
             
             <div class="form-group">
-              <label class="form-label" style="color:#cbd5e1; font-weight:500;">Password</label>
+              <label class="form-label" style="color:#4b5563; font-weight:500;">Password</label>
               <div class="password-input-wrapper" style="position:relative;">
-                <input type="password" class="form-input" id="login-password" placeholder="••••••••" required autocomplete="current-password" style="background:#1e293b; border-color:#334155; color:#f8fafc; padding:12px 16px; padding-right:40px;">
-                <span class="material-icons-outlined" id="toggle-password" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#64748b; font-size:20px;">visibility_off</span>
+                <input type="password" class="form-input" id="login-password" placeholder="••••••••" required autocomplete="current-password" style="background:#ffffff; border-color:rgba(0,0,0,0.1); color:#111827; padding:12px 16px; padding-right:40px;">
+                <span class="material-icons-outlined" id="toggle-password" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#4b5563; font-size:20px;">visibility_off</span>
               </div>
             </div>
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 32px; font-size: 0.85rem;">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#94a3b8;">
-                <input type="checkbox" style="accent-color: #4f46e5; width:16px; height:16px; border-radius:4px; border:1px solid #334155;"> Remember me
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#4b5563;">
+                <input type="checkbox" style="accent-color: #4f46e5; width:16px; height:16px; border-radius:4px; border:1px solid rgba(0,0,0,0.1);"> Remember me
               </label>
-              <a href="#" style="color:#94a3b8; text-decoration:none;">Forgot password?</a>
+              <a href="#" style="color:#4f46e5; text-decoration:none;">Forgot password?</a>
             </div>
 
             <button type="submit" class="btn" id="login-submit" style="width: 100%; padding: 14px; font-size: 1rem; border-radius: 8px; font-weight:600; background:#4f46e5; color:white; border:none; transition:0.2s;">

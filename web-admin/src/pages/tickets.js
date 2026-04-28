@@ -1031,7 +1031,6 @@ export function initTicketsPage(services, navigateFn) {
   }
   
   document.getElementById('close-customer-info-modal').addEventListener('click', () => customerInfoModal.classList.remove('active'));
-  document.getElementById('btn-close-customer-info').addEventListener('click', () => customerInfoModal.classList.remove('active'));
 
   // --- Notes Modal Logic ---
   const notesModal = document.getElementById('notes-modal');
