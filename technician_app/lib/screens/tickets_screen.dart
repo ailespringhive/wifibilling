@@ -666,6 +666,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                     onTap: () async {
                                       final picker = ImagePicker();
                                       final file = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                                      if (!context.mounted) return;
                                       if (file != null) setSheetState(() => proofImageFiles.add(file));
                                     },
                                     child: Container(
@@ -685,6 +686,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 onTap: () async {
                                   final picker = ImagePicker();
                                   final file = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                                  if (!context.mounted) return;
                                   if (file != null) setSheetState(() => proofImageFiles.add(file));
                                 },
                                 child: Container(

@@ -74,10 +74,12 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     
     try {
       final XFile? image = await _picker.pickImage(source: source, imageQuality: 70);
+      if (!mounted) return;
       if (image != null) {
         setState(() => _selectedImages.add(image));
       }
     } catch (e) {
+      if (!mounted) return;
       _showSnackBar('Error picking image', AppTheme.accentRose);
     }
   }
