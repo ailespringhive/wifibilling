@@ -54,7 +54,7 @@ class TicketService {
         );
 
         for (var doc in response.rows) {
-          final t = doc.data;
+          final t = Map<String, dynamic>.from(doc.data as Map);
           final userId = t['userId'];
           if (userId == null || userId.toString().isEmpty) continue;
 

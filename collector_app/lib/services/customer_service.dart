@@ -24,7 +24,10 @@ class CustomerService {
 
       // Step 2: Extract unique customer IDs
       final customerIds = subsResponse.rows
-          .map((doc) => doc.data['customerId'] as String)
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            return map['customerId'] as String;
+          })
           .toSet()
           .toList();
 
@@ -41,7 +44,10 @@ class CustomerService {
       );
 
       for (final doc in response.rows) {
-        customers.add(UserProfile.fromJson(doc.data));
+        final map = Map<String, dynamic>.from(doc.data as Map);
+        map[r'$id'] = doc.$id;
+        map[r'$createdAt'] = doc.$createdAt;
+        customers.add(UserProfile.fromJson(map));
       }
 
       return customers;
@@ -59,7 +65,10 @@ class CustomerService {
         tableId: AppCollections.usersProfile,
         rowId: documentId,
       );
-      return UserProfile.fromJson(response.data);
+      final map = Map<String, dynamic>.from(response.data as Map);
+      map[r'$id'] = response.$id;
+      map[r'$createdAt'] = response.$createdAt;
+      return UserProfile.fromJson(map);
     } catch (_) {
       return null;
     }
@@ -80,7 +89,11 @@ class CustomerService {
       );
 
       return response.rows
-          .map((doc) => SubscriptionModel.fromJson(doc.data))
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            map[r'$id'] = doc.$id;
+            return SubscriptionModel.fromJson(map);
+          })
           .toList();
     } catch (e) {
       throw Exception('Failed to load subscriptions: $e');

@@ -117,8 +117,12 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, constraints) {
         final bool tiny = constraints.maxHeight < 650;
 
-        // Gradient takes ~50% of total height
-        final double headerHeight = constraints.maxHeight * 0.50;
+        // Gradient takes ~50% of total height, but enforce a minimum height 
+        // to prevent RenderFlex overflow on smaller screens.
+        double headerHeight = constraints.maxHeight * 0.50;
+        if (headerHeight < 320) {
+          headerHeight = 320;
+        }
 
         // White card overlaps the gradient by 24px
         const double overlap = 24;

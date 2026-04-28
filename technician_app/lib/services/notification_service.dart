@@ -128,7 +128,10 @@ class NotificationService {
       );
 
       final unreadDocs =
-          unread.rows.where((doc) => doc.data['isRead'] == false).toList();
+          unread.rows.where((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            return map['isRead'] == false;
+          }).toList();
       for (final doc in unreadDocs) {
         await markAsRead(doc.$id);
       }

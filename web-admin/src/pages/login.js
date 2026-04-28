@@ -3,8 +3,9 @@
  */
 export function renderLoginPage() {
   return `
-    <div class="login-split-page">
-      <div class="login-split-container">
+    <div class="login-split-page" id="login-split-page" style="position: relative;">
+      <canvas id="animCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;"></canvas>
+      <div class="login-split-container" style="z-index: 10; position: relative;">
         <div class="login-illustration" style="background-image: url('/login-bg.png');">
 
       </div>
@@ -62,6 +63,73 @@ export function renderLoginPage() {
  * Init login page events
  */
 export function initLoginPage(onLogin) {
+  // --- Network Particles Animation Logic ---
+  const canvas = document.getElementById('animCanvas');
+  const ctx = canvas.getContext('2d');
+  const container = document.getElementById('login-split-page');
+  
+  let animId;
+  let particles = [];
+  
+  function resize() {
+    if(!canvas || !container) return;
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+  }
+  window.addEventListener('resize', resize);
+  
+  function initParticles() {
+    if(!canvas || !container) return;
+    resize();
+    particles = [];
+    for(let i=0; i<100; i++) {
+      particles.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        vx: (Math.random()-0.5)*1,
+        vy: (Math.random()-0.5)*1,
+        radius: Math.random()*2 + 1.5
+      });
+    }
+    
+    function draw() {
+      if(!canvas) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(79, 70, 229, 0.4)';
+      ctx.strokeStyle = 'rgba(79, 70, 229, 0.15)';
+      
+      for(let i=0; i<particles.length; i++) {
+        let p = particles[i];
+        p.x += p.vx; p.y += p.vy;
+        if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+        ctx.fill();
+        
+        for(let j=i+1; j<particles.length; j++) {
+          let p2 = particles[j];
+          let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+          if(dist < 120) {
+            ctx.globalAlpha = 1 - (dist/120);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+      animId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+  
+  // Wait slightly for DOM layout
+  setTimeout(initParticles, 50);
+  // ------------------------------------------
+
   const form = document.getElementById('login-form');
   const errorEl = document.getElementById('login-error');
   const submitBtn = document.getElementById('login-submit');

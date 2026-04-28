@@ -446,10 +446,14 @@ class _TicketsScreenState extends State<TicketsScreen> {
     
     String? validationError;
 
-    // Pre-fetch personnel
+    // Personnel fetch callback — will be wired to setSheetState inside the builder
+    void Function()? triggerRefresh;
+    
+    // Start fetching personnel; when done, call triggerRefresh to rebuild sheet
     _fetchPersonnel().then((list) {
       personnelList = list;
       personnelLoaded = true;
+      triggerRefresh?.call();
     });
 
     showModalBottomSheet(
@@ -459,6 +463,12 @@ class _TicketsScreenState extends State<TicketsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            // Wire the refresh callback to setSheetState so the .then() above
+            // can trigger a rebuild when personnel finishes loading
+            triggerRefresh = () {
+              if (ctx.mounted) setSheetState(() {});
+            };
+
             bool hasValidTech = selectedTechId != null && 
                                 selectedTechId!.isNotEmpty && 
                                 personnelLoaded && 
@@ -1136,7 +1146,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
 
       final List<Map<String, String>> result = [];
       for (final doc in response.rows) {
-        final data = doc.data;
+        final data = Map<String, dynamic>.from(doc.data as Map);
         final role = (data['role'] ?? '').toString().toLowerCase();
         if (role == 'technician' || role == 'collector') {
           final firstName = data['firstName'] ?? '';
@@ -1144,7 +1154,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
           result.add({
             'name': '$firstName $lastName'.trim(),
             'role': role,
-            'id': data[r'$id'] ?? '',
+            'id': doc.$id,
           });
         }
       }

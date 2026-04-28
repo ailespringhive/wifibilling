@@ -22,32 +22,32 @@ import 'package:appwrite/appwrite.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Appwrite
-  AppwriteService().init();
+  // All initialization and runApp MUST happen in the same zone to prevent
+  // the "Zone mismatch" assertion from WidgetsFlutterBinding.
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Local Cache
-  await LocalCacheService().init();
+    // Allow the app to render with default system fonts when google_fonts
+    // cannot reach fonts.gstatic.com (e.g. device is offline).
+    GoogleFonts.config.allowRuntimeFetching = true;
 
-  // Set status bar style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: AppTheme.bgCard,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ),
-  );
+    // Initialize Appwrite
+    AppwriteService().init();
 
-  runZonedGuarded(() {
-    runZoned(() {
-      runApp(const TechnicianApp());
-    }, zoneSpecification: ZoneSpecification(
-      print: (self, parent, zone, line) {
-        if (line.contains('Appwrite is using localStorage for session management')) return;
-        parent.print(zone, line);
-      },
-    ));
+    // Initialize Local Cache
+    await LocalCacheService().init();
+
+    // Set status bar style
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: AppTheme.bgCard,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+
+    runApp(const TechnicianApp());
   }, (error, stack) {
     debugPrint('Uncaught app error: $error');
   });
@@ -208,7 +208,7 @@ class _MainShellState extends State<MainShell> {
      // Subscribe to real-time events for mobile notifications collection
      _subscription = realtime.subscribe(['databases.$appwriteDatabaseId.collections.${AppCollections.mobileNotifications}.rows']);
      _subscription?.stream.listen((response) {
-       final payload = response.payload;
+       final payload = Map<String, dynamic>.from(response.payload as Map);
        if (payload.isNotEmpty) {
          final auth = context.read<AuthService>();
          if (payload['technicianId'] == auth.collectorId && payload['isRead'] == false) {
@@ -223,6 +223,9 @@ class _MainShellState extends State<MainShell> {
   }
 
   void _showNotificationToast(String title, String message) {
+    // Dismiss any existing notification toast before showing a new one
+    // so they don't stack and block each other from auto-dismissing
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: AppTheme.bgCard,
@@ -283,6 +286,7 @@ class _MainShellState extends State<MainShell> {
             if (!mounted) return;
             if (!_isInitialLoad) {
                if (count > _unreadCount) {
+                  // Only show if not already shown for this count to avoid duplicates
                   _showNotificationToast('New Alert', 'You have new unread notifications');
                }
             } else {

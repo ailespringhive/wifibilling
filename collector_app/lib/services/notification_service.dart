@@ -21,7 +21,12 @@ class NotificationService {
       );
 
       return response.rows
-          .map((doc) => CollectorNotification.fromMap(doc.data))
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            map[r'$id'] = doc.$id;
+            map[r'$createdAt'] = doc.$createdAt;
+            return CollectorNotification.fromMap(map);
+          })
           .where((n) => n.type != 'repair')
           .toList();
     } catch (e) {
@@ -66,7 +71,12 @@ class NotificationService {
       );
       
       final unreadDocs = response.rows
-          .map((doc) => CollectorNotification.fromMap(doc.data))
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            map[r'$id'] = doc.$id;
+            map[r'$createdAt'] = doc.$createdAt;
+            return CollectorNotification.fromMap(map);
+          })
           .where((n) => n.type != 'repair')
           .toList();
           

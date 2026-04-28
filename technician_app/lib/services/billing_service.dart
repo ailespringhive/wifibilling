@@ -26,7 +26,10 @@ class BillingService {
 
       // Step 2: Extract unique customer IDs
       final customerIds = subsResponse.rows
-          .map((doc) => doc.data['customerId'] as String)
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            return map['customerId'] as String;
+          })
           .toSet()
           .toList();
 
@@ -45,7 +48,9 @@ class BillingService {
       );
 
       for (final doc in billingsResponse.rows) {
-        allBillings.add(Billing.fromJson(doc.data));
+        final map = Map<String, dynamic>.from(doc.data as Map);
+        map[r'$id'] = doc.$id;
+        allBillings.add(Billing.fromJson(map));
       }
 
       return _autoCheckOverdue(allBillings);
@@ -69,7 +74,11 @@ class BillingService {
       );
 
       final result = response.rows
-          .map((doc) => Billing.fromJson(doc.data))
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            map[r'$id'] = doc.$id;
+            return Billing.fromJson(map);
+          })
           .toList();
       return _autoCheckOverdue(result);
     } catch (e) {
@@ -153,7 +162,11 @@ class BillingService {
       );
 
       return response.rows
-          .map((doc) => Billing.fromJson(doc.data))
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            map[r'$id'] = doc.$id;
+            return Billing.fromJson(map);
+          })
           .toList();
     } catch (e) {
       throw Exception('Failed to load collection history: $e');
@@ -174,7 +187,11 @@ class BillingService {
       );
 
       final result = response.rows
-          .map((doc) => Billing.fromJson(doc.data))
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            map[r'$id'] = doc.$id;
+            return Billing.fromJson(map);
+          })
           .toList();
       return _autoCheckOverdue(result);
     } catch (e) {

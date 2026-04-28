@@ -34,25 +34,33 @@ class _CollectionHistoryScreenState extends State<CollectionHistoryScreen> {
   }
 
   Future<void> _loadHistory() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     final auth = context.read<AuthService>();
+    debugPrint('[CollectionHistory] Loading history for collectorId: ${auth.collectorId}');
 
     try {
       final collections = await _billingService.getCollectionHistory(auth.collectorId);
+      debugPrint('[CollectionHistory] Got ${collections.length} collections');
+      
       final customers = await _customerService.getAssignedCustomers(auth.collectorId);
+      debugPrint('[CollectionHistory] Got ${customers.length} customers');
       
       final customerMap = {for (var c in customers) c.userId: c};
       final total = collections.fold<double>(0, (sum, b) => sum + ((b.amountPaid != null && b.amountPaid! > 0) ? b.amountPaid! : b.amount));
 
-      setState(() {
-        _collections = collections;
-        _customers = customerMap;
-        _totalAmount = total;
-        _isLoading = false;
-        _currentPage = 0;
-      });
+      if (mounted) {
+        setState(() {
+          _collections = collections;
+          _customers = customerMap;
+          _totalAmount = total;
+          _isLoading = false;
+          _currentPage = 0;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
+      debugPrint('[CollectionHistory] ERROR loading history: $e');
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

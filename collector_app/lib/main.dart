@@ -20,32 +20,28 @@ import 'screens/notifications_screen.dart';
 import 'services/notification_service.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Appwrite
-  AppwriteService().init();
+  // All initialization and runApp MUST happen in the same zone to prevent
+  // the "Zone mismatch" assertion from WidgetsFlutterBinding.
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Local Cache
-  await LocalCacheService().init();
+    // Initialize Appwrite
+    AppwriteService().init();
 
-  // Set status bar style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: AppTheme.bgCard,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ),
-  );
+    // Initialize Local Cache
+    await LocalCacheService().init();
 
-  runZonedGuarded(() {
-    runZoned(() {
-      runApp(const CollectorApp());
-    }, zoneSpecification: ZoneSpecification(
-      print: (self, parent, zone, line) {
-        if (line.contains('Appwrite is using localStorage for session management')) return;
-        parent.print(zone, line);
-      },
-    ));
+    // Set status bar style
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: AppTheme.bgCard,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+
+    runApp(const CollectorApp());
   }, (error, stack) {
     debugPrint('Uncaught app error: $error');
   });

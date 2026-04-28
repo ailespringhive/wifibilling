@@ -76,7 +76,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           collectionId: AppCollections.usersProfile,
           documentId: customerId,
         );
-        _customer = UserProfile.fromJson(doc.data);
+        final docMap = Map<String, dynamic>.from(doc.data as Map);
+        docMap[r'$id'] = doc.$id;
+        docMap[r'$createdAt'] = doc.$createdAt;
+        _customer = UserProfile.fromJson(docMap);
       } catch (_) {
         final response = await databases.listDocuments(
           databaseId: appwriteDatabaseId,
@@ -84,7 +87,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           queries: [Query.equal('userId', customerId), Query.limit(1)],
         );
         if (response.documents.isNotEmpty) {
-          _customer = UserProfile.fromJson(response.documents.first.data);
+          final firstDoc = response.documents.first;
+          final listMap = Map<String, dynamic>.from(firstDoc.data as Map);
+          listMap[r'$id'] = firstDoc.$id;
+          listMap[r'$createdAt'] = firstDoc.$createdAt;
+          _customer = UserProfile.fromJson(listMap);
         }
       }
       if (mounted) {

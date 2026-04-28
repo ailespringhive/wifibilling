@@ -167,7 +167,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         data: updates,
       );
 
-      _customer = UserProfile.fromJson(doc.data);
+      final map = Map<String, dynamic>.from(doc.data as Map);
+      map[r'$id'] = doc.$id;
+      map[r'$createdAt'] = doc.$createdAt;
+      _customer = UserProfile.fromJson(map);
       if (mounted) {
         setState(() => _isEditing = false);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Customer updated'), backgroundColor: AppTheme.accentBlue));
@@ -254,7 +257,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           collectionId: AppCollections.usersProfile,
           documentId: customerId,
         );
-        _customer = UserProfile.fromJson(doc.data);
+        final docMap = Map<String, dynamic>.from(doc.data as Map);
+        docMap[r'$id'] = doc.$id;
+        docMap[r'$createdAt'] = doc.$createdAt;
+        _customer = UserProfile.fromJson(docMap);
       } catch (_) {
         // If not found by doc ID, search by userId field
         final response = await databases.listDocuments(
@@ -263,7 +269,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           queries: [Query.equal('userId', customerId), Query.limit(1)],
         );
         if (response.documents.isNotEmpty) {
-          _customer = UserProfile.fromJson(response.documents.first.data);
+          final firstDoc = response.documents.first;
+          final listMap = Map<String, dynamic>.from(firstDoc.data as Map);
+          listMap[r'$id'] = firstDoc.$id;
+          listMap[r'$createdAt'] = firstDoc.$createdAt;
+          _customer = UserProfile.fromJson(listMap);
         }
       }
       setState(() {});  // trigger rebuild with fetched data
@@ -760,7 +770,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     TileLayer(
                       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.springhive.wifibilling.technician',
-                      tileProvider: NetworkTileProvider(headers: const {'User-Agent': 'WiFiBillingApp/1.0.0 (admin@springhive.com)'}),
                     ),
                     MarkerLayer(
                       markers: [

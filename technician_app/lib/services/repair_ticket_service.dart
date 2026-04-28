@@ -293,7 +293,10 @@ class RepairTicketService {
         rowId: ID.unique(),
         data: data,
       );
-      return RepairTicket.fromMap(response.data);
+      final map = Map<String, dynamic>.from(response.data as Map);
+      map[r'$id'] = response.$id;
+      map[r'$createdAt'] = response.$createdAt;
+      return RepairTicket.fromMap(map);
     } catch (e) {
       debugPrint('Error creating repair ticket: $e');
       return null;

@@ -102,7 +102,10 @@ class BillingService {
 
       // Step 2: Extract unique customer IDs
       final customerIds = subsResponse.rows
-          .map((doc) => doc.data['customerId'] as String)
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            return map['customerId'] as String;
+          })
           .where((id) => id.isNotEmpty)
           .toSet()
           .toList();
@@ -123,10 +126,16 @@ class BillingService {
       );
 
       for (final doc in billingsResponse.rows) {
-        allBillings.add(Billing.fromJson(doc.data));
+        final map = Map<String, dynamic>.from(doc.data as Map);
+        map[r'$id'] = doc.$id;
+        allBillings.add(Billing.fromJson(map));
       }
 
-      await cacheService.saveBillingsCache(collectorId, billingsResponse.rows.map((e) => e.data).toList());
+      await cacheService.saveBillingsCache(collectorId, billingsResponse.rows.map((e) {
+        final m = Map<String, dynamic>.from(e.data as Map);
+        m[r'$id'] = e.$id;
+        return m;
+      }).toList());
 
       return _autoCheckOverdue(allBillings);
     } catch (e) {
@@ -152,7 +161,11 @@ class BillingService {
       );
 
       final result = response.rows
-          .map((doc) => Billing.fromJson(doc.data))
+          .map((doc) {
+            final map = Map<String, dynamic>.from(doc.data as Map);
+            map[r'$id'] = doc.$id;
+            return Billing.fromJson(map);
+          })
           .toList();
       return _autoCheckOverdue(result);
     } catch (e) {
@@ -185,11 +198,13 @@ class BillingService {
       data['notes'] = notes;
     }
 
+    debugPrint('[BillingService] updateStatus: billingId=$billingId status=$status amountPaid=$amountPaid');
+
     final cacheService = LocalCacheService();
     final isOnline = await cacheService.isOnline;
 
     if (!isOnline) {
-      debugPrint('Device offline. Queuing payment locally.');
+      debugPrint('[BillingService] Device offline. Queuing payment locally.');
       // Keep UI responsive by immediately updating cache
       if (collectedBy != null) { // Hack to use collectorId since we know who it is
         await cacheService.updateBillingInCache(collectedBy, billingId, data);
@@ -207,6 +222,7 @@ class BillingService {
         rowId: billingId,
         data: data,
       );
+      debugPrint('[BillingService] updateStatus: Client SDK succeeded ✓');
       
       // Update cache even if online so it acts as fresh state when offline
       if (collectedBy != null) {
@@ -214,8 +230,9 @@ class BillingService {
       }
     } catch (e) {
       // Fallback: use server API key bypass for permission issues
-      debugPrint('Client SDK updateStatus failed ($e), using API bypass...');
+      debugPrint('[BillingService] Client SDK updateStatus failed ($e), using API bypass...');
       await _apiBypassUpdate(billingId, data);
+      debugPrint('[BillingService] updateStatus: API bypass succeeded ✓');
       if (collectedBy != null) {
         await cacheService.updateBillingInCache(collectedBy, billingId, data);
       }
@@ -270,7 +287,8 @@ class BillingService {
       int unpaidCount = 0;
 
       for (final doc in unpaidResponse.rows) {
-        final dueDate = doc.data['dueDate'] as String?;
+        final map = Map<String, dynamic>.from(doc.data as Map);
+        final dueDate = map['dueDate'] as String?;
         if (dueDate != null && dueDate.isNotEmpty) {
           try {
             final dueRaw = DateTime.parse(dueDate);
@@ -292,45 +310,46 @@ class BillingService {
     return counts;
   }
 
-  /// Get collections made for the collector's assigned customers
+  /// Get collections made for the collector's assigned customers.
+  /// Reuses [getAssignedBillings] (single-field query that works without
+  /// compound indexes) and filters for collected bills in-memory.
+  /// Uses the same logic as the dashboard: any billing with amountPaid > 0
+  /// or paymentStatus == 'already_paid' counts as a collection.
   Future<List<Billing>> getCollectionHistory(String collectorProfileId) async {
     try {
-      // Step 1: Get all active subscriptions (to find assigned customers)
-      // ignore: deprecated_member_use
-      final subsResponse = await _db.listRows(
-        databaseId: appwriteDatabaseId,
-        tableId: AppCollections.subscriptions,
-        queries: [
-          Query.equal('status', 'active'),
-          Query.limit(200),
-        ],
-      );
+      // Reuse the working getAssignedBillings method which uses a single
+      // Query.equal('customerId', ...) — proven to work on the dashboard.
+      final allBillings = await getAssignedBillings(collectorProfileId);
 
-      final customerIds = subsResponse.rows
-          .map((doc) => doc.data['customerId'] as String)
-          .where((id) => id.isNotEmpty)
-          .toSet()
-          .toList();
+      debugPrint('[BillingService] getCollectionHistory: ${allBillings.length} total billings fetched');
 
-      if (customerIds.isEmpty) return [];
+      // Log actual statuses for diagnostics
+      for (final b in allBillings) {
+        debugPrint('[BillingService]   billing ${b.id.substring(0, 8)}.. '
+            'status=${b.paymentStatus} amountPaid=${b.amountPaid} '
+            'amount=${b.amount} paidDate=${b.paidDate}');
+      }
 
-      // Step 2: Get paid billings for those customers
-      // ignore: deprecated_member_use
-      final response = await _db.listRows(
-        databaseId: appwriteDatabaseId,
-        tableId: AppCollections.billings,
-        queries: [
-          Query.equal('customerId', customerIds),
-          Query.equal('paymentStatus', 'already_paid'),
-          Query.orderDesc('paidDate'),
-          Query.limit(100),
-        ],
-      );
+      // Match dashboard logic: a billing counts as "collected" if
+      // amountPaid > 0 OR paymentStatus == 'already_paid'
+      final collectedBillings = allBillings.where((b) {
+        final hasPaidAmount = b.amountPaid != null && b.amountPaid! > 0;
+        final isMarkedPaid = b.paymentStatus == 'already_paid';
+        return hasPaidAmount || isMarkedPaid;
+      }).toList();
 
-      return response.rows
-          .map((doc) => Billing.fromJson(doc.data))
-          .toList();
+      debugPrint('[BillingService] getCollectionHistory: ${collectedBillings.length} collected billings found');
+
+      // Sort by paidDate descending
+      collectedBillings.sort((a, b) {
+        final aDate = a.paidDate ?? '';
+        final bDate = b.paidDate ?? '';
+        return bDate.compareTo(aDate);
+      });
+
+      return collectedBillings;
     } catch (e) {
+      debugPrint('[BillingService] getCollectionHistory ERROR: $e');
       throw Exception('Failed to load collection history: $e');
     }
   }
