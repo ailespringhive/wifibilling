@@ -11,8 +11,8 @@ export function renderLoginPage() {
       
       <div class="login-form-side">
         <div class="login-card-inner">
-          <div class="login-brand" style="text-align: left;">
-            <div class="brand-icon" style="margin: 0 0 24px 0;">
+          <div class="login-brand" style="text-align: center;">
+            <div class="brand-icon" style="margin: 0 auto 24px auto;">
               <div class="wifi-animated">
                 <div class="wifi-arc wifi-arc1"></div>
                 <div class="wifi-arc wifi-arc2"></div>
@@ -20,7 +20,7 @@ export function renderLoginPage() {
                 <div class="wifi-dot"></div>
               </div>
             </div>
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #111827; margin-bottom: 8px;">Login to WiFi Billing</h2>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #111827; margin-bottom: 8px;">Welcome WiFi Billing</h2>
             <p style="color: #4b5563; font-size: 0.95rem; margin-bottom: 32px;">Please provide your credentials to log in to your account.</p>
           </div>
 
