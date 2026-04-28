@@ -120,26 +120,64 @@
     a.btn-login { background: var(--text-main); color: white; padding: 10px 24px; border-radius: 8px; font-weight: 700; margin-left: 10px; transition: transform 0.2s; }
     a.btn-login:hover { color: white; transform: translateY(-2px); background: #000; }
 
-    /* Hero */
-    .hero {
-      padding: 80px 0;
-      max-width: 500px;
+    /* Hero Split Layout */
+    .hero-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+      min-height: calc(100vh - 120px);
       position: relative;
       z-index: 10;
+      padding-bottom: 60px;
+    }
+    
+    .hero-content {
+      flex: 1;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+    }
+
+    /* Hero Text */
+    .hero {
+      position: relative;
     }
     .hero h1 { font-family: 'Outfit', sans-serif; font-size: 4.2rem; font-weight: 800; line-height: 1.1; margin-bottom: 24px; color: var(--text-main); letter-spacing: -0.03em; }
-    .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; line-height: 1.5; font-weight: 500; }
+    .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; line-height: 1.5; font-weight: 500; max-width: 480px; }
     .btn-start { display: inline-block; background: var(--teal-light); color: white; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
     .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6); }
 
+    /* Hero Visual */
+    .hero-visual {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      position: relative;
+      max-width: 650px;
+    }
+    .hero-visual img {
+      width: 110%;
+      max-width: none;
+      height: auto;
+      margin-right: -10%;
+      filter: drop-shadow(0 30px 60px rgba(79,70,229,0.25));
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(0px); }
+    }
+
     /* Metrics Grid */
     .metrics-grid {
-      position: absolute;
-      bottom: 220px;
-      right: 40px;
       display: flex;
       gap: 20px;
-      z-index: 10;
+      flex-wrap: wrap;
     }
     
     .metric-card {
@@ -148,7 +186,8 @@
       border: 1px solid rgba(0, 0, 0, 0.05);
       border-radius: 16px;
       padding: 24px;
-      min-width: 220px;
+      flex: 1;
+      min-width: 180px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.05);
       position: relative;
       overflow: hidden;
@@ -377,36 +416,48 @@
       </div>
     </nav>
 
-    <!-- Hero -->
-    <header class="hero">
-      <h1>Connecting<br>Communities</h1>
-      <p>Reliable WiFi billing solutions for a connected world.</p>
-      <a href="/report/" class="btn-start">Get Started Now</a>
-    </header>
+    <!-- Hero Area -->
+    <div class="hero-wrapper">
+      
+      <!-- Left Content -->
+      <div class="hero-content">
+        <header class="hero">
+          <h1>Connecting<br>Communities</h1>
+          <p>Reliable WiFi billing solutions for a connected world.</p>
+          <a href="#plans" class="btn-start">Get Started Now</a>
+        </header>
 
-    <!-- Metrics Cards Bottom Right -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-header">
-          <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">groups</span></div>
-          <div class="metric-title">Total Customers</div>
+        <!-- Metrics Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">groups</span></div>
+              <div class="metric-title">Total Customers</div>
+            </div>
+            <div class="metric-value" id="hm-stat-customers">35,066</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-icon purple"><span class="material-icons-outlined" style="font-size:20px;">warning_amber</span></div>
+              <div class="metric-title">Tickets</div>
+            </div>
+            <div class="metric-value" id="hm-stat-tickets">126</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">payments</span></div>
+              <div class="metric-title">Total Revenue</div>
+            </div>
+            <div class="metric-value" id="hm-stat-revenue">$2677.77</div>
+          </div>
         </div>
-        <div class="metric-value" id="hm-stat-customers">35,066</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-header">
-          <div class="metric-icon purple"><span class="material-icons-outlined" style="font-size:20px;">warning_amber</span></div>
-          <div class="metric-title">Tickets</div>
-        </div>
-        <div class="metric-value" id="hm-stat-tickets">126</div>
+      
+      <!-- Right Illustration -->
+      <div class="hero-visual">
+        <img src="/assets/hero_illustration.png" alt="Modern WiFi Network Visualization">
       </div>
-      <div class="metric-card">
-        <div class="metric-header">
-          <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">payments</span></div>
-          <div class="metric-title">Total Revenue</div>
-        </div>
-        <div class="metric-value" id="hm-stat-revenue">$2677.77</div>
-      </div>
+      
     </div>
   </div>
 
