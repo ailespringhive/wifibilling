@@ -176,39 +176,48 @@
 
     /* Metrics Grid */
     .metrics-grid {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      flex: 1;
+      max-width: 600px;
+      justify-content: flex-end;
+      position: relative;
+      z-index: 10;
     }
     
     .metric-card {
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      border-radius: 16px;
-      padding: 24px;
-      flex: 1;
-      min-width: 180px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06);
       position: relative;
       overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    .metric-card:hover { transform: translateY(-5px); }
+
+    .metric-card:nth-child(3) {
+      grid-column: 1 / -1;
     }
     
     .metric-card::before {
       content: ''; position: absolute;
-      width: 120px; height: 120px;
+      width: 140px; height: 140px;
       background: rgba(59, 130, 246, 0.15);
       filter: blur(40px); border-radius: 50%;
       bottom: -30px; right: -30px; z-index: -1;
     }
     .metric-card:nth-child(2)::before { background: rgba(168, 85, 247, 0.15); }
     
-    .metric-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .metric-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    .metric-icon.blue { background: rgba(79, 70, 229, 0.15); color: var(--teal-light); }
-    .metric-icon.purple { background: rgba(79, 70, 229, 0.15); color: var(--teal-light); }
-    .metric-title { font-size: 0.95rem; color: var(--text-muted); font-weight: 600; }
-    .metric-value { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
+    .metric-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .metric-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .metric-icon.blue { background: rgba(79, 70, 229, 0.1); color: var(--teal-light); }
+    .metric-icon.purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+    .metric-title { font-size: 1.1rem; color: var(--text-muted); font-weight: 600; }
+    .metric-value { font-family: 'Outfit', sans-serif; font-size: 3rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
 
     /* Public Pricing Cards */
     .public-pricing-grid {
@@ -427,34 +436,33 @@
           <p>Reliable WiFi billing solutions for a connected world.</p>
           <a href="#plans" class="btn-start">Get Started Now</a>
         </header>
-
-        <!-- Metrics Cards -->
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-header">
-              <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">groups</span></div>
-              <div class="metric-title">Total Customers</div>
-            </div>
-            <div class="metric-value" id="hm-stat-customers">35,066</div>
+      </div>
+      
+      <!-- Right Content: Metrics Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:28px;">groups</span></div>
+            <div class="metric-title">Total Customers</div>
           </div>
-          <div class="metric-card">
-            <div class="metric-header">
-              <div class="metric-icon purple"><span class="material-icons-outlined" style="font-size:20px;">warning_amber</span></div>
-              <div class="metric-title">Tickets</div>
-            </div>
-            <div class="metric-value" id="hm-stat-tickets">126</div>
+          <div class="metric-value" id="hm-stat-customers">35,066</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon purple"><span class="material-icons-outlined" style="font-size:28px;">warning_amber</span></div>
+            <div class="metric-title">Tickets</div>
           </div>
-          <div class="metric-card">
-            <div class="metric-header">
-              <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:20px;">payments</span></div>
-              <div class="metric-title">Total Revenue</div>
-            </div>
-            <div class="metric-value" id="hm-stat-revenue">$2677.77</div>
+          <div class="metric-value" id="hm-stat-tickets">126</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:28px;">payments</span></div>
+            <div class="metric-title">Total Revenue</div>
           </div>
+          <div class="metric-value" id="hm-stat-revenue">$2677.77</div>
         </div>
       </div>
       
-      <!-- Right Illustration removed per request -->
       
     </div>
   </div>
