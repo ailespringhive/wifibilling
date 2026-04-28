@@ -272,10 +272,12 @@ export const BillingService = {
           const expectedAmt = parseFloat(doc.amount || 0);
           projected[monthIndex] += expectedAmt;
 
-          // 2. Add to Collected Revenue IF paid
+          // 2. Add to Collected Revenue IF paid OR partially paid
           if (['paid', 'already_paid', 'archived_paid'].includes(doc.paymentStatus)) {
              const finalPaid = (doc.amountPaid !== null && doc.amountPaid > 0) ? doc.amountPaid : expectedAmt;
              collected[monthIndex] += parseFloat(finalPaid || 0);
+          } else if (doc.amountPaid !== null && doc.amountPaid > 0) {
+             collected[monthIndex] += parseFloat(doc.amountPaid);
           }
         }
 
@@ -303,19 +305,29 @@ export const BillingService = {
       let hasMore = true;
 
       while (hasMore) {
-        const response = await databases.listDocuments(
-          DATABASE_ID,
-          COLLECTIONS.BILLINGS,
-          [
-            Query.equal('paymentStatus', ['paid', 'already_paid', 'archived_paid']),
-            Query.limit(100),
-            Query.offset(offset)
-          ]
-        );
+        let response;
+        try {
+          response = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTIONS.BILLINGS,
+            [
+              Query.limit(100),
+              Query.offset(offset)
+            ]
+          );
+        } catch(e) {
+          response = await apiBypass.listDocuments(COLLECTIONS.BILLINGS, [`limit(100)`, `offset(${offset})`]);
+        }
         
+        if (!response || !response.documents) break;
+
         for (const doc of response.documents) {
-          const finalAmount = (doc.amountPaid !== null && doc.amountPaid > 0) ? doc.amountPaid : (doc.amount || 0);
-          totalAmount += finalAmount;
+          if (['paid', 'already_paid', 'archived_paid'].includes(doc.paymentStatus)) {
+            const finalAmount = (doc.amountPaid !== null && doc.amountPaid > 0) ? doc.amountPaid : (doc.amount || 0);
+            totalAmount += finalAmount;
+          } else if (doc.amountPaid !== null && doc.amountPaid > 0) {
+            totalAmount += doc.amountPaid;
+          }
         }
 
         if (response.documents.length < 100) {
