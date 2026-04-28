@@ -1676,20 +1676,67 @@
     const mainContainer = document.querySelector('.container');
     if (mainContainer) mainContainer.style.marginTop = '0';
     
-    // Make backgrounds transparent so it blends with homepage
+    // Make backgrounds transparent and switch to light theme so it blends with homepage
     const style = document.createElement('style');
     style.innerHTML = `
       :root {
         --text-primary: #111827 !important;
-        --text-muted: #4b5563 !important;
-        --border-color: rgba(0, 0, 0, 0.1) !important;
-        --card-bg: rgba(255, 255, 255, 0.6) !important;
+        --text-secondary: #4b5563 !important;
+        --text-muted: #6b7280 !important;
+        --border: rgba(0, 0, 0, 0.1) !important;
+        --bg-card: rgba(255, 255, 255, 0.8) !important;
+        --bg-card-hover: rgba(0, 0, 0, 0.03) !important;
       }
       html, body { background: transparent !important; color: var(--text-primary) !important; }
       body::before { display: none !important; }
-      .card { background: var(--card-bg) !important; backdrop-filter: blur(16px); box-shadow: 0 20px 40px rgba(0,0,0,0.05) !important; }
-      .data-table tbody tr:hover { background: rgba(0,0,0,0.02) !important; }
-      .btn-ghost { color: #111827 !important; }
+      
+      /* Card */
+      .card { background: var(--bg-card) !important; backdrop-filter: blur(16px); box-shadow: 0 10px 40px rgba(0,0,0,0.05) !important; }
+      .card-header { border-bottom-color: var(--border) !important; }
+      
+      /* Table & Text */
+      thead th { color: #6b7280 !important; border-bottom-color: var(--border) !important; background: rgba(0,0,0,0.02) !important; }
+      tbody tr { border-bottom-color: var(--border) !important; }
+      tbody tr:hover { background: var(--bg-card-hover) !important; }
+      .customer-name, .modal-title, .confirm-title { color: #111827 !important; }
+      .customer-id, .issue-cell, .confirm-msg, td { color: #4b5563 !important; }
+      
+      /* Buttons */
+      .btn-ghost { color: #111827 !important; border-color: var(--border) !important; }
+      .btn-ghost:hover { background: rgba(0,0,0,0.05) !important; }
+      .act-btn { background: rgba(0,0,0,0.04) !important; border-color: var(--border) !important; color: #4b5563 !important; }
+      .act-btn:hover { background: rgba(0,0,0,0.08) !important; color: #111827 !important; }
+      
+      /* Filter Select */
+      .filter-select { background: #fff !important; border-color: var(--border) !important; color: #111827 !important; }
+      .filter-select option { background: #fff !important; color: #111827 !important; }
+      
+      /* Modals */
+      .modal, .confirm-box { background: #ffffff !important; border-color: var(--border) !important; box-shadow: 0 24px 64px rgba(0,0,0,0.12) !important; }
+      .modal-header { border-bottom-color: var(--border) !important; }
+      .modal-close { color: #9ca3af !important; }
+      .modal-close:hover { color: #111827 !important; }
+      .modal-footer { border-top-color: var(--border) !important; }
+      
+      /* Form */
+      .form-label { color: #4b5563 !important; }
+      .form-input, .form-textarea { background: #f9fafb !important; border-color: #d1d5db !important; color: #111827 !important; }
+      .form-input:focus, .form-textarea:focus { background: #ffffff !important; border-color: #3b82f6 !important; box-shadow: 0 0 0 4px rgba(59,130,246,0.1) !important; }
+      
+      /* Priority Pills */
+      .priority-pill { background: #f3f4f6 !important; border-color: #e5e7eb !important; color: #6b7280 !important; }
+      .priority-pill:hover { border-color: #d1d5db !important; color: #111827 !important; }
+      .priority-pill.active.low    { background: #f1f5f9 !important; border-color: #94a3b8 !important; color: #475569 !important; }
+      .priority-pill.active.medium { background: #fffbeb !important; border-color: #fcd34d !important; color: #d97706 !important; }
+      .priority-pill.active.high   { background: #fff1f2 !important; border-color: #fda4af !important; color: #e11d48 !important; }
+      
+      /* Details View Overrides */
+      #td-issue, #td-notes { background: #f9fafb !important; border-color: var(--border) !important; color: #1f2937 !important; }
+      #td-address, #td-tech-text { color: #111827 !important; }
+      
+      /* Fix attachment box */
+      label[for="f-images"] { border-color: #d1d5db !important; color: #6b7280 !important; }
+      label[for="f-images"]:hover { border-color: #3b82f6 !important; color: #3b82f6 !important; }
     `;
     document.head.appendChild(style);
   }
