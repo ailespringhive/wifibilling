@@ -760,6 +760,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     TileLayer(
                       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.springhive.wifibilling.technician',
+                      tileProvider: NetworkTileProvider(headers: const {'User-Agent': 'WiFiBillingApp/1.0.0 (admin@springhive.com)'}),
                     ),
                     MarkerLayer(
                       markers: [

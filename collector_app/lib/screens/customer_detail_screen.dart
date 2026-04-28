@@ -1340,6 +1340,7 @@ class _CustomerProfileScreen extends StatelessWidget {
                       TileLayer(
                         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         userAgentPackageName: 'com.springhive.wifibilling.collector',
+                        tileProvider: NetworkTileProvider(headers: const {'User-Agent': 'WiFiBillingApp/1.0.0 (admin@springhive.com)'}),
                       ),
                       MarkerLayer(
                         markers: [
@@ -2211,6 +2212,7 @@ class _EditCustomerScreenState extends State<_EditCustomerScreen> {
                     TileLayer(
                       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.springhive.wifibilling.collector',
+                      tileProvider: NetworkTileProvider(headers: const {'User-Agent': 'WiFiBillingApp/1.0.0 (admin@springhive.com)'}),
                     ),
                     MarkerLayer(
                       markers: [

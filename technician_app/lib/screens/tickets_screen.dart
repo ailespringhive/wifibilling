@@ -588,7 +588,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                         interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
                                       ),
                                       children: [
-                                        TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+                                        TileLayer(
+                                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                          userAgentPackageName: 'com.wifibilling.technician_app',
+                                          tileProvider: NetworkTileProvider(headers: const {'User-Agent': 'WiFiBillingApp/1.0.0 (admin@springhive.com)'}),
+                                        ),
                                         MarkerLayer(markers: [
                                           Marker(
                                             point: LatLng(ticket.latitude!, ticket.longitude!),

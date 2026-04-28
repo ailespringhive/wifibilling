@@ -53,6 +53,7 @@ class _LocationPickerState extends State<LocationPicker> {
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.wifibilling.technician_app',
+            tileProvider: NetworkTileProvider(headers: const {'User-Agent': 'WiFiBillingApp/1.0.0 (admin@springhive.com)'}),
           ),
           MarkerLayer(
             markers: [
