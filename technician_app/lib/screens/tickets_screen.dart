@@ -885,6 +885,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               }
                               
                               if (success) {
+                                 if (!mounted) return;
                                  final messenger = ScaffoldMessenger.of(context);
                                  await _ticketService.sendAdminNotification(techName, ticket.customerName, selectedStatus);
                                  

@@ -72,7 +72,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
       if (mounted) {
         setState(() {
-          _plans = plansRes.documents.map((d) => d.data..[r'$id'] = d.$id).toList();
+          _plans = plansRes.documents.map((d) => Map<String, dynamic>.from(d.data as Map)..[r'$id'] = d.$id).toList();
           _isLoadingData = false;
         });
       }
