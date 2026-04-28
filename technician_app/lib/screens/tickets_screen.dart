@@ -665,8 +665,8 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                   GestureDetector(
                                     onTap: () async {
                                       final picker = ImagePicker();
-                                      final files = await picker.pickMultiImage(imageQuality: 70);
-                                      if (files.isNotEmpty) setSheetState(() => proofImageFiles.addAll(files));
+                                      final file = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                                      if (file != null) setSheetState(() => proofImageFiles.add(file));
                                     },
                                     child: Container(
                                       height: 100, width: 100,
@@ -674,7 +674,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                                         const Icon(Icons.add_a_photo, color: AppTheme.textMuted, size: 28),
                                         const SizedBox(height: 8),
-                                        Text('Add more', style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textMuted))
+                                        Text('Take photo', style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textMuted))
                                       ]),
                                     ),
                                   ),
@@ -684,8 +684,8 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               GestureDetector(
                                 onTap: () async {
                                   final picker = ImagePicker();
-                                  final files = await picker.pickMultiImage(imageQuality: 70);
-                                  if (files.isNotEmpty) setSheetState(() => proofImageFiles.addAll(files));
+                                  final file = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                                  if (file != null) setSheetState(() => proofImageFiles.add(file));
                                 },
                                 child: Container(
                                   height: 120,
@@ -700,7 +700,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                     children: [
                                       HugeIcon(icon: HugeIcons.strokeRoundedCamera01, color: AppTheme.textMuted, size: 28.0),
                                       const SizedBox(height: 8),
-                                      Text('Tap to select photos', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                                      Text('Tap to open camera', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
                                     ],
                                   ),
                                 ),

@@ -328,26 +328,19 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                   if (_selectedImages.length < 3)
                     Padding(
                       padding: EdgeInsets.only(top: _selectedImages.isEmpty ? 0 : 12.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _pickImage(ImageSource.camera),
-                              icon: const HugeIcon(icon: HugeIcons.strokeRoundedCamera01, color: Colors.white, size: 18),
-                              label: Text('Camera', style: GoogleFonts.inter(color: Colors.white)),
-                              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentBlue, elevation: 0),
-                            ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _pickImage(ImageSource.camera),
+                          icon: const HugeIcon(icon: HugeIcons.strokeRoundedCamera01, color: Colors.white, size: 20),
+                          label: Text('Take Photo', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentBlue, 
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _pickImage(ImageSource.gallery),
-                              icon: const HugeIcon(icon: HugeIcons.strokeRoundedImage01, color: Colors.white, size: 18),
-                              label: Text('Gallery', style: GoogleFonts.inter(color: Colors.white)),
-                              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentBlue, elevation: 0),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
 
