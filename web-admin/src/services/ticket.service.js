@@ -19,9 +19,6 @@ class TicketService {
     }
   }
 
-  /**
-   * Fetch all tickets with optional status filter and pagination
-   */
   async getTickets(statusFilter = '', limit = 10, offset = 0) {
     try {
       const queries = [
@@ -43,16 +40,26 @@ class TicketService {
       return response;
     } catch (error) {
       console.warn('Client API failed, trying bypass:', error.message);
-      const queries = [
-        Query.orderDesc('$createdAt'),
-        Query.limit(limit),
-        Query.offset(offset)
-      ];
-      if (statusFilter) {
-        queries.push(Query.equal('status', statusFilter));
+      try {
+        const queryStrings = [
+          `limit(${limit})`,
+          `offset(${offset})`
+        ];
+        if (statusFilter) {
+          queryStrings.push(`equal("status", ["${statusFilter}"])`);
+        }
+        
+        const response = await apiBypass.listDocuments(COLLECTIONS.REPAIR_TICKETS, queryStrings);
+        
+        // Ensure manual sorting by createdAt descending since we dropped orderDesc from bypass string
+        if (response && response.documents) {
+          response.documents.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
+        }
+        return response || { documents: [], total: 0 };
+      } catch (bypassErr) {
+        console.error('Bypass also failed:', bypassErr);
+        return { documents: [], total: 0 };
       }
-      const response = await apiBypass.listDocuments(COLLECTIONS.REPAIR_TICKETS, queries);
-      return response;
     }
   }
 
@@ -73,15 +80,18 @@ class TicketService {
       return response.documents;
     } catch (error) {
       console.warn('Client API failed, trying bypass:', error.message);
-      const queries = [
-        Query.equal('customerId', customerId),
-        Query.orderDesc('$createdAt')
-      ];
       try {
-          const response = await apiBypass.listDocuments(COLLECTIONS.REPAIR_TICKETS, queries);
-          return response.documents || [];
+        const queryStrings = [
+          `equal("customerId", ["${customerId}"])`
+        ];
+        const response = await apiBypass.listDocuments(COLLECTIONS.REPAIR_TICKETS, queryStrings);
+        if (response && response.documents) {
+          response.documents.sort((a, b) => (b.$createdAt || '').localeCompare(a.$createdAt || ''));
+        }
+        return response.documents || [];
       } catch(e) {
-          return [];
+        console.error('Bypass also failed:', e);
+        return [];
       }
     }
   }

@@ -15,14 +15,14 @@ export function renderLoginPage() {
           <div class="login-brand" style="text-align: center;">
             <div class="brand-icon" style="margin: 0 auto 24px auto;">
               <div class="wifi-animated">
-                <div class="wifi-arc wifi-arc1"></div>
-                <div class="wifi-arc wifi-arc2"></div>
-                <div class="wifi-arc wifi-arc3"></div>
-                <div class="wifi-dot"></div>
+                <div class="wifi-arc wifi-arc1" style="border-top-color: #4f46e5;"></div>
+                <div class="wifi-arc wifi-arc2" style="border-top-color: #4f46e5;"></div>
+                <div class="wifi-arc wifi-arc3" style="border-top-color: #4f46e5;"></div>
+                <div class="wifi-dot" style="background-color: #4f46e5;"></div>
               </div>
             </div>
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; color: #ffffff; margin-bottom: 8px; font-weight: 800;">Welcome WiFi Billing</h2>
-            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 32px;">Please provide your credentials to log in to your account.</p>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; color: #1e1b4b; margin-bottom: 8px; font-weight: 800;">Welcome WiFi Billing</h2>
+            <p style="color: #475569; font-size: 0.9rem; margin-bottom: 32px;">Please provide your credentials to log in to your account.</p>
           </div>
 
           <div class="login-error" id="login-error"></div>
