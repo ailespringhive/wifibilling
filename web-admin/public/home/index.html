@@ -176,8 +176,8 @@
 
     /* Metrics Grid */
     .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      display: flex;
+      flex-direction: column;
       gap: 30px;
       flex: 1;
       max-width: 600px;
@@ -198,10 +198,6 @@
       transition: transform 0.3s ease;
     }
     .metric-card:hover { transform: translateY(-5px); }
-
-    .metric-card:nth-child(3) {
-      grid-column: 1 / -1;
-    }
     
     .metric-card::before {
       content: ''; position: absolute;
@@ -459,7 +455,7 @@
             <div class="metric-icon blue"><span class="material-icons-outlined" style="font-size:28px;">payments</span></div>
             <div class="metric-title">Total Revenue</div>
           </div>
-          <div class="metric-value" id="hm-stat-revenue">$2677.77</div>
+          <div class="metric-value" id="hm-stat-revenue">₱0.00</div>
         </div>
       </div>
       
@@ -602,10 +598,52 @@
         }
         if (parsed.totalCollectedAmount !== undefined) {
           const rev = parsed.totalCollectedAmount;
-          document.getElementById('hm-stat-revenue').textContent = '$' + rev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          document.getElementById('hm-stat-revenue').textContent = '₱' + rev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
       }
     } catch(e) { console.error('Error syncing dashboard cache:', e); }
+
+    // Live fetch for Customers
+    try {
+      fetch('https://appwrite.springhive.co/v1/databases/wifi_billing_db/collections/users_profile/documents?queries[]={"method":"equal","attribute":"role","values":["customer"]}&queries[]={"method":"limit","values":[1]}', {
+        headers: {
+          'X-Appwrite-Project': '69c4840a0022d6824d83',
+          'X-Appwrite-Key': 'standard_b650468f4a776eac08a7d0f31aea79b5de528e970e85714564a8d0480a9cffc6d0c947aaeaecc2a2011b98c97f90515cbf5f9e16d3cd6230d259d1e91d885a1de14d5c1cb20da10930d49bcc3f3cb7d3f4a5011619cba4e42d533abefbc60435de9ab782c82e59704a44ea08b88f9babd5a6edb83fb50e2bc6f4cb33e1069b6c'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.total !== undefined) {
+          document.getElementById('hm-stat-customers').textContent = data.total.toLocaleString();
+        }
+      });
+    } catch(e) {}
+
+    // Live fetch for Revenue (sums up the latest 500 bills as a fallback)
+    try {
+      fetch('https://appwrite.springhive.co/v1/databases/wifi_billing_db/collections/billings/documents?queries[]={"method":"limit","values":[500]}', {
+        headers: {
+          'X-Appwrite-Project': '69c4840a0022d6824d83',
+          'X-Appwrite-Key': 'standard_b650468f4a776eac08a7d0f31aea79b5de528e970e85714564a8d0480a9cffc6d0c947aaeaecc2a2011b98c97f90515cbf5f9e16d3cd6230d259d1e91d885a1de14d5c1cb20da10930d49bcc3f3cb7d3f4a5011619cba4e42d533abefbc60435de9ab782c82e59704a44ea08b88f9babd5a6edb83fb50e2bc6f4cb33e1069b6c'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.documents) {
+          let total = 0;
+          data.documents.forEach(doc => {
+            if (['paid', 'already_paid', 'archived_paid'].includes(doc.paymentStatus)) {
+              total += (doc.amountPaid !== null && doc.amountPaid > 0) ? doc.amountPaid : (doc.amount || 0);
+            } else if (doc.amountPaid !== null && doc.amountPaid > 0) {
+              total += doc.amountPaid;
+            }
+          });
+          if (total > 0) {
+            document.getElementById('hm-stat-revenue').textContent = '₱' + total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          }
+        }
+      });
+    } catch(e) {}
 
     // Live fetch for tickets
     try {
