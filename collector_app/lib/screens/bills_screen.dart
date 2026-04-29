@@ -508,7 +508,7 @@ class _BillsScreenState extends State<BillsScreen> {
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: 5,
-      itemBuilder: (_, __) => Container(
+      itemBuilder: (_, _) => Container(
         height: 80,
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 6),

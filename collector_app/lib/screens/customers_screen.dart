@@ -367,7 +367,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: 8,
-      itemBuilder: (_, __) => Container(
+      itemBuilder: (_, _) => Container(
         height: 70,
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 8),

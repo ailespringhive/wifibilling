@@ -18,12 +18,9 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
   final LocalCacheService _cache = LocalCacheService();
 
   bool _isScanning = false;
-  bool _isConnecting = false;
   List<BluetoothInfo> _pairedDevices = [];
   String? _savedMac;
   String? _savedName;
-
-  bool _printingTest = false;
 
   @override
   void initState() {
@@ -74,27 +71,22 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
       _savedMac = mac;
       _savedName = name;
     });
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$name set as default printer'), backgroundColor: AppTheme.accentBlue),
     );
   }
 
   Future<void> _testPrint(String mac, String name) async {
-    setState(() => _isConnecting = true);
     // Connect first
     final conn = await _printer.connect(mac, name);
     if (!conn) {
-      setState(() => _isConnecting = false);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to connect to $name'), backgroundColor: Colors.red),
       );
       return;
     }
-
-    setState(() {
-      _isConnecting = false;
-      _printingTest = true;
-    });
 
     final err = await _printer.printReceipt(
       invoiceNo: 'TEST-12345',
@@ -109,8 +101,7 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
       status: 'PAID',
     );
 
-    setState(() => _printingTest = false);
-    
+    if (!mounted) return;
     if (err == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Test receipt printed successfully!'), backgroundColor: Colors.green),

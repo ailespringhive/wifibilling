@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'logo_base64.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -128,38 +130,16 @@ class _AuthGateState extends State<AuthGate> with SingleTickerProviderStateMixin
               AnimatedBuilder(
                 animation: _pulseController,
                 builder: (context, child) {
-                  return Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.accentBlue.withValues(alpha: 
-                            0.2 + (_pulseController.value * 0.15),
-                          ),
-                          blurRadius: 24 + (_pulseController.value * 12),
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: HugeIcon(
-                      icon: HugeIcons.strokeRoundedWifi01,
-                      size: 36.0,
-                      color: AppTheme.textPrimary,
+                  return Transform.scale(
+                    scale: 0.95 + (_pulseController.value * 0.1),
+                    child: Image.memory(
+                      base64Decode(techLogoBase64),
+                      width: 90,
+                      height: 90,
+                      fit: BoxFit.contain,
                     ),
                   );
                 },
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppTheme.accentBlue.withValues(alpha: 0.6),
-                ),
               ),
             ],
           ),

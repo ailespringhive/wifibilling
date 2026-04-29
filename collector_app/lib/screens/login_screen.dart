@@ -204,9 +204,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOutBack,
                   transformAlignment: Alignment.center,
-                  transform: Matrix4.identity()
-                    ..translate(focusNode.hasFocus ? 4.0 : 0.0, 0.0)
-                    ..scale(focusNode.hasFocus ? 1.2 : 1.0),
+                  transform: Matrix4.translationValues(focusNode.hasFocus ? 4.0 : 0.0, 0.0, 0.0)
+                    ..multiply(Matrix4.diagonal3Values(
+                        focusNode.hasFocus ? 1.2 : 1.0,
+                        focusNode.hasFocus ? 1.2 : 1.0,
+                        1.0)),
                   child: Icon(
                     prefixIcon,
                     color: focusNode.hasFocus ? const Color(0xFF1A1A1A) : Colors.grey.shade600,
@@ -411,7 +413,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           width: double.infinity,
                           height: 56,
                           transformAlignment: Alignment.center,
-                          transform: Matrix4.identity()..scale(_isButtonPressed ? 0.95 : 1.0),
+                          transform: Matrix4.diagonal3Values(_isButtonPressed ? 0.95 : 1.0, _isButtonPressed ? 0.95 : 1.0, 1.0),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1C1D21), // Very dark grey / black
                             borderRadius: BorderRadius.circular(30),

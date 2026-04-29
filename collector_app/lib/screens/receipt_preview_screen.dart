@@ -733,6 +733,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
       if (mac != null && name != null) {
         setState(() => _isPrinting = true);
         final conn = await _printer.connect(mac, name);
+        if (!mounted) return;
         if (!conn) {
           setState(() => _isPrinting = false);
           ScaffoldMessenger.of(context).showSnackBar(

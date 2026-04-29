@@ -52,8 +52,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   bool _isLoadingData = true;
 
   // Image state
-  List<Uint8List> _imageBytesList = [];
-  List<String> _imageNamesList = [];
+  final List<Uint8List> _imageBytesList = [];
+  final List<String> _imageNamesList = [];
 
   @override
   void initState() {
@@ -816,7 +816,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
       ),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         isExpanded: true,
         icon: HugeIcon(icon: HugeIcons.strokeRoundedMore02, color: AppTheme.textSecondary, size: 20.0),
         dropdownColor: AppTheme.bgCard,

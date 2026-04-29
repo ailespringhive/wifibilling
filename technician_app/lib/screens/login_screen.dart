@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen>
           return Offset(4.0 + (16.0 * t), 4.0 + (16.0 * t));
         }
 
-        final textStyle = GoogleFonts.poppins(
+        final textStyle = GoogleFonts.inter(
           fontSize: 50,
           fontWeight: FontWeight.w900,
           letterSpacing: -1.5,
@@ -187,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen>
       children: [
         Text(
           label,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1A1A1A),
@@ -224,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen>
             keyboardType: isPassword
                 ? TextInputType.text
                 : TextInputType.emailAddress,
-            style: GoogleFonts.poppins(color: Colors.black87, fontSize: 15),
+            style: GoogleFonts.inter(color: Colors.black87, fontSize: 15),
             decoration: InputDecoration(
               prefixIcon: Padding(
                 padding: const EdgeInsets.only(left: 12.0, right: 8.0),
@@ -245,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
               hintText: hint,
-              hintStyle: GoogleFonts.poppins(
+              hintStyle: GoogleFonts.inter(
                 color: Colors.grey.shade400,
                 fontSize: 15,
               ),
@@ -299,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen>
                 const SizedBox(height: 32),
                 Text(
                   'Sign in to continue to WiFi Technician',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.inter(
                     fontSize: 15,
                     color: Colors.grey.shade600,
                   ),
@@ -359,7 +359,7 @@ class _LoginScreenState extends State<LoginScreen>
                             const SizedBox(width: 8),
                             Text(
                               'Remember me',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.inter(
                                 fontSize: 13,
                                 color: Colors.grey.shade700,
                                 fontWeight: FontWeight.w500,
@@ -376,20 +376,20 @@ class _LoginScreenState extends State<LoginScreen>
                           builder: (context) => AlertDialog(
                             title: Text(
                               'Reset Password',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             content: Text(
                               'Please contact the Administrator to reset your password.',
-                              style: GoogleFonts.poppins(),
+                              style: GoogleFonts.inter(),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
                                 child: Text(
                                   'OK',
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.inter(
                                     color: Colors.blue,
                                   ),
                                 ),
@@ -408,7 +408,7 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       child: Text(
                         'Forgot Password?',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1A1A1A),
@@ -448,7 +448,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 Expanded(
                                   child: Text(
                                     auth.error!,
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.inter(
                                       fontSize: 13,
                                       color: Colors.red.shade800,
                                       fontWeight: FontWeight.w500,
@@ -509,7 +509,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     )
                                   : Text(
                                       'Log In',
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.inter(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
