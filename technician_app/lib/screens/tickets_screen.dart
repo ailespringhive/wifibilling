@@ -601,7 +601,8 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                         TileLayer(
                                           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                           userAgentPackageName: 'com.wifibilling.technician_app',
-                                          tileProvider: NetworkTileProvider(headers: const {'User-Agent': 'WiFiBillingApp/1.0.0 (admin@springhive.com)'}),
+                                          // Don't use custom tileProvider – let flutter_map use the default
+                                          // which correctly handles HTTPS tiles on release builds
                                         ),
                                         MarkerLayer(markers: [
                                           Marker(

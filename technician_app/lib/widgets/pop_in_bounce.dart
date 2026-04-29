@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 class PopInBounce extends StatefulWidget {
   final Widget child;
@@ -21,8 +22,18 @@ class _PopInBounceState extends State<PopInBounce> with SingleTickerProviderStat
     _scale = Tween<double>(begin: 0.85, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: const Cubic(0.34, 1.56, 0.64, 1.0)));
     _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
     
-    Future.delayed(widget.delay, () {
-      if (mounted) _controller.forward();
+    // Use addPostFrameCallback to ensure the widget tree is fully built
+    // before scheduling the delayed animation start. Future.delayed alone
+    // can silently fail on mobile when the widget isn't fully mounted yet.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.delay == Duration.zero) {
+        _controller.forward();
+      } else {
+        Future.delayed(widget.delay, () {
+          if (mounted) _controller.forward();
+        });
+      }
     });
   }
 
@@ -34,17 +45,12 @@ class _PopInBounceState extends State<PopInBounce> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Opacity(
-          opacity: _opacity.value,
-          child: Transform.scale(
-            scale: _scale.value,
-            child: widget.child,
-          ),
-        );
-      },
+    return FadeTransition(
+      opacity: _opacity,
+      child: ScaleTransition(
+        scale: _scale,
+        child: widget.child,
+      ),
     );
   }
 }

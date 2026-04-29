@@ -3,6 +3,29 @@
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
+/* Material Icons — prevent raw icon text from being visible while font loads */
+.material-icons-outlined {
+  font-family: 'Material Icons Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga';
+  /* Hide text overflow — ensures icon names don't show as plain text */
+  overflow: hidden;
+  max-width: 1em;
+  max-height: 1em;
+}
+
 :root {
   /* Colors — Modern Corporate Theme */
   --bg-primary: #F4F7FC;
