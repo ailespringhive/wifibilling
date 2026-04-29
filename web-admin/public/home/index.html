@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
+  <!-- Material Icons — loaded eagerly with font-display: block to prevent text flash natively -->
+  <link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=block" as="style">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=block">
   
   <style>
     html { scroll-behavior: smooth; }
