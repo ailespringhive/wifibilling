@@ -299,10 +299,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Customer Details', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-        backgroundColor: const Color(0xFFF3F4F6),
+        backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -452,23 +452,29 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Text(
-            title,
-            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade500),
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Row(
+            children: [
+              HugeIcon(icon: icon, size: 16.0, color: AppTheme.accentBlue),
+              const SizedBox(width: 8),
+              Text(
+                title.toUpperCase(),
+                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted, letterSpacing: 0.5),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 10),
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               )
             ],
           ),
@@ -486,11 +492,16 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: [Colors.white, const Color(0xFFF8FAFC)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -609,7 +620,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   // ── Location Photos ──
   Widget _buildPhotoCarousel() {
     List<String> photos = [];
-    final imageStr = _customer!.profileImage!.trim();
+    final imageStr = (_customer!.profileImage ?? '').trim();
 
     try {
       if (imageStr.startsWith('[')) {
@@ -815,9 +826,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   Widget _divider() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       height: 1,
-      color: AppTheme.border.withValues(alpha: 0.5),
+      color: AppTheme.border.withValues(alpha: 0.3),
     );
   }
 
@@ -857,38 +868,44 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         ),
       );
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            color: AppTheme.textMuted,
-            fontWeight: FontWeight.w500,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 130,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 16),
-        Flexible(
-          child: Text(
-            value,
-            style: mono
-                ? TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                    fontFamily: 'monospace',
-                  )
-                : GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: isLink ? FontWeight.bold : FontWeight.w600,
-                    color: isLink ? AppTheme.accentBlue : AppTheme.textPrimary,
-                  ),
-            textAlign: TextAlign.right,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: mono
+                  ? TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isLink ? AppTheme.accentBlue : AppTheme.textPrimary,
+                    )
+                  : GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isLink ? AppTheme.accentBlue : AppTheme.textPrimary,
+                    ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

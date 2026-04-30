@@ -9,6 +9,8 @@ import '../models/user_profile.dart';
 import '../models/billing.dart';
 import '../theme/app_theme.dart';
 import '../widgets/pop_in_bounce.dart';
+import 'package:appwrite/appwrite.dart';
+import '../config/appwrite_config.dart';
 
 class BillsScreen extends StatefulWidget {
   const BillsScreen({super.key});
@@ -29,20 +31,54 @@ class _BillsScreenState extends State<BillsScreen> {
   String _currentFilter = 'All';
   int _currentPage = 0;
 
+  RealtimeSubscription? _subscription;
+
   @override
   void initState() {
     super.initState();
     _loadBills();
+    _setupRealtime();
+  }
+
+  void _setupRealtime() {
+    _subscription = AppwriteService().realtime.subscribe([
+      'databases.$appwriteDatabaseId.collections.${AppCollections.billings}.documents'
+    ]);
+
+    _subscription?.stream.listen((event) {
+      if (mounted) {
+        if (event.events.any((e) => e.contains('.create'))) {
+          // A new bill was created. Silently reload to fetch it.
+          _loadBills(silent: true);
+          
+          final data = event.payload;
+          final customerName = data['customerName'] ?? 'a customer';
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('New bill generated for $customerName'),
+              backgroundColor: AppTheme.accentBlue,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        } else {
+          // An existing bill was updated (e.g. status changed). Silently reload.
+          _loadBills(silent: true);
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
+    _subscription?.close();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadBills() async {
-    setState(() => _isLoading = true);
+  Future<void> _loadBills({bool silent = false}) async {
+    if (!silent) setState(() => _isLoading = true);
     final auth = context.read<AuthService>();
 
     try {

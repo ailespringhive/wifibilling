@@ -17,6 +17,7 @@ class AppCollections {
   static const String billings = 'billings';
   static const String paymentExtensions = 'payment_extensions';
   static const String mobileNotifications = 'mobile_notifications';
+  static const String repairTickets = 'repair_tickets';
 }
 
 // Singleton Appwrite client

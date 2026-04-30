@@ -124,34 +124,38 @@ export const BillingService = {
   },
 
   /**
-   * Internal Helper: Notification for new bills
+   * Internal Helper: Notification for new bills (Broadcast to all collectors)
    */
   async _notifyCollectorOnNewBill(customerId, amount, billingMonth, customerName = 'A customer') {
     try {
-        const subRes = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTIONS.SUBSCRIPTIONS,
-            [Query.equal('customerId', customerId), Query.limit(1)]
-        );
-        const collectorId = subRes.documents.length > 0 ? subRes.documents[0].collectorId : null;
-        if (collectorId) {
-            let monthName = billingMonth || 'the month';
-            try {
-                if (billingMonth && billingMonth.includes('-')) {
-                    const [y, m] = billingMonth.split('-');
-                    monthName = new Date(y, parseInt(m)-1).toLocaleString('default', { month: 'long', year: 'numeric' });
-                }
-            } catch(_) {}
+        let monthName = billingMonth || 'the month';
+        try {
+            if (billingMonth && billingMonth.includes('-')) {
+                const [y, m] = billingMonth.split('-');
+                monthName = new Date(y, parseInt(m)-1).toLocaleString('default', { month: 'long', year: 'numeric' });
+            }
+        } catch(_) {}
 
-            await MobileNotificationService.send(
-                collectorId,
-                `New Bill: ${customerName}`,
-                `A new bill of ₱${(amount || 0).toLocaleString()} has been generated for ${monthName}.`,
-                'bill_generated'
-            );
+        // Fetch ALL collectors
+        const collectorsRes = await apiBypass.listDocuments(COLLECTIONS.USERS_PROFILE, [
+             Query.equal('role', 'collector'),
+             Query.limit(100)
+        ]);
+
+        if (collectorsRes && collectorsRes.documents) {
+            for (const collector of collectorsRes.documents) {
+                if (collector.$id) {
+                    await MobileNotificationService.send(
+                        collector.$id,
+                        `New Bill: ${customerName}`,
+                        `A new bill of ₱${(amount || 0).toLocaleString()} has been generated for ${monthName}.`,
+                        'bill_generated'
+                    );
+                }
+            }
         }
     } catch (e) {
-        console.warn('[BillingService] Notification failed:', e);
+        console.warn('[BillingService] Notification broadcast failed:', e);
     }
   },
 
@@ -178,37 +182,29 @@ export const BillingService = {
   },
 
   /**
-   * Helper: Find collector and send payment notification
+   * Helper: Broadcast payment notification to all collectors
    */
   async notifyCollectorPayment(customerId, amountPaid, customerName = 'A customer') {
     try {
-      // 1. Find subscription for collectorId
-      const subRes = await databases.listDocuments(
-        DATABASE_ID,
-        COLLECTIONS.SUBSCRIPTIONS,
-        [Query.equal('customerId', customerId), Query.limit(1)]
-      );
-      
-      let collectorId = subRes.documents.length > 0 ? subRes.documents[0].collectorId : null;
-      
-      if (!collectorId) {
-        // Try bypass if empty
-        const bypassSub = await apiBypass.listDocuments(COLLECTIONS.SUBSCRIPTIONS, [Query.equal('customerId', customerId)]);
-        if (bypassSub.documents && bypassSub.documents.length > 0) {
-          collectorId = bypassSub.documents[0].collectorId;
-        }
-      }
+        const collectorsRes = await apiBypass.listDocuments(COLLECTIONS.USERS_PROFILE, [
+             Query.equal('role', 'collector'),
+             Query.limit(100)
+        ]);
 
-      if (collectorId) {
-        await MobileNotificationService.send(
-          collectorId,
-          `Payment: ${customerName}`,
-          `${customerName} has paid ₱${amountPaid.toLocaleString()}.`,
-          'payment_received'
-        );
-      }
+        if (collectorsRes && collectorsRes.documents) {
+            for (const collector of collectorsRes.documents) {
+                if (collector.$id) {
+                    await MobileNotificationService.send(
+                        collector.$id,
+                        `Payment: ${customerName}`,
+                        `${customerName} has paid ₱${amountPaid.toLocaleString()}.`,
+                        'payment_received'
+                    );
+                }
+            }
+        }
     } catch (err) {
-      console.warn('[BillingService] Failed to send payment notification:', err);
+      console.warn('[BillingService] Failed to broadcast payment notification:', err);
     }
   },
 

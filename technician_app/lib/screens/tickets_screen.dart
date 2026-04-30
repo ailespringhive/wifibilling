@@ -35,21 +35,56 @@ class _TicketsScreenState extends State<TicketsScreen> {
   List<RepairTicket> _allTickets = [];
   String _filterStatus = 'all';
   String _searchQuery = '';
+  
+  RealtimeSubscription? _subscription;
 
   @override
   void initState() {
     super.initState();
     _loadTickets();
+    _setupRealtime();
+  }
+
+  void _setupRealtime() {
+    _subscription = AppwriteService().realtime.subscribe([
+      'databases.$appwriteDatabaseId.collections.${AppCollections.repairTickets}.documents'
+    ]);
+
+    _subscription?.stream.listen((event) {
+      if (mounted) {
+        if (event.events.any((e) => e.contains('.create'))) {
+          // A new ticket was created. Silently reload.
+          _loadTickets(silent: true);
+          
+          final data = event.payload;
+          final issue = data['issue'] ?? 'an issue';
+          final customer = data['customerName'] ?? 'a customer';
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('New ticket for $customer: $issue'),
+              backgroundColor: AppTheme.accentBlue,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        } else {
+          // Existing ticket updated.
+          _loadTickets(silent: true);
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
+    _subscription?.close();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadTickets() async {
-    setState(() => _isLoading = true);
+  Future<void> _loadTickets({bool silent = false}) async {
+    if (!silent) setState(() => _isLoading = true);
     final auth = context.read<AuthService>();
     final techId = auth.collectorId;
 

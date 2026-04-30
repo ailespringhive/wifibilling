@@ -32,6 +32,7 @@ class AppwriteService {
   late final Databases databases;
   late final TablesDB tablesDB;
   late final Storage storage;
+  late final Realtime realtime;
 
   void init() {
     client = Client()
@@ -43,5 +44,6 @@ class AppwriteService {
     databases = Databases(client);
     tablesDB = TablesDB(client);
     storage = Storage(client);
+    realtime = Realtime(client);
   }
 }
