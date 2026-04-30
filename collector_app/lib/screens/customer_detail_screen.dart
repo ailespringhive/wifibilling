@@ -1100,24 +1100,30 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     ? () => setState(() => _selectedBillingMonth = key)
                     : null,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
+                  duration: const Duration(milliseconds: 200),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber)
                         : hasBill
-                            ? (isPaid ? AppTheme.accentEmerald.withValues(alpha: 0.08) : AppTheme.accentAmber.withValues(alpha: 0.08))
-                            : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
+                            ? (isPaid ? AppTheme.accentEmerald.withValues(alpha: 0.1) : AppTheme.accentAmber.withValues(alpha: 0.1))
+                            : AppTheme.textMuted.withValues(alpha: 0.04), // Soft grey for empty months
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
                           ? (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber)
                           : hasBill
-                              ? (isPaid ? AppTheme.accentEmerald.withValues(alpha: 0.35) : AppTheme.accentAmber.withValues(alpha: 0.35))
-                              : AppTheme.border.withValues(alpha: 0.25),
+                              ? (isPaid ? AppTheme.accentEmerald.withValues(alpha: 0.4) : AppTheme.accentAmber.withValues(alpha: 0.5))
+                              : AppTheme.border.withValues(alpha: 0.2), // Subtle border for empty months
                       width: isSelected ? 1.5 : 1,
                     ),
                     boxShadow: isSelected
-                        ? [BoxShadow(color: (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber).withValues(alpha: 0.25), blurRadius: 6, offset: const Offset(0, 2))]
+                        ? [
+                            BoxShadow(
+                              color: (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber).withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            )
+                          ]
                         : [],
                   ),
                   child: Column(
@@ -1126,21 +1132,23 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       Text(
                         monthNames[index],
                         style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: hasBill ? FontWeight.w700 : FontWeight.w400,
+                          fontSize: 14,
+                          fontWeight: hasBill ? FontWeight.bold : FontWeight.w500,
                           color: isSelected
                               ? Colors.white
                               : hasBill
                                   ? (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber)
-                                  : AppTheme.textMuted.withValues(alpha: 0.35),
+                                  : AppTheme.textMuted.withValues(alpha: 0.4),
                         ),
                       ),
                       if (hasBill) ...[
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Icon(
-                          isPaid ? Icons.check_circle : Icons.circle,
-                          size: 10,
-                          color: isSelected ? Colors.white70 : (isPaid ? AppTheme.accentEmerald.withValues(alpha: 0.8) : AppTheme.accentAmber.withValues(alpha: 0.8)),
+                          isPaid ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+                          size: 14,
+                          color: isSelected 
+                              ? Colors.white 
+                              : (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber),
                         ),
                       ],
                     ],
