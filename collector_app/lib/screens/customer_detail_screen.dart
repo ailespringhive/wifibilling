@@ -33,7 +33,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   final BillingService _billingService = BillingService();
   List<Billing> _billings = [];
-  Billing? _currentBilling;
+  String? _selectedBillingMonth; // tracks which month chip is selected
+  int? _selectedBillingYear;     // tracks displayed calendar year
 
   // Payment dialog state
   final TextEditingController _paymentAmountCtrl = TextEditingController();
@@ -110,21 +111,23 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       final billings = await _billingService.getBillingsByCustomer(_customer!.userId);
       billings.sort((a, b) => b.billingMonth.compareTo(a.billingMonth));
       
-      // Find the latest unpaid/overdue billing for payment
-      Billing? current;
+      // Auto-select the latest unpaid month, or just the latest if all paid
+      String? defaultMonth;
       for (final b in billings) {
         if (!b.isPaid) {
-          current = b;
+          defaultMonth = b.billingMonth;
           break;
         }
       }
-      // If all paid, just show the latest
-      current ??= billings.isNotEmpty ? billings.first : null;
+      defaultMonth ??= billings.isNotEmpty ? billings.first.billingMonth : null;
 
       if (mounted) {
         setState(() {
           _billings = billings;
-          _currentBilling = current;
+          if (_selectedBillingMonth == null && defaultMonth != null) {
+            _selectedBillingMonth = defaultMonth;
+            _selectedBillingYear = int.tryParse(defaultMonth.split('-')[0]) ?? DateTime.now().year;
+          }
           _isLoadingBillings = false;
         });
       }
@@ -156,10 +159,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     }
   }
 
-  void _showCollectPaymentDialog() {
-    if (_currentBilling == null || _currentBilling!.isPaid) return;
+  void _showCollectPaymentDialog(Billing billing) {
+    if (billing.isPaid) return;
     
-    final billing = _currentBilling!;
     final balance = billing.amount - (billing.amountPaid ?? 0);
     _paymentAmountCtrl.text = balance.toStringAsFixed(0);
     _paymentNotesCtrl.clear();
@@ -524,21 +526,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         children: [
                           if (_isLoadingBillings)
                             _buildLoadingCard()
-                          else if (_currentBilling != null)
-                            _buildBillingCard(_currentBilling!),
-                          
-                          const SizedBox(height: 16),
-
-                          if (!_isLoadingBillings && _currentBilling != null && !_currentBilling!.isPaid)
-                            _buildCollectPaymentButton(),
-                          
+                          else if (_billings.isEmpty)
+                            _buildEmptyBillings()
+                          else ...[
+                            _buildUnifiedCalendarFlow(),
+                          ],
                           const SizedBox(height: 12),
                           _buildReportIssueButton(),
-
-                          if (!_isLoadingBillings && _currentBilling != null && !_currentBilling!.isPaid)
-                            const SizedBox(height: 20),
-
-                          _buildPaymentHistorySection(),
                         ],
                       ),
                     ),
@@ -599,7 +593,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Current Bill',
+                    'Bill Details',
                     style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                   ),
                 ],
@@ -739,7 +733,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
 
-  Widget _buildCollectPaymentButton() {
+  Widget _buildCollectPaymentButton(Billing billing) {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -759,7 +753,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: _showCollectPaymentDialog,
+          onTap: () => _showCollectPaymentDialog(billing),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
@@ -911,25 +905,51 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
 
-  Widget _buildPaymentHistorySection() {
-    // Collect individual payment entries from all billings
-    final List<Map<String, dynamic>> allPayments = [];
-    for (final billing in _billings) {
-      final log = _parsePaymentLog(billing.notes);
-      if (log.isNotEmpty) {
-        for (final entry in log) {
-          allPayments.add({
-            'billing': billing,
-            'amount': (entry['amount'] as num?)?.toDouble() ?? 0,
-            'date': entry['date'] as String? ?? '',
-            'collector': entry['collector'] as String? ?? '',
-            'note': entry['note'] as String? ?? '',
-          });
-        }
-      }
+  Widget _buildEmptyBillings() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppTheme.textMuted.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.receipt_long_outlined, size: 22, color: AppTheme.textMuted),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No billings found',
+            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Generated bills will appear here.',
+            style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnifiedCalendarFlow() {
+    // Determine the selected billing based on _selectedBillingMonth
+    Billing? selectedBilling;
+    if (_selectedBillingMonth != null) {
+      try {
+        selectedBilling = _billings.firstWhere((b) => b.billingMonth == _selectedBillingMonth);
+      } catch (_) {}
     }
-    // Sort newest first
-    allPayments.sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
+
+    final displayYear = _selectedBillingYear ?? DateTime.now().year;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -938,155 +958,317 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Payment History',
+              'Billing Calendar',
               style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
             ),
           ],
         ),
         const SizedBox(height: 10),
 
-        if (_isLoadingBillings)
-          ...[
-            _buildShimmerCard(),
-            _buildShimmerCard(),
-          ]
-        else if (allPayments.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppTheme.bgCard,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppTheme.textMuted.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.receipt_long_outlined, size: 22, color: AppTheme.textMuted),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'No payments yet',
-                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Collected payments will appear here.',
-                  style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
-                ),
-              ],
-            ),
-          )
-        else
-          ...allPayments.map((entry) => _buildPaymentEntryCard(entry)),
+        // ── Calendar month grid ──
+        _buildBillingCalendarGrid(displayYear),
+        
+        const SizedBox(height: 20),
+        
+        // ── Details for Selected Month ──
+        if (selectedBilling != null) ...[
+          Text(
+            'Details for ${_billingPeriodLabel(selectedBilling.billingMonth)}',
+            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textMuted),
+          ),
+          const SizedBox(height: 8),
+          
+          // Bill Card
+          _buildBillingCard(selectedBilling),
+          
+          // Collect Payment Button (if unpaid or partial)
+          if (!selectedBilling.isPaid) ...[
+            const SizedBox(height: 16),
+            _buildCollectPaymentButton(selectedBilling),
+          ],
+          
+          // Payment History Receipts for this bill
+          _buildSelectedMonthReceipts(selectedBilling),
+        ],
       ],
     );
   }
 
-  Widget _buildPaymentEntryCard(Map<String, dynamic> entry) {
+  /// Calendar-style month grid — 4 columns × 3 rows (Jan–Dec).
+  /// Only months with generated bills are active. 
+  /// Orange dot = Unpaid, Green check = Paid.
+  Widget _buildBillingCalendarGrid(int displayYear) {
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+
+    // Map billings by their key for quick lookup
+    final Map<String, Billing> billedMonths = {};
+    final Set<int> availableYears = {};
+    for (final b in _billings) {
+      final key = b.billingMonth.length >= 7 ? b.billingMonth.substring(0, 7) : b.billingMonth;
+      billedMonths[key] = b;
+      availableYears.add(int.tryParse(key.split('-')[0]) ?? DateTime.now().year);
+    }
+    
+    final yearsList = availableYears.toList()..sort();
+    final hasPrev = yearsList.any((y) => y < displayYear);
+    final hasNext = yearsList.any((y) => y > displayYear);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 14),
+      child: Column(
+        children: [
+          // ── Year navigator ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.chevron_left,
+                  color: hasPrev ? const Color(0xFF6C63FF) : AppTheme.border,
+                ),
+                onPressed: hasPrev
+                    ? () => setState(() {
+                          _selectedBillingYear = displayYear - 1;
+                          if (_selectedBillingMonth != null &&
+                              !_selectedBillingMonth!.startsWith('${displayYear - 1}')) {
+                            _selectedBillingMonth = null;
+                          }
+                        })
+                    : null,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              Text(
+                '$displayYear',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.chevron_right,
+                  color: hasNext ? const Color(0xFF6C63FF) : AppTheme.border,
+                ),
+                onPressed: hasNext
+                    ? () => setState(() {
+                          _selectedBillingYear = displayYear + 1;
+                          if (_selectedBillingMonth != null &&
+                              !_selectedBillingMonth!.startsWith('${displayYear + 1}')) {
+                            _selectedBillingMonth = null;
+                          }
+                        })
+                    : null,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // ── Month grid: 4 columns × 3 rows ──
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              childAspectRatio: 1.6,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: 12,
+            itemBuilder: (context, index) {
+              final monthNum = index + 1;
+              final key = '$displayYear-${monthNum.toString().padLeft(2, '0')}';
+              final billingInfo = billedMonths[key];
+              final hasBill = billingInfo != null;
+              final isSelected = _selectedBillingMonth == key;
+              final isPaid = billingInfo?.isPaid ?? false;
+
+              return GestureDetector(
+                onTap: hasBill
+                    ? () => setState(() => _selectedBillingMonth = key)
+                    : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber)
+                        : hasBill
+                            ? (isPaid ? AppTheme.accentEmerald.withValues(alpha: 0.08) : AppTheme.accentAmber.withValues(alpha: 0.08))
+                            : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber)
+                          : hasBill
+                              ? (isPaid ? AppTheme.accentEmerald.withValues(alpha: 0.35) : AppTheme.accentAmber.withValues(alpha: 0.35))
+                              : AppTheme.border.withValues(alpha: 0.25),
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                    boxShadow: isSelected
+                        ? [BoxShadow(color: (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber).withValues(alpha: 0.25), blurRadius: 6, offset: const Offset(0, 2))]
+                        : [],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        monthNames[index],
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: hasBill ? FontWeight.w700 : FontWeight.w400,
+                          color: isSelected
+                              ? Colors.white
+                              : hasBill
+                                  ? (isPaid ? AppTheme.accentEmerald : AppTheme.accentAmber)
+                                  : AppTheme.textMuted.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      if (hasBill) ...[
+                        const SizedBox(height: 2),
+                        Icon(
+                          isPaid ? Icons.check_circle : Icons.circle,
+                          size: 10,
+                          color: isSelected ? Colors.white70 : (isPaid ? AppTheme.accentEmerald.withValues(alpha: 0.8) : AppTheme.accentAmber.withValues(alpha: 0.8)),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Lists the payment receipts specifically for the selected billing
+  Widget _buildSelectedMonthReceipts(Billing billing) {
+    final log = _parsePaymentLog(billing.notes);
+    if (log.isEmpty) return const SizedBox.shrink();
+
+    // Convert logs into standard entry format
+    final List<Map<String, dynamic>> entries = log.map((entry) => {
+      'billing': billing,
+      'amount': (entry['amount'] as num?)?.toDouble() ?? 0,
+      'date': entry['date'] as String? ?? '',
+      'collector': entry['collector'] as String? ?? '',
+      'note': entry['note'] as String? ?? '',
+    }).toList();
+
+    entries.sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+              child: Text(
+                'Payment Receipts',
+                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+              ),
+            ),
+            Container(height: 1, color: AppTheme.border.withValues(alpha: 0.5)),
+            ...entries.map((entry) => _buildPaymentEntryRow(entry)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// A single payment row inside the month detail panel.
+  Widget _buildPaymentEntryRow(Map<String, dynamic> entry) {
     final billing = entry['billing'] as Billing;
     final amount = entry['amount'] as double;
     final dateStr = entry['date'] as String;
     final collector = entry['collector'] as String;
-    
+
     String formattedDate = '—';
     if (dateStr.isNotEmpty) {
       try {
-        formattedDate = DateFormat('MMM d, yyyy · h:mm a').format(DateTime.parse(dateStr).toLocal());
+        formattedDate = DateFormat('MMM d · h:mm a').format(DateTime.parse(dateStr).toLocal());
       } catch (_) {}
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            // Navigate to receipt for THIS specific payment amount
-            Navigator.pushNamed(
-              context,
-              '/receipt-preview',
-              arguments: {
-                'billing': Billing(
-                  id: billing.id,
-                  customerId: billing.customerId,
-                  subscriptionId: billing.subscriptionId,
-                  billingMonth: billing.billingMonth,
-                  amount: billing.amount,
-                  paymentStatus: billing.paymentStatus,
-                  dueDate: billing.dueDate,
-                  paidDate: dateStr,
-                  collectedBy: collector,
-                  notes: billing.notes,
-                  customerName: billing.customerName,
-                  createdAt: billing.createdAt,
-                  amountPaid: amount,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(0),
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            '/receipt-preview',
+            arguments: {
+              'billing': Billing(
+                id: billing.id,
+                customerId: billing.customerId,
+                subscriptionId: billing.subscriptionId,
+                billingMonth: billing.billingMonth,
+                amount: billing.amount,
+                paymentStatus: billing.paymentStatus,
+                dueDate: billing.dueDate,
+                paidDate: dateStr,
+                collectedBy: collector,
+                notes: billing.notes,
+                customerName: billing.customerName,
+                createdAt: billing.createdAt,
+                amountPaid: amount,
+              ),
+              'customer': _customer!,
+              'amountPaid': amount,
+              'collectorName': collector,
+            },
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppTheme.accentEmerald.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                'customer': _customer!,
-                'amountPaid': amount,
-                'collectorName': collector,
-              },
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                // Check icon
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentEmerald.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.check_circle_outlined, color: AppTheme.accentEmerald, size: 18),
+                child: const Icon(Icons.check_circle_outlined, color: AppTheme.accentEmerald, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  formattedDate,
+                  style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textMuted, fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(width: 14),
-
-                // Details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _billingPeriodLabel(billing.billingMonth),
-                        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        formattedDate,
-                        style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade500),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Amount (this specific payment)
-                Text(
-                  '₱${NumberFormat('#,##0').format(amount)}',
-                  style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                ),
-              ],
-            ),
+              ),
+              Text(
+                '₱${NumberFormat('#,##0').format(amount)}',
+                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right, size: 16, color: AppTheme.textMuted),
+            ],
           ),
         ),
       ),
