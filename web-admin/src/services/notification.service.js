@@ -33,6 +33,7 @@ export const MobileNotificationService = {
           documentId: 'unique()',
           data: {
             collectorId,
+            technicianId: '',
             title,
             message,
             type,
